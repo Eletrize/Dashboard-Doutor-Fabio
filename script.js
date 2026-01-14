@@ -6626,6 +6626,28 @@ function updateMusicPlayerUI(artist, track, album, albumArt) {
   const albumImgElement = queryActiveMusic(".music-album-img");
   const activePage = document.querySelector(".page.active");
 
+  // tentar descobrir o ambiente atual a partir da classe da página (ex: 'ambiente2-page')
+  let currentEnvKey = null;
+  if (activePage && activePage.classList) {
+    for (const cls of activePage.classList) {
+      const m = cls.match(/^(.+)-page$/);
+      if (m) {
+        currentEnvKey = m[1];
+        break;
+      }
+    }
+  }
+
+  // determinar placeholder de capa por ambiente (prioriza webp otimizado quando suportado)
+  let albumPlaceholder = "images/Images/photo-living.jpg";
+  try {
+    if (currentEnvKey && typeof ROOM_IMAGE_DATA !== "undefined" && ROOM_IMAGE_DATA[currentEnvKey]) {
+      albumPlaceholder = WEBP_SUPPORTED
+        ? ROOM_IMAGE_DATA[currentEnvKey].defaultWebp || ROOM_IMAGE_DATA[currentEnvKey].fallback
+        : ROOM_IMAGE_DATA[currentEnvKey].fallback;
+    }
+  } catch (e) {}
+
   // Atualizar texto se os elementos existirem
   if (artistElement) artistElement.textContent = artist;
   if (activePage) {
@@ -6649,11 +6671,11 @@ function updateMusicPlayerUI(artist, track, album, albumArt) {
       albumImgElement.src = albumArt;
       albumImgElement.onerror = function () {
         // Se a imagem falhar, use placeholder
-        this.src = "images/Images/photo-varanda.jpg";
+        this.src = albumPlaceholder;
       };
     } else {
       // Usar placeholder se não houver capa
-      albumImgElement.src = "images/Images/photo-varanda.jpg";
+      albumImgElement.src = albumPlaceholder;
     }
   }
 

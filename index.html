@@ -1071,7 +1071,11 @@
         const transportId = String(device.transportId || device.id);
         const volumeId = String(device.volumeId || device.id);
         const powerId = String(device.powerId || device.id);
-        const photoBase = ROOM_IMAGE_DATA[envKey]?.fallback || "images/Images/photo-living.jpg";
+        const photoBase = (ROOM_IMAGE_DATA[envKey])
+          ? (WEBP_SUPPORTED
+              ? ROOM_IMAGE_DATA[envKey].defaultWebp || ROOM_IMAGE_DATA[envKey].fallback
+              : ROOM_IMAGE_DATA[envKey].fallback)
+          : "images/Images/photo-living.jpg";
 
         return `
 
@@ -1846,7 +1850,7 @@
         <div class="music-player-content">
           <div class="music-primary">
             <div class="music-album">
-              <img class="music-album-img" src="images/Images/photo-varanda.jpg" alt="Capa do Ã¡lbum" loading="lazy" decoding="async" width="720" height="540">
+              <img class="music-album-img" src="${(WEBP_SUPPORTED && ROOM_IMAGE_DATA['ambiente1']) ? ROOM_IMAGE_DATA['ambiente1'].defaultWebp : ROOM_IMAGE_DATA['ambiente1']?.fallback || 'images/Images/photo-varanda.jpg'}" alt="Capa do Ã¡lbum" loading="lazy" decoding="async" width="720" height="540">
             </div>
 
             <div class="music-info">
@@ -1933,7 +1937,7 @@
         <div class="music-player-content">
           <div class="music-primary">
             <div class="music-album">
-              <img class="music-album-img" src="images/Images/photo-living.jpg" alt="Capa do Ã¡lbum" loading="lazy" decoding="async" width="720" height="540">
+              <img class="music-album-img" src="${(WEBP_SUPPORTED && ROOM_IMAGE_DATA['ambiente2']) ? ROOM_IMAGE_DATA['ambiente2'].defaultWebp : ROOM_IMAGE_DATA['ambiente2']?.fallback || 'images/Images/photo-living.jpg'}" alt="Capa do Ã¡lbum" loading="lazy" decoding="async" width="720" height="540">
             </div>
 
             <div class="music-info">
