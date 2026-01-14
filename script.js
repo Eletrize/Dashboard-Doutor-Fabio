@@ -280,7 +280,7 @@ const ICON_ASSET_PATHS = [
   "images/icons/icon-settings.svg",
   "images/icons/icon-home.svg",
   "images/icons/back-button.svg",
-  "images/icons/Eletrize.svg",
+  "images/icons/eletrize.svg",
   "images/icons/Fullscreen.svg",
   "images/icons/icon-limpar.svg",
   "images/icons/icon-mouse.svg",
@@ -4030,29 +4030,81 @@ function showErrorMessage(message) {
   }, 10000);
 }
 
-// Fallback direto desativado por seguranÃƒÂ§a (CORS e exposiÃƒÂ§ÃƒÂ£o de token)
+// Fallback direto via Maker API (cloud). Usa appBaseUrl/accessToken do config.js
 async function loadAllDeviceStatesDirect(deviceIds) {
-  console.warn(
-    "Fallback direto desativado. Usando apenas estados locais armazenados."
-  );
-  if (!Array.isArray(deviceIds)) {
-    deviceIds =
-      typeof deviceIds === "string"
-        ? deviceIds.split(",").map((id) => id.trim())
+  const baseUrl = HUBITAT_CLOUD_APP_BASE_URL;
+  const token = HUBITAT_CLOUD_ACCESS_TOKEN;
+
+  if (!baseUrl || !token) {
+    throw new Error("Maker API cloud não configurado (baseUrl/token ausentes)");
+  }
+
+  let idsArray = deviceIds;
+  if (!Array.isArray(idsArray)) {
+    idsArray =
+      typeof idsArray === "string"
+        ? idsArray.split(",").map((id) => id.trim())
         : [];
   }
+  const filterSet = idsArray.length > 0 ? new Set(idsArray.map(String)) : null;
+
+  const url = `${baseUrl}/devices/all?access_token=${encodeURIComponent(token)}`;
+  console.log("📡 [fallback-direct] Fetching:", url);
+
+  const response = await fetch(url, { method: "GET", mode: "cors" });
+  const text = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`Maker API fallback falhou: HTTP ${response.status} ${response.statusText}`);
+  }
+
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch (err) {
+    console.error("⚠️ [fallback-direct] Resposta não é JSON:", text.slice(0, 300));
+    throw err;
+  }
+
+  if (!Array.isArray(data)) {
+    throw new Error("Formato inesperado da Maker API (esperado array)");
+  }
+
   const devices = {};
-  deviceIds.forEach((id) => {
-    const state = getStoredState(id) || "off";
-    updateDeviceUI(id, state, true);
-    devices[id] = { state, success: false, error: "Direct polling disabled" };
+
+  data.forEach((device) => {
+    if (!device || !device.id) return;
+    const idStr = String(device.id);
+    if (filterSet && !filterSet.has(idStr)) return;
+
+    let state = "off";
+    let level = null;
+
+    if (Array.isArray(device.attributes)) {
+      const switchAttr = device.attributes.find((attr) => attr.name === "switch");
+      state = switchAttr?.currentValue || switchAttr?.value || state;
+
+      const levelAttr = device.attributes.find((attr) => attr.name === "level");
+      if (levelAttr) {
+        level = levelAttr?.currentValue ?? levelAttr?.value ?? level;
+      }
+    } else if (device.attributes && typeof device.attributes === "object") {
+      if (device.attributes.switch !== undefined) {
+        state = device.attributes.switch;
+      }
+      if (device.attributes.level !== undefined) {
+        level = device.attributes.level;
+      }
+    }
+
+    devices[idStr] = {
+      success: true,
+      state,
+      level,
+    };
   });
-  return {
-    timestamp: new Date().toISOString(),
-    devices,
-    fallback: true,
-    disabled: true,
-  };
+
+  return { success: true, devices };
 }
 
 // Função para testar Configurações do Hubitat
@@ -4417,14 +4469,37 @@ async function updateDeviceStatesFromServer(options = {}) {
     ]);
 
     const response = await fetch(pollingUrl, { cache: "no-store" });
+    const rawText = await response.text();
+
     if (!response.ok) {
       throw new Error(`Polling failed: ${response.status}`);
     }
 
-    const data = await response.json();
-    let devicesMap = data.devices;
+    let data;
+    let devicesMap;
 
-    if (!devicesMap && Array.isArray(data.data)) {
+    const trimmed = (rawText || "").trim();
+    const looksLikeHtml = trimmed.startsWith("<!DOCTYPE html") || trimmed.startsWith("<html");
+
+    if (looksLikeHtml) {
+      console.warn("⚠️ Polling retornou HTML (Cloudflare Functions falhando). Tentando fallback Maker API...");
+      const direct = await loadAllDeviceStatesDirect(ALL_LIGHT_IDS);
+      devicesMap = direct.devices;
+    } else {
+      try {
+        data = JSON.parse(rawText);
+      } catch (err) {
+        console.warn("⚠️ Polling JSON parse falhou, tentando fallback Maker API...", err);
+        const direct = await loadAllDeviceStatesDirect(ALL_LIGHT_IDS);
+        devicesMap = direct.devices;
+      }
+
+      if (!devicesMap && data) {
+        devicesMap = data.devices;
+      }
+    }
+
+    if (!devicesMap && data && Array.isArray(data.data)) {
       devicesMap = {};
       data.data.forEach((device) => {
         if (!device || !device.id) {
