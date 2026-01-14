@@ -3827,20 +3827,48 @@ const HUBITAT_PROXY_URL = "/hubitat-proxy";
 const POLLING_URL = "/polling";
 window.musicPlayerUI = window.musicPlayerUI || {};
 
-// Hubitat Cloud (Maker API) configuration
-const HUBITAT_CLOUD_ENABLED = true;
+function normalizeMakerApiDeviceIds(ids, fallback = "*") {
+  const source = ids !== undefined ? ids : fallback;
+  if (source === "*" || source === "all" || source === true) return null; // null = todos
+  if (Array.isArray(source)) {
+    const normalized = source.filter(Boolean).map((v) => String(v));
+    return normalized.length > 0 ? new Set(normalized) : null;
+  }
+  if (source === undefined || source === null) return null;
+  return new Set([String(source)]);
+}
+
+// Hubitat Cloud (Maker API) configuration via config.js (com fallback seguro)
+const CLIENT_MAKER_API_CLOUD =
+  (typeof window !== "undefined" && window.CLIENT_CONFIG?.makerApi?.cloud) || {};
+const DEFAULT_MAKER_API_CLOUD = {
+  enabled: true,
+  appBaseUrl:
+    "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144",
+  accessToken: "94f13f9f-2842-48ea-a860-02eda566a02a",
+  deviceIds: "*",
+};
+
+const HUBITAT_CLOUD_ENABLED =
+  CLIENT_MAKER_API_CLOUD.enabled ?? DEFAULT_MAKER_API_CLOUD.enabled;
 const HUBITAT_CLOUD_APP_BASE_URL =
-  "https://cloud.hubitat.com/api/e45cb756-9028-44c2-8a00-e6fb3651856c/apps/15";
-const HUBITAT_CLOUD_ACCESS_TOKEN = "1d9b367b-e4cd-4042-b726-718b759a82ef";
-const HUBITAT_CLOUD_DEVICES_BASE_URL = `${HUBITAT_CLOUD_APP_BASE_URL}/devices`;
-const HUBITAT_CLOUD_DEVICE_IDS = new Set(["109", "115", "116", "119"]);
+  CLIENT_MAKER_API_CLOUD.appBaseUrl || DEFAULT_MAKER_API_CLOUD.appBaseUrl;
+const HUBITAT_CLOUD_ACCESS_TOKEN =
+  CLIENT_MAKER_API_CLOUD.accessToken || DEFAULT_MAKER_API_CLOUD.accessToken;
+const HUBITAT_CLOUD_DEVICES_BASE_URL = HUBITAT_CLOUD_APP_BASE_URL
+  ? `${HUBITAT_CLOUD_APP_BASE_URL}/devices`
+  : "";
+const HUBITAT_CLOUD_DEVICE_IDS = normalizeMakerApiDeviceIds(
+  CLIENT_MAKER_API_CLOUD.deviceIds,
+  DEFAULT_MAKER_API_CLOUD.deviceIds
+);
 
 function useHubitatCloud(deviceId) {
-  return (
-    HUBITAT_CLOUD_ENABLED &&
-    deviceId !== undefined &&
-    HUBITAT_CLOUD_DEVICE_IDS.has(String(deviceId))
-  );
+  if (!HUBITAT_CLOUD_ENABLED) return false;
+  if (!HUBITAT_CLOUD_APP_BASE_URL || !HUBITAT_CLOUD_ACCESS_TOKEN) return false;
+  if (deviceId === undefined || deviceId === null) return false;
+  if (HUBITAT_CLOUD_DEVICE_IDS === null) return true; // null = todos os dispositivos
+  return HUBITAT_CLOUD_DEVICE_IDS.has(String(deviceId));
 }
 
 const TEXT_MOJIBAKE_REGEX = /[\u00C3\u00C2\u00E2\uFFFD]/;

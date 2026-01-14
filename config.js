@@ -13,6 +13,45 @@ const CLIENT_CONFIG = {
     version: "1.5",
   },
 
+  // Configuração da Maker API (Hubitat) centralizada no config.js
+  makerApi: {
+    cloud: {
+      enabled: true,
+      // URL base completa do app da Maker API (inclui apiId e appId)
+      appBaseUrl:
+        "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144",
+      // Token de acesso fornecido pela Maker API
+      accessToken: "94f13f9f-2842-48ea-a860-02eda566a02a",
+      // Quais dispositivos devem usar a nuvem: "*"/"all" para todos ou uma lista de IDs
+      deviceIds: "*",
+      // Endpoints diretos úteis (mantidos aqui para fácil consulta)
+      endpoints: {
+        devicesAll:
+          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/devices/all?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+        deviceInfo:
+          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/devices/[Device ID]?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+        deviceEvents:
+          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/devices/[Device ID]/events?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+        deviceCommands:
+          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/devices/[Device ID]/commands?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+        deviceCapabilities:
+          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/devices/[Device ID]/capabilities?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+        deviceAttribute:
+          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/devices/[Device ID]/attribute/[Attribute]?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+        sendDeviceCommand:
+          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/devices/[Device ID]/[Command]/[Secondary value]?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+        sendPostUrl:
+          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/postURL/[URL]?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+        setHubVariable:
+          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/hubvariables/[Variable Name]/[Value]?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+        modesList:
+          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/modes?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+        setMode:
+          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/modes/[Mode ID]?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+      },
+    },
+  },
+
   // Overrides globais de ícones (vale para TODOS os botões)
   // Chave: caminho atual (ex.: "images/icons/icon-mute.svg")
   // Valor: novo caminho (ex.: "images/icons/whatsapp.svg")
@@ -122,7 +161,7 @@ const CLIENT_CONFIG = {
         { id: "75", name: "Spots" },
         { id: "76", name: "Sanca" },
         { id: "58", name: "Lustre", type: "dimmer", defaultLevel: 60 },
-        { id: "20", name: "Spots Dimmer", type: "dimmer", defaultLevel: 99 },
+        { id: "20", name: "Spots Dimmer", type: "dimmer", defaultLevel: 100 },
       ],
       curtains: [
         { id: "119", name: "Cortina Lateral" }
