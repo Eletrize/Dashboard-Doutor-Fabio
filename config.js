@@ -164,14 +164,13 @@ const CLIENT_CONFIG = {
         { id: "342", name: "Spots Dimmer", type: "dimmer", defaultLevel: 100 },
       ],
       curtains: [
-        { id: "119", name: "Cortina Lateral" }
+        { id: "359", name: "Corredor" },
+        { id: "361", name: "Varanda" },
+        { id: "119", name: "Cortina" },
       ],
       airConditioner: {
         zones: [{ id: "living", name: "Living", deviceId: "167" }],
       },
-      curtains: [
-        { id: "119", name: "Cortina" }
-      ],
     },
 
     ambiente3: {
