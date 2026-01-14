@@ -697,43 +697,23 @@ window.addEventListener("orientationchange", updateDeviceStyles);
 window.addEventListener("resize", updateDeviceStyles);
 
 // ========================================
-// CONFIGURAÃƒâ€¡Ãƒâ€¢ES GERAIS
+// CONFIGURAÇÕES GERAIS
 // ========================================
 
-// IDs de todos os dispositivos de iluminaÃƒÂ§ÃƒÂ£o (atualizados com devices.json)
+// IDs de todos os dispositivos de iluminação (obtidos do config.js)
 let ALL_LIGHT_IDS =
   typeof getAllLightIds === "function"
     ? getAllLightIds()
-    : [
-  "231", // Ambiente 1 - Luz 1 (Escritorio-Pendente)
-  "232", // Ambiente 1 - Luz 2 (Escritorio-Trilho)
-  "233", // Ambiente 2 - Luz 1 (Escritorio-Lustre)
-  "234", // Ambiente 2 - Luz 2 (Escritorio-Balizador)
-  "259", // Ambiente 3 - Luz 1 (Cinema-Iluminacao)
-  "260", // Ambiente 3 - Luz 2 (Cinema-Balizadores)
-  "261", // Ambiente 4 - Luz 1 (Recepcao-Lustre)
-  "262", // Ambiente 4 - Luz 2 (Recepcao-Lavabo)
-  "263", // Ambiente 5 - Luz 1 (Recepcao-JardimExterno)
-  "256", // Ambiente 5 - Luz 2 (Funcionarios-LuzVermelha)
-  "257", // Ambiente 6 - Luz 1 (Funcionarios-Banheiro)
-  "258", // Ambiente 6 - Luz 2 (Funcionarios-Paineis)
-  "15", // Denon AVR - Receiver (para atualização de volume)
-];
+    : [];
 
-// Mapeamento de IDs de Ar Condicionado por ambiente
+// Mapeamento de IDs de Ar Condicionado por ambiente (obtidos do config.js)
 const AC_DEVICE_IDS =
   typeof getAcDeviceIds === "function"
     ? getAcDeviceIds()
-    : {
-        ambiente1: "110", // Varanda
-        ambiente2: "167", // Living
-        ambiente7: "182", // Suíte I
-        ambiente8: "188", // Suíte II
-        ambiente9: "180", // Suíte Master
-      };
+    : {};
 
 // ID do dispositivo de Ar Condicionado atual (será atualizado dinamicamente)
-let AC_DEVICE_ID = "110"; // Padrão: Ambiente 1 - Varanda
+let AC_DEVICE_ID = AC_DEVICE_IDS["ambiente1"] || "110"; // Padrão: Ambiente 1
 
 // Função para obter o ID do AC baseado na rota atual
 function getACDeviceIdForCurrentRoute() {

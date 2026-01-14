@@ -5104,17 +5104,8 @@
 
             const firstVisibleRoute = visible[0]?.route || null;
 
-            const roomDevicesFallback = {
-              ambiente1: ["44", "95", "96", "41", "45", "40", "31"],
-              ambiente2: ["57", "61", "75", "76", "49", "58", "20"],
-              ambiente3: ["35", "36", "37", "42"],
-              ambiente4: ["70", "66", "59", "65", "77", "37"],
-              ambiente5: ["38"],
-              ambiente6: ["81", "82"],
-              ambiente7: [],
-              ambiente8: [],
-              ambiente9: [],
-            };
+            // Os deviceIds já vêm do config.js via getHomeRoomsData()
+            // Não há mais fallback hardcoded - use apenas os IDs configurados
 
             list.innerHTML = visible
               .map((r) => {
@@ -5122,7 +5113,7 @@
                 const ids =
                   Array.isArray(r.deviceIds) && r.deviceIds.length > 0
                     ? r.deviceIds
-                    : roomDevicesFallback[r.route] || [];
+                    : [];
                 return `
 
                     <div class="room-card ${hasPhoto ? "has-photo" : ""}">

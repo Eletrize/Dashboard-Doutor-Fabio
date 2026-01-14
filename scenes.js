@@ -1,16 +1,37 @@
 // ALL_LIGHT_IDS agora está definido em script.js (carregado primeiro)
 
 // === CONFIGURAÇÃO DO CENÁRIO DORMIR ===
-// Dispositivos da Varanda (Ambiente 1)
-const VARANDA_LUZES = ["44", "95", "96", "41", "45", "40", "31"];
-const VARANDA_CORTINAS = ["109", "115", "116"];
-const VARANDA_AC = "110";
-const VARANDA_TV = "111";
+// Dispositivos agora obtidos dinamicamente do config.js
 
-// Dispositivos do Living (Ambiente 2)
-const LIVING_LUZES = ["57", "61", "75", "76", "49", "58", "20"];
-const LIVING_CORTINAS = ["119"];
-const LIVING_AC = "167";
+// Funções auxiliares para obter IDs do config.js
+function getSceneLightIds(envKey) {
+  return typeof getEnvironmentLightIds === "function" ? getEnvironmentLightIds(envKey) : [];
+}
+
+function getSceneCurtainIds(envKey) {
+  return typeof getEnvironmentCurtainIds === "function" ? getEnvironmentCurtainIds(envKey) : [];
+}
+
+function getSceneAcId(envKey) {
+  const acIds = typeof getAcDeviceIds === "function" ? getAcDeviceIds() : {};
+  return acIds[envKey] || null;
+}
+
+function getSceneTvId(envKey) {
+  const env = typeof getEnvironment === "function" ? getEnvironment(envKey) : null;
+  return env?.tv?.[0]?.id || null;
+}
+
+// Dispositivos da Varanda (Ambiente 1) - dinâmicos
+const VARANDA_LUZES = getSceneLightIds("ambiente1");
+const VARANDA_CORTINAS = getSceneCurtainIds("ambiente1");
+const VARANDA_AC = getSceneAcId("ambiente1");
+const VARANDA_TV = getSceneTvId("ambiente1");
+
+// Dispositivos do Living (Ambiente 2) - dinâmicos
+const LIVING_LUZES = getSceneLightIds("ambiente2");
+const LIVING_CORTINAS = getSceneCurtainIds("ambiente2");
+const LIVING_AC = getSceneAcId("ambiente2");
 
 // Receiver/Música
 const RECEIVER = "15";
