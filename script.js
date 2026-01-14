@@ -972,6 +972,7 @@ function getMainControlIcon(el) {
 }
 
 function toggleRoomControl(el) {
+  const resolvedDeviceId = resolveLightDeviceIdFromConfig(el);
   const ICON_ON = resolveIconPath(
     (el && el.dataset && (el.dataset.iconOn || el.dataset.iconon)) ||
       "images/icons/icon-small-light-on.svg"
@@ -983,7 +984,7 @@ function toggleRoomControl(el) {
   const img = getMainControlIcon(el);
   const isOff = (el.dataset.state || "off") === "off";
   const newState = isOff ? "on" : "off";
-  const deviceId = el.dataset.deviceId;
+  const deviceId = resolvedDeviceId || el.dataset.deviceId;
 
   if (!deviceId) return;
 
@@ -1017,6 +1018,39 @@ function toggleRoomControl(el) {
       if (img) img.src = revertState === "on" ? ICON_ON : ICON_OFF;
       setStoredState(deviceId, revertState);
     });
+}
+
+function resolveLightDeviceIdFromConfig(el) {
+  if (!el || !el.dataset) return null;
+
+  const currentRoute = (window.location.hash || "").replace("#", "");
+  const envKey = currentRoute.split("-")[0] || null;
+  const explicit = el.dataset.deviceId ? String(el.dataset.deviceId) : null;
+
+  if (!envKey || typeof getEnvironment !== "function") {
+    return explicit;
+  }
+
+  const env = getEnvironment(envKey);
+  const lights = Array.isArray(env?.lights) ? env.lights : [];
+
+  if (explicit && lights.some((light) => String(light.id) === explicit)) {
+    return explicit;
+  }
+
+  const label = el.querySelector(".control-label")?.textContent?.trim();
+  if (label) {
+    const match = lights.find(
+      (light) => String(light?.name || "").trim() === label
+    );
+    if (match) {
+      const id = String(match.id);
+      el.dataset.deviceId = id;
+      return id;
+    }
+  }
+
+  return explicit;
 }
 
 function clampDimmerValue(value, fallback) {
@@ -1092,7 +1126,7 @@ function toggleDimmerControl(eventOrEl, maybeEl) {
     return;
   }
 
-  const deviceId = el.dataset.deviceId;
+  const deviceId = resolveLightDeviceIdFromConfig(el) || el.dataset.deviceId;
   const slider = el.querySelector(".dimmer-slider");
   const defaultLevel = clampDimmerValue(el.dataset.defaultLevel, 80);
   const currentState = (el.dataset.state || "off") === "on" ? "on" : "off";
@@ -1152,7 +1186,9 @@ function handleDimmerChange(event, sliderEl) {
   if (!sliderEl) return;
 
   const card = sliderEl.closest(".control-card");
-  const deviceId = sliderEl.dataset.deviceId;
+  const deviceId =
+    resolveLightDeviceIdFromConfig(card || sliderEl) ||
+    sliderEl.dataset.deviceId;
   const level = clampDimmerValue(sliderEl.value, card?.dataset?.defaultLevel);
   const nextState = level > 0 ? "on" : "off";
 
@@ -4808,7 +4844,11 @@ function onHomeMasterClick(event, button) {
     return;
   }
 
-  const deviceIds = (button.dataset.deviceIds || "").split(",").filter(Boolean);
+  const envKey = button?.dataset?.route || null;
+  const deviceIds =
+    envKey && typeof getEnvironmentLightIds === "function"
+      ? getEnvironmentLightIds(envKey)
+      : (button.dataset.deviceIds || "").split(",").filter(Boolean);
   console.log("Ã°Å¸â€Â Device IDs encontrados:", deviceIds);
 
   if (deviceIds.length === 0) {
@@ -4864,9 +4904,11 @@ function onHomeCurtainMasterClick(event, button) {
     return;
   }
 
-  const curtainIds = (button.dataset.curtainIds || "")
-    .split(",")
-    .filter(Boolean);
+  const envKey = button?.dataset?.route || null;
+  const curtainIds =
+    envKey && typeof getEnvironmentCurtainIds === "function"
+      ? getEnvironmentCurtainIds(envKey)
+      : (button.dataset.curtainIds || "").split(",").filter(Boolean);
   console.log("Ã°Å¸â€Â Curtain IDs encontrados:", curtainIds);
 
   if (curtainIds.length === 0) {
