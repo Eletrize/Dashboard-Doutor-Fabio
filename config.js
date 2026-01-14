@@ -103,9 +103,9 @@ const CLIENT_CONFIG = {
     // Ícones de ações (setas, voltar, stop etc.)
     actions: {
       back: "images/icons/back-button.svg",
-      curtainOpen: "images/icons/arrow-up.svg",
+      curtainOpen: "images/icons/open-curtain.svg",
       curtainStop: "images/icons/icon-stop.svg",
-      curtainClose: "images/icons/arrow-down.svg",
+      curtainClose: "images/icons/close-curtain.svg",
     },
 
     iconOverrides: {
@@ -166,7 +166,6 @@ const CLIENT_CONFIG = {
       curtains: [
         { id: "359", name: "Corredor" },
         { id: "361", name: "Varanda" },
-        { id: "119", name: "Cortina" },
       ],
       airConditioner: {
         zones: [{ id: "living", name: "Living", deviceId: "167" }],
@@ -501,11 +500,11 @@ function generateCurtainsControls(envKey) {
   if (!env?.curtains?.length) return "";
 
   const ICON_OPEN =
-    CLIENT_CONFIG?.ui?.actions?.curtainOpen || "images/icons/arrow-up.svg";
+    CLIENT_CONFIG?.ui?.actions?.curtainOpen || "images/icons/open-curtain.svg";
   const ICON_STOP =
     CLIENT_CONFIG?.ui?.actions?.curtainStop || "images/icons/icon-stop.svg";
   const ICON_CLOSE =
-    CLIENT_CONFIG?.ui?.actions?.curtainClose || "images/icons/arrow-down.svg";
+    CLIENT_CONFIG?.ui?.actions?.curtainClose || "images/icons/close-curtain.svg";
 
   return env.curtains
     .map(
