@@ -178,9 +178,9 @@ const CLIENT_CONFIG = {
       visible: true,
       order: 3,
       lights: [
-        { id: "35", name: "Spots" },
-        { id: "36", name: "Churrasqueira" },
-        { id: "37", name: "Lustre" },
+        { id: "306", name: "Spots" },
+        { id: "307", name: "Churrasqueira" },
+        { id: "341", name: "Pendente", type: "dimmer", defaultLevel: 100 },
       ],
       curtains: [
         { id: "121", name: "Cortina" }
