@@ -10,6 +10,8 @@ const PRECACHE_ASSETS = [
   "/manifest.json",
   "/images/pwa/app-icon-192.png",
   "/images/pwa/app-icon-512-transparent.png",
+  "/images/icons/open-curtain.svg",
+  "/images/icons/close-curtain.svg",
 ];
 const DEBUG_SW = false;
 
@@ -56,6 +58,11 @@ self.addEventListener("fetch", (event) => {
   const isHubitat =
     /cloud\.hubitat\.com$/i.test(url.hostname) ||
     /\/apps\/api\//i.test(url.pathname);
+
+  // Não interceptar chamadas ao proxy local do Hubitat — deixar ir direto à rede.
+  if (url.pathname.startsWith("/hubitat-proxy")) {
+    return;
+  }
 
   if (!isSameOrigin || isHubitat) {
     return;
