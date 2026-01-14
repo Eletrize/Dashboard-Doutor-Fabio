@@ -4032,13 +4032,7 @@ function showErrorMessage(message) {
 
 // Fallback direto via Maker API (cloud). Usa appBaseUrl/accessToken do config.js
 async function loadAllDeviceStatesDirect(deviceIds) {
-  const baseUrl = HUBITAT_CLOUD_APP_BASE_URL;
-  const token = HUBITAT_CLOUD_ACCESS_TOKEN;
-
-  if (!baseUrl || !token) {
-    throw new Error("Maker API cloud não configurado (baseUrl/token ausentes)");
-  }
-
+  // Agora usa o proxy /polling em vez de chamar o Hubitat diretamente
   let idsArray = deviceIds;
   if (!Array.isArray(idsArray)) {
     idsArray =
@@ -4046,65 +4040,29 @@ async function loadAllDeviceStatesDirect(deviceIds) {
         ? idsArray.split(",").map((id) => id.trim())
         : [];
   }
-  const filterSet = idsArray.length > 0 ? new Set(idsArray.map(String)) : null;
 
-  const url = `${baseUrl}/devices/all?access_token=${encodeURIComponent(token)}`;
-  console.log("📡 [fallback-direct] Fetching:", url);
+  // Monta a URL do proxy com a lista de IDs
+  const idsParam = idsArray.length > 0 ? idsArray.join(",") : "";
+  const url = `${POLLING_URL}?devices=${encodeURIComponent(idsParam)}`;
+  console.log("📡 [fallback-proxy] Fetching via proxy:", url);
 
   const response = await fetch(url, { method: "GET", mode: "cors" });
   const text = await response.text();
 
   if (!response.ok) {
-    throw new Error(`Maker API fallback falhou: HTTP ${response.status} ${response.statusText}`);
+    throw new Error(`Polling proxy falhou: HTTP ${response.status} ${response.statusText}`);
   }
 
   let data;
   try {
     data = JSON.parse(text);
   } catch (err) {
-    console.error("⚠️ [fallback-direct] Resposta não é JSON:", text.slice(0, 300));
+    console.error("⚠️ [fallback-proxy] Resposta não é JSON:", text.slice(0, 300));
     throw err;
   }
 
-  if (!Array.isArray(data)) {
-    throw new Error("Formato inesperado da Maker API (esperado array)");
-  }
-
-  const devices = {};
-
-  data.forEach((device) => {
-    if (!device || !device.id) return;
-    const idStr = String(device.id);
-    if (filterSet && !filterSet.has(idStr)) return;
-
-    let state = "off";
-    let level = null;
-
-    if (Array.isArray(device.attributes)) {
-      const switchAttr = device.attributes.find((attr) => attr.name === "switch");
-      state = switchAttr?.currentValue || switchAttr?.value || state;
-
-      const levelAttr = device.attributes.find((attr) => attr.name === "level");
-      if (levelAttr) {
-        level = levelAttr?.currentValue ?? levelAttr?.value ?? level;
-      }
-    } else if (device.attributes && typeof device.attributes === "object") {
-      if (device.attributes.switch !== undefined) {
-        state = device.attributes.switch;
-      }
-      if (device.attributes.level !== undefined) {
-        level = device.attributes.level;
-      }
-    }
-
-    devices[idStr] = {
-      success: true,
-      state,
-      level,
-    };
-  });
-
-  return { success: true, devices };
+  // O proxy já retorna no formato { success, devices }
+  return data;
 }
 
 // Função para testar Configurações do Hubitat
@@ -4151,25 +4109,7 @@ function urlDeviceInfo(deviceId) {
 }
 
 function urlSendCommand(deviceId, command, value) {
-  if (useHubitatCloud(deviceId)) {
-    let url = `${HUBITAT_CLOUD_DEVICES_BASE_URL}/${encodeURIComponent(
-      deviceId
-    )}`;
-
-    if (command) {
-      url += `/${encodeURIComponent(command)}`;
-
-      if (value !== undefined && value !== null && value !== "") {
-        url += `/${encodeURIComponent(value)}`;
-      }
-    }
-
-    const separator = url.includes("?") ? "&" : "?";
-    return `${url}${separator}access_token=${encodeURIComponent(
-      HUBITAT_CLOUD_ACCESS_TOKEN
-    )}`;
-  }
-
+  // SEMPRE usar o proxy para evitar CORS e 404
   return `${HUBITAT_PROXY_URL}?device=${deviceId}&command=${encodeURIComponent(
     command
   )}${value !== undefined ? `&value=${encodeURIComponent(value)}` : ""}`;
@@ -4221,35 +4161,15 @@ async function sendHubitatCommand(deviceId, command, value) {
 
 // --- Cortinas (abrir/parar/fechar) ---
 function sendCurtainCommand(deviceId, action, commandName) {
-  if (useHubitatCloud(deviceId)) {
-    const commandMap = {
-      open: "open",
-      stop: "stop",
-      close: "close",
-    };
-    const commandToSend = commandMap[action];
-    if (!commandToSend) throw new Error("Ação de cortina inválida");
-    return sendHubitatCommand(deviceId, commandToSend);
-  }
-
-  const cmd = commandName || "push";
-
-  // Correção específica para cortina interna (ID 39) - comandos invertidos
-  let map;
-  if (String(deviceId) === "39") {
-    // Cortina com comandos invertidos (exemplo: device ID 40)
-    map = { open: 3, stop: 2, close: 1 };
-    console.log(
-      `🪟 Cortina com comandos invertidos (ID ${deviceId}): comando ${action} mapeado para valor ${map[action]}`
-    );
-  } else {
-    // Padrão para todas as outras cortinas
-    map = { open: 1, stop: 2, close: 3 };
-  }
-
-  const value = map[action];
-  if (value === undefined) throw new Error("Ação de cortina inválida");
-  return sendHubitatCommand(deviceId, cmd, value);
+  // Sempre usa comandos padrão do Maker API (open/stop/close)
+  const commandMap = {
+    open: "open",
+    stop: "stop",
+    close: "close",
+  };
+  const commandToSend = commandMap[action];
+  if (!commandToSend) throw new Error("Ação de cortina inválida");
+  return sendHubitatCommand(deviceId, commandToSend);
 }
 
 function curtainAction(el, action) {
