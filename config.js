@@ -518,7 +518,7 @@ function generateCurtainsControls(envKey) {
             <button class="curtain-tile__btn" data-device-id="${String(curtain.id)}" onclick="curtainAction(this, 'open')" aria-label="Abrir ${curtain.name}">
               <img src="${ICON_OPEN}" alt="Abrir">
             </button>
-            <button class="curtain-tile__btn" data-device-id="${String(curtain.id)}" onclick="curtainAction(this, 'stop')" aria-label="Parar ${curtain.name}">
+            <button class="curtain-tile__btn curtain-tile__btn--stop" data-device-id="${String(curtain.id)}" onclick="curtainAction(this, 'stop')" aria-label="Parar ${curtain.name}">
               <img src="${ICON_STOP}" alt="Parar">
             </button>
             <button class="curtain-tile__btn" data-device-id="${String(curtain.id)}" onclick="curtainAction(this, 'close')" aria-label="Fechar ${curtain.name}">

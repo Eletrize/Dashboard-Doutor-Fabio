@@ -1819,6 +1819,8 @@ body.orchestrated-animation.reveal-home .room-card {
     background:#282828;border-color:#666;outline:none}
 .curtain-tile__btn img {
     object-fit:contain;filter:brightness(0)invert();width:40px;height:40px}
+.curtain-tile__btn--stop img {
+    width:32px;height:32px}
 .curtain-tile--transparent {
     -webkit-backdrop-filter:blur(18px);background:#ffffff14;border:1px solid #ffffff2e;box-shadow:0 18px 40px #0f141e40}
 .curtain-tile--transparent:before,
