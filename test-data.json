@@ -1,0 +1,19 @@
+{
+  "success": true,
+  "message": "Test endpoint working!",
+  "timestamp": "2025-10-22T00:00:00.000Z",
+  "data": {
+    "devices": [
+      {
+        "id": 326,
+        "name": "Denon AVR-S770H HEOS",
+        "attributes": {
+          "trackData": "{\"song\":\"Test Song\",\"artist\":\"Test Artist\",\"album\":\"Test Album\",\"image_url\":\"https://example.com/image.jpg\"}",
+          "artist": "Test Artist",
+          "track": "Test Song",
+          "album": "Test Album"
+        }
+      }
+    ]
+  }
+}

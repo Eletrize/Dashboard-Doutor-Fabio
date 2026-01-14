@@ -1,0 +1,161 @@
+﻿// ========================================
+// DEBUG UTILITIES
+// ========================================
+
+function isDebugEnabled() {
+  if (typeof window === "undefined") return false;
+  return Boolean(window.__DASHBOARD_DEBUG__);
+}
+
+function debugLog(messageOrFactory, ...args) {
+  if (!isDebugEnabled()) return;
+
+  if (typeof messageOrFactory === "function") {
+    try {
+      const result = messageOrFactory();
+
+      if (Array.isArray(result)) {
+        console.log(...result);
+      } else {
+        console.log(result);
+      }
+    } catch (error) {
+      console.error("Debug log failure:", error);
+    }
+
+    return;
+  }
+
+  console.log(messageOrFactory, ...args);
+}
+
+if (typeof window !== "undefined") {
+  window.debugLog = debugLog;
+  window.isDebugEnabled = isDebugEnabled;
+}
+
+const CONTROL_SELECTOR = '.room-control[data-device-id], .control-card[data-device-id]';
+const MASTER_BUTTON_SELECTOR = '.room-master-btn[data-device-ids]';
+const deviceControlCache = new Map();
+const masterButtonCache = new Set();
+const deviceStateMemory = new Map();
+let controlCachePrimed = false;
+let domObserverInstance = null;
+let fallbackSyncTimer = null;
+let pendingControlSyncHandle = null;
+let pendingControlSyncForce = false;
+
+﻿// ========================================
+// DETECÃƒâ€¡ÃƒÆ’O DE DISPOSITIVOS
+// ========================================
+
+const MUSIC_PAGE_ROUTES = [
+  "ambiente1-musica",
+  "ambiente2-musica",
+  "ambiente3-musica",
+];
+
+function isMusicPageActive(hash = window.location.hash) {
+  return MUSIC_PAGE_ROUTES.some((route) => hash.includes(route));
+}
+
+function queryActiveMusic(selector) {
+  const activePage = document.querySelector(".page.active");
+  if (!activePage) return null;
+  return activePage.querySelector(selector);
+}
+
+// Detectar iPad Mini 6 especificamente
+function detectIPadMini6() {
+  const userAgent = navigator.userAgent.toLowerCase();
+  const isIPad = /ipad/.test(userAgent);
+
+  // Verificar tamanho: iPad Mini 6 tem 2048x1536 (portrait)
+  const screenWidth = window.screen.width;
+  const screenHeight = window.screen.height;
+
+  // iPad Mini 6: ~1024x768 em modo reportado pelo navegador (scaled)
+  const isIPadMini6 =
+    isIPad &&
+    ((screenWidth === 1024 && screenHeight === 768) ||
+      (screenWidth === 768 && screenHeight === 1024));
+
+  if (isIPadMini6) {
+    document.documentElement.dataset.device = "ipad-mini-6";
+    console.log(
+      "Ã°Å¸ÂÅ½ iPad Mini 6 detectado - aplicando fixes específicos",
+      `Screen: ${screenWidth}x${screenHeight}`,
+      `Inner: ${window.innerWidth}x${window.innerHeight}`,
+      `DPR: ${window.devicePixelRatio}`
+    );
+    return true;
+  }
+
+  return false;
+}
+
+// Detectar se é um celular (não tablet)
+function isMobilePhone() {
+  const userAgent = navigator.userAgent.toLowerCase();
+
+  // Considerar celular se:
+  // 1. iPhone ou Android com tela pequena
+  // 2. Largura mÃƒÂ¡xima < 768px (breakpoint de tablet)
+  const isIPhone = /iphone/.test(userAgent);
+  const isAndroid = /android/.test(userAgent);
+  const isSmallScreen = window.innerWidth < 768;
+
+  // iPad e tablets maiores não são celulares
+  const isTablet = /ipad|galaxy tab|sm-t/.test(userAgent);
+
+  return (isIPhone || (isAndroid && isSmallScreen)) && !isTablet;
+}
+
+// Detectar dispositivo geral (Apple, Android ou Desktop)
+function detectDevice() {
+  const userAgent = navigator.userAgent.toLowerCase();
+
+  const isApple =
+    /ipad|iphone|mac os x/.test(userAgent) && navigator.maxTouchPoints > 1;
+  const isAndroid = /android/.test(userAgent);
+
+  if (isApple || isAndroid) {
+    document.documentElement.dataset.device = "mobile";
+    console.log(
+      `Ã°Å¸â€œÂ± Dispositivo mobile detectado (${isApple ? "Apple" : "Android"})`
+    );
+  }
+
+}
+
+// Função para detectar se está na página de controle remoto da TV
+function isOnTVControlPage() {
+  return (
+    window.location.pathname.includes("ambiente1-tv") ||
+    window.location.hash.includes("ambiente1-tv")
+  );
+}
+
+// Função para criar/mostrar overlay de orientação
+function showOrientationOverlay() {
+  let overlay = document.getElementById("orientation-overlay");
+
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = "orientation-overlay";
+    overlay.innerHTML = `
+      <div class="orientation-overlay-content">
+        <img src="images/icons/icon-rotatephone.svg" alt="Rotacione o dispositivo" class="orientation-icon">
+        <p class="orientation-message">Rotacione o dispositivo</p>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // Adicionar estilos dinamicamente se não existirem
+    if (!document.getElementById("orientation-overlay-styles")) {
+      const style = document.createElement("style");
+      style.id = "orientation-overlay-styles";
+      style.innerHTML = `
+        #orientation-overlay {
+          display: none;
+
