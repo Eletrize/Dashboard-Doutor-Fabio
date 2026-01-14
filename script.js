@@ -1038,13 +1038,34 @@ function resolveLightDeviceIdFromConfig(el) {
     return explicit;
   }
 
-  const label = el.querySelector(".control-label")?.textContent?.trim();
-  if (label) {
+  const normalizeLabel = (value) =>
+    String(value || "")
+      .trim()
+      .replace(/\s+/g, " ")
+      .toLowerCase();
+
+  const label =
+    el.dataset.lightName ||
+    el.querySelector(".control-label")?.textContent ||
+    "";
+  const normalizedLabel = normalizeLabel(label);
+
+  if (normalizedLabel) {
     const match = lights.find(
-      (light) => String(light?.name || "").trim() === label
+      (light) => normalizeLabel(light?.name) === normalizedLabel
     );
     if (match) {
       const id = String(match.id);
+      el.dataset.deviceId = id;
+      return id;
+    }
+  }
+
+  const indexAttr = el.dataset.lightIndex;
+  if (indexAttr !== undefined && indexAttr !== null) {
+    const idx = Number.parseInt(indexAttr, 10);
+    if (!Number.isNaN(idx) && lights[idx]) {
+      const id = String(lights[idx].id);
       el.dataset.deviceId = id;
       return id;
     }

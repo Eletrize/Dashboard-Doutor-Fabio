@@ -156,12 +156,12 @@ const CLIENT_CONFIG = {
       visible: true,
       order: 2,
       lights: [
-        { id: "57", name: "Canjiquinha" },
-        { id: "61", name: "Hall Entrada" },
-        { id: "75", name: "Spots" },
-        { id: "76", name: "Sanca" },
-        { id: "58", name: "Lustre", type: "dimmer", defaultLevel: 60 },
-        { id: "20", name: "Spots Dimmer", type: "dimmer", defaultLevel: 100 },
+        { id: "302", name: "Canjiquinha" },
+        { id: "303", name: "Hall Entrada" },
+        { id: "304", name: "Spots" },
+        { id: "305", name: "Sanca" },
+        { id: "344", name: "Lustre", type: "dimmer", defaultLevel: 60 },
+        { id: "342", name: "Spots Dimmer", type: "dimmer", defaultLevel: 100 },
       ],
       curtains: [
         { id: "119", name: "Cortina Lateral" }
@@ -458,7 +458,7 @@ function generateLightsControls(envKey) {
     "images/icons/icon-small-light-off.svg";
 
   return env.lights
-    .map((light) => {
+    .map((light, index) => {
       const iconOn =
         light?.iconOn || light?.icon?.on || light?.icons?.on || DEFAULT_ICON_ON;
       const iconOff =
@@ -472,7 +472,7 @@ function generateLightsControls(envKey) {
 
       if (!dimmerEnabled) {
         return `
-        <div class="control-card" data-state="off" data-device-id="${deviceId}" data-icon-on="${iconOn}" data-icon-off="${iconOff}" onclick="toggleRoomControl(this)">
+        <div class="control-card" data-state="off" data-device-id="${deviceId}" data-light-name="${light.name}" data-light-index="${index}" data-icon-on="${iconOn}" data-icon-off="${iconOff}" onclick="toggleRoomControl(this)">
           <div class="control-icon-wrap">
             <img class="control-icon control-icon-outline" src="${iconOff}" alt="${light.name}">
             <img class="control-icon control-icon-main" src="${iconOff}" alt="${light.name}">
@@ -485,7 +485,7 @@ function generateLightsControls(envKey) {
       const sliderId = `${envKey}-${deviceId}-dimmer`;
 
       return `
-        <div class="control-card control-card--dimmer" data-state="off" data-device-id="${deviceId}" data-icon-on="${iconOn}" data-icon-off="${iconOff}" data-control-type="dimmer" data-default-level="${defaultLevel}" onclick="toggleDimmerControl(event, this)" onmousedown="startDimmerLongPress(event, this)" onmouseup="cancelDimmerLongPress(this)" onmouseleave="cancelDimmerLongPress(this)" ontouchstart="startDimmerLongPress(event, this)" ontouchend="cancelDimmerLongPress(this)" ontouchcancel="cancelDimmerLongPress(this)">
+        <div class="control-card control-card--dimmer" data-state="off" data-device-id="${deviceId}" data-light-name="${light.name}" data-light-index="${index}" data-icon-on="${iconOn}" data-icon-off="${iconOff}" data-control-type="dimmer" data-default-level="${defaultLevel}" onclick="toggleDimmerControl(event, this)" onmousedown="startDimmerLongPress(event, this)" onmouseup="cancelDimmerLongPress(this)" onmouseleave="cancelDimmerLongPress(this)" ontouchstart="startDimmerLongPress(event, this)" ontouchend="cancelDimmerLongPress(this)" ontouchcancel="cancelDimmerLongPress(this)">
           <div class="control-icon-wrap">
             <img class="control-icon control-icon-outline" src="${iconOff}" alt="${light.name}">
             <img class="control-icon control-icon-main" src="${iconOff}" alt="${light.name}">
