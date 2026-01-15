@@ -1,4 +1,4 @@
-﻿const CACHE_VERSION = "v1.2.9";
+﻿const CACHE_VERSION = "v1.3.0";
 const CACHE_NAME = `eletrize-${CACHE_VERSION}`;
 const PRECACHE_ASSETS = [
   "/",
