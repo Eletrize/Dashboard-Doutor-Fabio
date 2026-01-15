@@ -91,11 +91,16 @@ self.addEventListener("fetch", (event) => {
 
   if (url.pathname.startsWith("/images/")) {
     // Não servir imagens do cache: sempre tentar a rede sem armazenar (no-store).
-    // Se a rede falhar, retornar do cache como fallback (se houver).
+    // Se a rede falhar, retornar do cache como fallback (se houver). Se nada estiver em cache,
+    // retornar um Response vazio com código 504 para evitar erro no Service Worker.
     event.respondWith(
       fetch(request, { cache: "no-store" })
         .then((response) => response)
-        .catch(() => caches.match(request))
+        .catch(() =>
+          caches.match(request).then((cached) =>
+            cached || new Response(null, { status: 504, statusText: "Network and cache miss" })
+          )
+        )
     );
     return;
   }
@@ -104,7 +109,9 @@ self.addEventListener("fetch", (event) => {
 });
 
 function fetchConfigNoStore(request) {
-  return fetch(request, { cache: "no-store" }).catch(() => caches.match(request));
+  return fetch(request, { cache: "no-store" }).catch(() =>
+    caches.match(request).then((cached) => cached || new Response(null, { status: 504, statusText: "Network and cache miss" }))
+  );
 }
 
 function htmlNetworkFirst(request) {
