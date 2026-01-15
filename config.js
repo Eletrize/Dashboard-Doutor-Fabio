@@ -118,7 +118,7 @@ const CLIENT_CONFIG = {
   environments: {
     ambiente1: {
       name: "Home Theater",
-      photo: "photo-varanda",
+      photo: "photo-hometeather.webp",
       visible: true,
       order: 1,
       lights: [
@@ -152,7 +152,7 @@ const CLIENT_CONFIG = {
 
     ambiente2: {
       name: "Living",
-      photo: "photo-living",
+      photo: "photo-living.webp",
       visible: true,
       order: 2,
       lights: [
@@ -174,7 +174,7 @@ const CLIENT_CONFIG = {
 
     ambiente3: {
       name: "Varanda",
-      photo: "photo-piscina",
+      photo: "photo-varanda.webp",
       visible: true,
       order: 3,
       lights: [
@@ -204,7 +204,7 @@ const CLIENT_CONFIG = {
 
     ambiente4: {
       name: "Piscina",
-      photo: "photo-externo",
+      photo: "photo-piscina.jpg",
       visible: true,
       order: 4,
       lights: [
@@ -219,7 +219,7 @@ const CLIENT_CONFIG = {
 
     ambiente5: {
       name: "Escritório",
-      photo: "photo-servico",
+      photo: "photo-externo.jpg",
       visible: true,
       order: 5,
       curtains: [
@@ -232,7 +232,7 @@ const CLIENT_CONFIG = {
 
     ambiente6: {
       name: "Escada",
-      photo: "photo-circulacao",
+      photo: "photo-servico.jpg",
       visible: true,
       order: 6,
       lights: [
@@ -243,7 +243,7 @@ const CLIENT_CONFIG = {
 
     ambiente7: {
       name: "Brinquedoteca",
-      photo: "photo-suitei",
+      photo: "photo-suitei.jpg",
       visible: true,
       order: 7,
       tv: [
@@ -256,7 +256,7 @@ const CLIENT_CONFIG = {
 
     ambiente8: {
       name: "Suíte Milena",
-      photo: "photo-suiteii",
+      photo: "photo-suiteii.jpg",
       visible: true,
       order: 8,
       curtains: [
@@ -278,7 +278,7 @@ const CLIENT_CONFIG = {
 
     ambiente9: {
       name: "Suíte Fabio",
-      photo: "photo-suitemaster",
+      photo: "photo-suitemaster.jpg",
       visible: true,
        order: 10,
       lights: [],
@@ -290,7 +290,7 @@ const CLIENT_CONFIG = {
 
     ambiente10: {
       name: "Suíte Laura",
-      photo: "photo-suitemaster",
+      photo: "photo-suitemaster.jpg",
       visible: true,
       order: 10,
       lights: [],
