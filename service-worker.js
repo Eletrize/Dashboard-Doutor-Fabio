@@ -1,4 +1,4 @@
-﻿const CACHE_VERSION = "v1.3.1";
+﻿const CACHE_VERSION = "v1.3.3";
 const CACHE_NAME = `eletrize-${CACHE_VERSION}`;
 const PRECACHE_ASSETS = [
   "/",
@@ -90,15 +90,24 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (url.pathname.startsWith("/images/")) {
-    // Não servir imagens do cache: sempre tentar a rede sem armazenar (no-store).
-    // Se a rede falhar, retornar do cache como fallback (se houver). Se nada estiver em cache,
-    // retornar um Response vazio com código 504 para evitar erro no Service Worker.
+    // Buscar imagens da rede sem cache; fallback para cache se existir.
     event.respondWith(
       fetch(request, { cache: "no-store" })
-        .then((response) => response)
+        .then((response) => {
+          if (!response || !response.ok) {
+            // Tentar cache se a rede retornar erro
+            return caches.match(request).then((cached) => cached || response);
+          }
+          return response;
+        })
         .catch(() =>
-          caches.match(request).then((cached) =>
-            cached || new Response(null, { status: 504, statusText: "Network and cache miss" })
+          caches.match(request).then(
+            (cached) =>
+              cached ||
+              new Response("Image not found", {
+                status: 404,
+                statusText: "Not Found",
+              })
           )
         )
     );
@@ -109,9 +118,7 @@ self.addEventListener("fetch", (event) => {
 });
 
 function fetchConfigNoStore(request) {
-  return fetch(request, { cache: "no-store" }).catch(() =>
-    caches.match(request).then((cached) => cached || new Response(null, { status: 504, statusText: "Network and cache miss" }))
-  );
+  return fetch(request, { cache: "no-store" }).catch(() => caches.match(request));
 }
 
 function htmlNetworkFirst(request) {
