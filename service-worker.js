@@ -1,4 +1,4 @@
-﻿const CACHE_VERSION = "v1.3.0";
+﻿const CACHE_VERSION = "v1.3.1";
 const CACHE_NAME = `eletrize-${CACHE_VERSION}`;
 const PRECACHE_ASSETS = [
   "/",
@@ -90,7 +90,13 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (url.pathname.startsWith("/images/")) {
-    event.respondWith(cacheFirst(request));
+    // Não servir imagens do cache: sempre tentar a rede sem armazenar (no-store).
+    // Se a rede falhar, retornar do cache como fallback (se houver).
+    event.respondWith(
+      fetch(request, { cache: "no-store" })
+        .then((response) => response)
+        .catch(() => caches.match(request))
+    );
     return;
   }
 
