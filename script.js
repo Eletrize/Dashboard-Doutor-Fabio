@@ -214,18 +214,6 @@ let fallbackSyncTimer = null;
 let pendingControlSyncHandle = null;
 let pendingControlSyncForce = false; // ========================================
 
-const DEFAULT_ROOM_IMAGE_BASE_SCRIPT = {
-  ambiente1: "photo-varanda",
-  ambiente2: "photo-living",
-  ambiente3: "photo-piscina",
-  ambiente4: "photo-externo",
-  ambiente5: "photo-servico",
-  ambiente6: "photo-circulacao",
-  ambiente7: "photo-suitei",
-  ambiente8: "photo-suiteii",
-  ambiente9: "photo-suitemaster",
-};
-
 function buildRoomImageBases() {
   if (typeof getEnvironmentPhotoMap === "function") {
     try {
@@ -239,12 +227,11 @@ function buildRoomImageBases() {
     }
   }
 
-  return Object.values(DEFAULT_ROOM_IMAGE_BASE_SCRIPT);
+  return [];
 }
 
 const ROOM_IMAGE_BASES = buildRoomImageBases();
 
-const ROOM_IMAGE_WIDTHS = [480, 720, 960, 1440, 1920, 2560];
 const CRITICAL_IMAGE_BASES = ROOM_IMAGE_BASES.slice(0, 3);
 
 const ICON_ASSET_PATHS = [
@@ -302,9 +289,6 @@ const ICON_ASSET_PATHS = [
 function buildRoomAssetList() {
   const assets = [];
   ROOM_IMAGE_BASES.forEach((base) => {
-    ROOM_IMAGE_WIDTHS.forEach((width) =>
-      assets.push(`images/optimized/${base}-${width}.webp`)
-    );
     assets.push(`images/Images/${base}.jpg`);
   });
   return assets;
@@ -368,13 +352,6 @@ const AssetPreloader = (() => {
 })();
 
 ROOM_IMAGE_BASES.forEach((base) => {
-  ROOM_IMAGE_WIDTHS.forEach((width) => {
-    const priority =
-      CRITICAL_IMAGE_BASES.includes(base) && width <= 720
-        ? "critical"
-        : "background";
-    AssetPreloader.add(`images/optimized/${base}-${width}.webp`, { priority });
-  });
   AssetPreloader.add(`images/Images/${base}.jpg`, { priority: "background" });
 });
 
@@ -6638,13 +6615,11 @@ function updateMusicPlayerUI(artist, track, album, albumArt) {
     }
   }
 
-  // determinar placeholder de capa por ambiente (prioriza webp otimizado quando suportado)
-  let albumPlaceholder = "images/Images/photo-living.jpg";
+  // placeholder de capa depende apenas do config.js; se nÃ£o houver, fica vazio
+  let albumPlaceholder = "";
   try {
     if (currentEnvKey && typeof ROOM_IMAGE_DATA !== "undefined" && ROOM_IMAGE_DATA[currentEnvKey]) {
-      albumPlaceholder = WEBP_SUPPORTED
-        ? ROOM_IMAGE_DATA[currentEnvKey].defaultWebp || ROOM_IMAGE_DATA[currentEnvKey].fallback
-        : ROOM_IMAGE_DATA[currentEnvKey].fallback;
+      albumPlaceholder = ROOM_IMAGE_DATA[currentEnvKey].fallback;
     }
   } catch (e) {}
 
@@ -6670,11 +6645,11 @@ function updateMusicPlayerUI(artist, track, album, albumArt) {
     if (albumArt && albumArt !== "null" && albumArt !== "") {
       albumImgElement.src = albumArt;
       albumImgElement.onerror = function () {
-        // Se a imagem falhar, use placeholder
-        this.src = albumPlaceholder;
+        // Se a imagem falhar, use placeholder, se existir
+        if (albumPlaceholder) this.src = albumPlaceholder;
       };
-    } else {
-      // Usar placeholder se não houver capa
+    } else if (albumPlaceholder) {
+      // Usar placeholder somente se definido no config
       albumImgElement.src = albumPlaceholder;
     }
   }

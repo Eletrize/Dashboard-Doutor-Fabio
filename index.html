@@ -490,34 +490,14 @@
         return fallback || "";
       }
 
-      // Fotos dos cards por rota (reaproveitadas como fundo das pÃ¡ginas internas)
-      // Preferir valores vindos do config.js para evitar editar este arquivo
-
-      const DEFAULT_ROOM_IMAGE_BASE = {
-        ambiente1: "photo-varanda",
-        ambiente2: "photo-living",
-        ambiente3: "photo-piscina",
-        ambiente4: "photo-externo",
-        ambiente5: "photo-servico",
-        ambiente6: "photo-circulacao",
-        ambiente7: "photo-suitei",
-        ambiente8: "photo-suiteii",
-        ambiente9: "photo-suitemaster",
-      };
-
       const ROOM_IMAGE_BASE =
         typeof getEnvironmentPhotoMap === "function"
           ? (() => {
               const map = getEnvironmentPhotoMap();
               if (map && Object.keys(map).length > 0) return map;
-              return DEFAULT_ROOM_IMAGE_BASE;
+              return {};
             })()
-          : DEFAULT_ROOM_IMAGE_BASE;
-
-      const RESPONSIVE_WIDTHS = [480, 720, 960, 1440, 1920, 2560];
-      const CARD_DISPLAY_WIDTH = 720;
-      const CARD_IMAGE_SIZES =
-        "(max-width: 600px) 100vw, (max-width: 1200px) 60vw, 720px";
+          : {};
 
       function resolveRoomPhotoSpec(value) {
         const raw = String(value || "").trim();
@@ -530,7 +510,7 @@
           return { kind: "direct", url, base: raw };
         }
 
-        // Default behavior: treat as "base" and use optimized + jpg fallback.
+        // Default behavior: treat as "base" and use somente a versão JPG.
         return { kind: "base", base: raw };
       }
 
@@ -550,22 +530,13 @@
             return acc;
           }
 
-          const base = spec.base;
-          const sortedWidths = [...RESPONSIVE_WIDTHS].sort((a, b) => a - b);
-          const backgroundWidth = sortedWidths[sortedWidths.length - 1];
-          const cardWidth =
-            sortedWidths.find((width) => width >= CARD_DISPLAY_WIDTH) ||
-            backgroundWidth;
-
           acc[key] = {
-            base,
+            base: spec.base,
             isDirect: false,
-            fallback: `images/Images/${base}.jpg`,
-            webpSrcset: RESPONSIVE_WIDTHS.map(
-              (width) => `images/optimized/${base}-${width}.webp ${width}w`
-            ).join(", "),
-            defaultWebp: `images/optimized/${base}-${cardWidth}.webp`,
-            backgroundWebp: `images/optimized/${base}-${backgroundWidth}.webp`,
+            fallback: `images/Images/${spec.base}.jpg`,
+            webpSrcset: "",
+            defaultWebp: `images/Images/${spec.base}.jpg`,
+            backgroundWebp: `images/Images/${spec.base}.jpg`,
           };
 
           return acc;
@@ -573,16 +544,7 @@
         {}
       );
 
-      const WEBP_SUPPORTED = (() => {
-        try {
-          const canvas = document.createElement("canvas");
-          return canvas
-            .toDataURL("image/webp", 0.5)
-            .startsWith("data:image/webp");
-        } catch (error) {
-          return false;
-        }
-      })();
+      const WEBP_SUPPORTED = false;
 
       function getRoomBackgroundUrl(route) {
         const data = ROOM_IMAGE_DATA[route];
@@ -697,7 +659,7 @@
       function renderRoomResponsivePhoto(route, alt, options = {}) {
         const data = ROOM_IMAGE_DATA[route];
         if (!data) return "";
-        const preferredCardUrl = WEBP_SUPPORTED ? data.defaultWebp : data.fallback;
+        const preferredCardUrl = data.fallback;
         cacheRoomBackground(route, preferredCardUrl);
         const {
           eager = false,
@@ -711,35 +673,8 @@
           ? `class="${imageClassName}"`
           : "";
 
-        if (data.isDirect) {
-          return `
-            <picture class="${className}" data-route="${route}">
-              <img
-                ${imgClassAttribute}
-                src="${data.fallback}"
-                alt="${alt}"
-                loading="${loading}"
-                decoding="${decoding}"
-                ${fetchPriority}
-                width="720"
-                height="540"
-              />
-            </picture>
-          `;
-        }
-
         return `
           <picture class="${className}" data-route="${route}">
-            <source
-              type="image/webp"
-              srcset="${data.webpSrcset}"
-              sizes="${CARD_IMAGE_SIZES}"
-            />
-            <source
-              type="image/jpeg"
-              srcset="${data.fallback}"
-              sizes="${CARD_IMAGE_SIZES}"
-            />
             <img
               ${imgClassAttribute}
               src="${data.fallback}"
@@ -1045,6 +980,16 @@
         `;
       }
 
+      function renderMusicAlbum(route, { loading = "lazy", decoding = "async" } = {}) {
+        const data = ROOM_IMAGE_DATA[route];
+        if (!data) return "";
+        return `
+          <div class="music-album">
+            <img class="music-album-img" src="${data.fallback}" alt="Capa do Ã¡lbum" loading="${loading}" decoding="${decoding}" width="720" height="540">
+          </div>
+        `;
+      }
+
       function renderMusicPage(envKey) {
         const env = typeof getEnvironment === "function" ? getEnvironment(envKey) : null;
         const envName = env?.name || envKey;
@@ -1071,11 +1016,7 @@
         const transportId = String(device.transportId || device.id);
         const volumeId = String(device.volumeId || device.id);
         const powerId = String(device.powerId || device.id);
-        const photoBase = (ROOM_IMAGE_DATA[envKey])
-          ? (WEBP_SUPPORTED
-              ? ROOM_IMAGE_DATA[envKey].defaultWebp || ROOM_IMAGE_DATA[envKey].fallback
-              : ROOM_IMAGE_DATA[envKey].fallback)
-          : "images/Images/photo-living.jpg";
+        const albumPhoto = renderMusicAlbum(envKey, { loading: "lazy", decoding: "async" });
 
         return `
 
@@ -1095,9 +1036,7 @@
       <div class="music-player-inner">
         <div class="music-player-content">
           <div class="music-primary">
-            <div class="music-album">
-              <img class="music-album-img" src="${photoBase}" alt="Capa do Ã¡lbum" loading="lazy" decoding="async" width="720" height="540">
-            </div>
+            ${albumPhoto}
 
             <div class="music-info">
               <div class="music-track">
@@ -1848,10 +1787,8 @@
     <div class="control-card control-card--full-width music-player-card" data-metadata-device-id="29">
       <div class="music-player-inner">
         <div class="music-player-content">
-          <div class="music-primary">
-            <div class="music-album">
-              <img class="music-album-img" src="${(WEBP_SUPPORTED && ROOM_IMAGE_DATA['ambiente1']) ? ROOM_IMAGE_DATA['ambiente1'].defaultWebp : ROOM_IMAGE_DATA['ambiente1']?.fallback || 'images/Images/photo-varanda.jpg'}" alt="Capa do Ã¡lbum" loading="lazy" decoding="async" width="720" height="540">
-            </div>
+            <div class="music-primary">
+            ${renderMusicAlbum("ambiente1")}
 
             <div class="music-info">
               <div class="music-track">
@@ -1935,10 +1872,8 @@
     <div class="control-card control-card--full-width music-player-card" data-metadata-device-id="29">
       <div class="music-player-inner">
         <div class="music-player-content">
-          <div class="music-primary">
-            <div class="music-album">
-              <img class="music-album-img" src="${(WEBP_SUPPORTED && ROOM_IMAGE_DATA['ambiente2']) ? ROOM_IMAGE_DATA['ambiente2'].defaultWebp : ROOM_IMAGE_DATA['ambiente2']?.fallback || 'images/Images/photo-living.jpg'}" alt="Capa do Ã¡lbum" loading="lazy" decoding="async" width="720" height="540">
-            </div>
+            <div class="music-primary">
+            ${renderMusicAlbum("ambiente2")}
 
             <div class="music-info">
               <div class="music-track">
@@ -2022,10 +1957,8 @@
     <div class="control-card control-card--full-width music-player-card" data-metadata-device-id="29">
       <div class="music-player-inner">
         <div class="music-player-content">
-          <div class="music-primary">
-            <div class="music-album">
-              <img class="music-album-img" src="images/Images/photo-piscina.jpg" alt="Capa do Ã¡lbum" loading="lazy" decoding="async" width="720" height="540">
-            </div>
+            <div class="music-primary">
+            ${renderMusicAlbum("ambiente3")}
 
             <div class="music-info">
               <div class="music-track">

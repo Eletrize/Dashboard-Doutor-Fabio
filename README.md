@@ -66,7 +66,7 @@ ambiente1: {
 }
 ```
 
-Coloque a imagem em `images/Images/photo-sala.jpg` e as versões otimizadas em `images/optimized/photo-sala-<largura>.webp`.
+Coloque a imagem em `images/Images/photo-sala.jpg`.
 
 #### 1.4 Ícones dos Botões (Luzes)
 
