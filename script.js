@@ -2207,11 +2207,7 @@ function setRoomControlUI(el, state) {
   // Usa a camada principal do ícone, mantendo o contorno separado
   const img = getMainControlIcon(el);
   if (img) {
-    const newSrc = normalized === "on" ? ICON_ON : ICON_OFF;
-    console.log(
-      `Ã°Å¸â€Â§ setRoomControlUI: Atualizando imagem ${img.src} Ã¢â€ â€™ ${newSrc} (estado: ${state})`
-    );
-    img.src = newSrc;
+    img.src = ICON_OFF; // Sempre usa outline
   } else {
     console.warn(
       `Ã¢Å¡Â Ã¯Â¸Â setRoomControlUI: Imagem não encontrada para elemento com classes: ${el.className}`
@@ -7626,3 +7622,4 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 console.log("📜 SCRIPT.JS CARREGADO COMPLETAMENTE!");
+
