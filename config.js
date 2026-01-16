@@ -83,7 +83,7 @@ const CLIENT_CONFIG = {
         off: "images/icons/icon-small-light-off.svg",
       },
       dimmer: {
-        on: "images/icons/icon-dimmer-on.svg",
+        on: "images/icons/icon-dimmer-off.svg",
         off: "images/icons/icon-dimmer-off.svg",
       },
       tv: {
