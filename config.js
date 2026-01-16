@@ -466,7 +466,7 @@ function generateLightsControls(envKey) {
     .map((light, index) => {
       const dimmerEnabled = isDimmerLight(light);
       
-      // Se for dimmer, usa ícones de dimmer; senão usa ícones de luz normal
+      // Dimmers usam icon-dimmer-off quando desligado e icon-small-light-on (background) quando ligado
       const defaultIconOn = dimmerEnabled ? DIMMER_ICON_ON : DEFAULT_ICON_ON;
       const defaultIconOff = dimmerEnabled ? DIMMER_ICON_OFF : DEFAULT_ICON_OFF;
       
@@ -479,6 +479,9 @@ function generateLightsControls(envKey) {
         defaultIconOff;
       const defaultLevel = normalizeDimmerLevel(light?.defaultLevel, 80);
       const deviceId = String(light.id);
+      
+      // Para dimmers, adiciona ícone de background (light-on com 40% opacity)
+      const backgroundIcon = dimmerEnabled ? DEFAULT_ICON_ON : null;
 
       if (!dimmerEnabled) {
         return `
@@ -495,8 +498,9 @@ function generateLightsControls(envKey) {
       const sliderId = `${envKey}-${deviceId}-dimmer`;
 
       return `
-        <div class="control-card control-card--dimmer" data-state="off" data-device-id="${deviceId}" data-light-name="${light.name}" data-light-index="${index}" data-icon-on="${iconOn}" data-icon-off="${iconOff}" data-control-type="dimmer" data-default-level="${defaultLevel}" onclick="toggleDimmerControl(event, this)" onmousedown="startDimmerLongPress(event, this)" onmouseup="cancelDimmerLongPress(this)" onmouseleave="cancelDimmerLongPress(this)" ontouchstart="startDimmerLongPress(event, this)" ontouchend="cancelDimmerLongPress(this)" ontouchcancel="cancelDimmerLongPress(this)">
+        <div class="control-card control-card--dimmer" data-state="off" data-device-id="${deviceId}" data-light-name="${light.name}" data-light-index="${index}" data-icon-on="${iconOn}" data-icon-off="${iconOff}" data-icon-bg="${backgroundIcon || ''}" data-control-type="dimmer" data-default-level="${defaultLevel}" onclick="toggleDimmerControl(event, this)" onmousedown="startDimmerLongPress(event, this)" onmouseup="cancelDimmerLongPress(this)" onmouseleave="cancelDimmerLongPress(this)" ontouchstart="startDimmerLongPress(event, this)" ontouchend="cancelDimmerLongPress(this)" ontouchcancel="cancelDimmerLongPress(this)">
           <div class="control-icon-wrap">
+            ${backgroundIcon ? `<img class="control-icon control-icon-bg" src="${backgroundIcon}" alt="" style="opacity: 0;">` : ''}
             <img class="control-icon control-icon-outline" src="${iconOff}" alt="${light.name}">
             <img class="control-icon control-icon-main" src="${iconOff}" alt="${light.name}">
           </div>
