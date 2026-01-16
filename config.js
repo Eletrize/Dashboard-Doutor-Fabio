@@ -82,6 +82,10 @@ const CLIENT_CONFIG = {
         on: "images/icons/icon-small-light-on.svg",
         off: "images/icons/icon-small-light-off.svg",
       },
+      dimmer: {
+        on: "images/icons/icon-dimmer-on.svg",
+        off: "images/icons/icon-dimmer-off.svg",
+      },
       tv: {
         on: "images/icons/icon-small-tv-on.svg",
         off: "images/icons/icon-small-tv-off.svg",
@@ -118,21 +122,17 @@ const CLIENT_CONFIG = {
   environments: {
     ambiente1: {
       name: "Home Theater",
-      photo: "photo-hometeather.webp",
+      photo: "photo-placeholder.webp",
       visible: true,
       order: 1,
       lights: [
-        { id: "96", name: "Painel" },
-        { id: "41", name: "Spots" },
+        { id: "301", name: "Painel" },
+        { id: "340", name: "Spots", type: "dimmer", defaultLevel: 100 },
       ],
       airConditioner: {
-        zones: [{ id: "varanda", name: "Varanda", deviceId: "110" }],
+        zones: [{ id: "Home", name: "home", deviceId: "347" }],
       },
-      curtains: [
-        { id: "109", name: "Todas" },
-        { id: "115", name: "Esquerda" },
-        { id: "116", name: "Direita" },
-      ],
+      curtains: [],
       tv: [
         { id: "111", name: "Televisão" },
       ],
@@ -204,7 +204,7 @@ const CLIENT_CONFIG = {
 
     ambiente4: {
       name: "Piscina",
-      photo: "photo-piscina.jpg",
+      photo: "photo-placeholder.webp",
       visible: true,
       order: 4,
       lights: [
@@ -219,7 +219,7 @@ const CLIENT_CONFIG = {
 
     ambiente5: {
       name: "Escritório",
-      photo: "photo-externo.jpg",
+      photo: "photo-placeholder.webp",
       visible: true,
       order: 5,
       curtains: [
@@ -232,7 +232,7 @@ const CLIENT_CONFIG = {
 
     ambiente6: {
       name: "Escada",
-      photo: "photo-servico.jpg",
+      photo: "photo-placeholder.webp",
       visible: true,
       order: 6,
       lights: [
@@ -243,7 +243,7 @@ const CLIENT_CONFIG = {
 
     ambiente7: {
       name: "Brinquedoteca",
-      photo: "photo-suitei.jpg",
+      photo: "photo-placeholder.webp",
       visible: true,
       order: 7,
       tv: [
@@ -256,7 +256,7 @@ const CLIENT_CONFIG = {
 
     ambiente8: {
       name: "Suíte Milena",
-      photo: "photo-suiteii.jpg",
+      photo: "photo-placeholder.webp",
       visible: true,
       order: 8,
       curtains: [
@@ -278,7 +278,7 @@ const CLIENT_CONFIG = {
 
     ambiente9: {
       name: "Suíte Fabio",
-      photo: "photo-suitemaster.jpg",
+      photo: "photo-placeholder.webp",
       visible: true,
        order: 10,
       lights: [],
@@ -290,7 +290,7 @@ const CLIENT_CONFIG = {
 
     ambiente10: {
       name: "Suíte Laura",
-      photo: "photo-suitemaster.jpg",
+      photo: "photo-placeholder.webp",
       visible: true,
       order: 10,
       lights: [],
@@ -455,16 +455,28 @@ function generateLightsControls(envKey) {
     CLIENT_CONFIG?.ui?.toggles?.light?.off ||
     "images/icons/icon-small-light-off.svg";
 
+  const DIMMER_ICON_ON =
+    CLIENT_CONFIG?.ui?.toggles?.dimmer?.on ||
+    "images/icons/icon-dimmer-on.svg";
+  const DIMMER_ICON_OFF =
+    CLIENT_CONFIG?.ui?.toggles?.dimmer?.off ||
+    "images/icons/icon-dimmer-off.svg";
+
   return env.lights
     .map((light, index) => {
+      const dimmerEnabled = isDimmerLight(light);
+      
+      // Se for dimmer, usa ícones de dimmer; senão usa ícones de luz normal
+      const defaultIconOn = dimmerEnabled ? DIMMER_ICON_ON : DEFAULT_ICON_ON;
+      const defaultIconOff = dimmerEnabled ? DIMMER_ICON_OFF : DEFAULT_ICON_OFF;
+      
       const iconOn =
-        light?.iconOn || light?.icon?.on || light?.icons?.on || DEFAULT_ICON_ON;
+        light?.iconOn || light?.icon?.on || light?.icons?.on || defaultIconOn;
       const iconOff =
         light?.iconOff ||
         light?.icon?.off ||
         light?.icons?.off ||
-        DEFAULT_ICON_OFF;
-      const dimmerEnabled = isDimmerLight(light);
+        defaultIconOff;
       const defaultLevel = normalizeDimmerLevel(light?.defaultLevel, 80);
       const deviceId = String(light.id);
 
