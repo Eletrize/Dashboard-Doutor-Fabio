@@ -1076,16 +1076,8 @@ function updateDimmerSliderUI(slider, level) {
 }
 
 function updateDimmerIconIntensity(controlEl, level) {
-  if (!controlEl) return;
-  const icon = getMainControlIcon(controlEl);
-  if (!icon) return;
-
-  const normalized = clampDimmerValue(level, level);
-  const minOpacity = 0.35;
-  const maxOpacity = 1;
-  const fraction = normalized / 100;
-  const op = minOpacity + (maxOpacity - minOpacity) * fraction;
-  icon.style.opacity = op.toFixed(2);
+  // Função desabilitada - não aplica mais efeito de opacidade baseado no nível
+  return;
 }
 
 function applyDimmerLevelToControl(controlEl, level) {
