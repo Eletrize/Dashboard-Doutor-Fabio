@@ -1076,8 +1076,16 @@ function updateDimmerSliderUI(slider, level) {
 }
 
 function updateDimmerIconIntensity(controlEl, level) {
-  // Função desabilitada - não aplica mais efeito de opacidade baseado no nível
-  return;
+  if (!controlEl) return;
+  const icon = getMainControlIcon(controlEl);
+  if (!icon) return;
+
+  const normalized = clampDimmerValue(level, level);
+  const minOpacity = 0.35;
+  const maxOpacity = 1;
+  const fraction = normalized / 100;
+  const op = minOpacity + (maxOpacity - minOpacity) * fraction;
+  icon.style.opacity = op.toFixed(2);
 }
 
 function applyDimmerLevelToControl(controlEl, level) {
@@ -2213,6 +2221,14 @@ function setRoomControlUI(el, state) {
       `Ã°Å¸â€Â Elementos filhos:`,
       Array.from(el.children).map((child) => child.className)
     );
+  }
+
+  // Para dimmers: controlar opacidade do ícone de background
+  if (el.classList.contains("control-card--dimmer")) {
+    const bgIcon = el.querySelector(".control-icon-bg");
+    if (bgIcon) {
+      bgIcon.style.opacity = normalized === "on" ? "0.4" : "0";
+    }
   }
 }
 
