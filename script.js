@@ -2223,12 +2223,10 @@ function setRoomControlUI(el, state) {
     );
   }
 
-  // Para dimmers: controlar opacidade do ícone de background
-  if (el.classList.contains("control-card--dimmer")) {
-    const bgIcon = el.querySelector(".control-icon-bg");
-    if (bgIcon) {
-      bgIcon.style.opacity = normalized === "on" ? "0.4" : "0";
-    }
+  // Para todas as luzes: controlar opacidade do ícone de background
+  const bgIcon = el.querySelector(".control-icon-bg");
+  if (bgIcon) {
+    bgIcon.style.opacity = normalized === "on" ? "0.6" : "0";
   }
 }
 

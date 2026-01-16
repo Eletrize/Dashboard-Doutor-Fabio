@@ -480,13 +480,14 @@ function generateLightsControls(envKey) {
       const defaultLevel = normalizeDimmerLevel(light?.defaultLevel, 80);
       const deviceId = String(light.id);
       
-      // Para dimmers, adiciona ícone de background (light-on com 40% opacity)
-      const backgroundIcon = dimmerEnabled ? DEFAULT_ICON_ON : null;
+      // Todas as luzes agora têm ícone de background (light-on com 60% opacity quando ligado)
+      const backgroundIcon = DEFAULT_ICON_ON;
 
       if (!dimmerEnabled) {
         return `
-        <div class="control-card" data-state="off" data-device-id="${deviceId}" data-light-name="${light.name}" data-light-index="${index}" data-icon-on="${iconOn}" data-icon-off="${iconOff}" onclick="toggleRoomControl(this)">
+        <div class="control-card" data-state="off" data-device-id="${deviceId}" data-light-name="${light.name}" data-light-index="${index}" data-icon-on="${iconOn}" data-icon-off="${iconOff}" data-icon-bg="${backgroundIcon}" onclick="toggleRoomControl(this)">
           <div class="control-icon-wrap">
+            <img class="control-icon control-icon-bg" src="${backgroundIcon}" alt="" style="opacity: 0;">
             <img class="control-icon control-icon-outline" src="${iconOff}" alt="${light.name}">
             <img class="control-icon control-icon-main" src="${iconOff}" alt="${light.name}">
           </div>
