@@ -705,14 +705,14 @@ function getACDeviceIdForCurrentRoute() {
       if (acConfig?.deviceId) {
         return String(acConfig.deviceId);
       }
+      if (AC_DEVICE_IDS[ambiente]) {
+        return String(AC_DEVICE_IDS[ambiente]);
+      }
       const zones = Array.isArray(acConfig?.zones) ? acConfig.zones : [];
       const zoneId = zones.find((zone) => zone?.deviceId)?.deviceId;
       if (zoneId) {
         return String(zoneId);
       }
-    }
-    if (AC_DEVICE_IDS[ambiente]) {
-      return AC_DEVICE_IDS[ambiente];
     }
   }
   return AC_DEVICE_IDS["ambiente1"] || "110"; // Fallback para ambiente1
@@ -2641,14 +2641,18 @@ function initAirConditionerControl() {
     return;
   }
 
-  const acConfig = (() => {
-    const route = (window.location.hash || "").replace("#", "");
-    const match = route.match(/^(ambiente\d+)/);
-    if (!match || typeof getEnvironment !== "function") return null;
-    return getEnvironment(match[1])?.airConditioner || null;
-  })();
-
-  const baseDeviceId = acConfig?.deviceId ? String(acConfig.deviceId) : "";
+  const route = (window.location.hash || "").replace("#", "");
+  const match = route.match(/^(ambiente\d+)/);
+  const envKey = match ? match[1] : "";
+  const acConfig =
+    envKey && typeof getEnvironment === "function"
+      ? getEnvironment(envKey)?.airConditioner || null
+      : null;
+  const mappedDeviceId =
+    envKey && AC_DEVICE_IDS[envKey] ? String(AC_DEVICE_IDS[envKey]) : "";
+  const baseDeviceId = acConfig?.deviceId
+    ? String(acConfig.deviceId)
+    : mappedDeviceId;
   const acBrandProfiles =
     (typeof CLIENT_CONFIG !== "undefined" &&
       CLIENT_CONFIG?.devices?.airConditionerBrands) ||

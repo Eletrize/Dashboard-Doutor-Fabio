@@ -1136,8 +1136,13 @@
         const defaultTemp = Number.isFinite(tempConfig.default) ? tempConfig.default : 22;
         const safeDefaultTemp = Math.min(maxTemp, Math.max(minTemp, defaultTemp));
         const acDeviceId = ac?.deviceId ? String(ac.deviceId) : "";
+        const acDeviceMap =
+          typeof getAcDeviceIds === "function" ? getAcDeviceIds() : {};
+        const mappedDeviceId =
+          acDeviceMap && acDeviceMap[envKey] ? String(acDeviceMap[envKey]) : "";
+        const acOverrideId = acDeviceId || mappedDeviceId;
         const defaultDeviceId =
-          acDeviceId ||
+          acOverrideId ||
           (zones.length && zones[0]?.deviceId ? String(zones[0].deviceId) : "");
 
         let zoneRow = "";
@@ -1154,7 +1159,7 @@
                 const label = String(index + 1);
                 const ariaLabel = zone.name || `Zona ${index + 1}`;
                 const deviceId =
-                  acDeviceId || (zone.deviceId ? String(zone.deviceId) : "");
+                  acOverrideId || (zone.deviceId ? String(zone.deviceId) : "");
                 return `
                   <button type="button" class="acv2-btn acv2-zone-btn" data-zone-button data-zone-ids="${deviceId}" aria-pressed="false" aria-label="${ariaLabel}">
                     ${label}
@@ -1165,7 +1170,7 @@
 
             const allIds = zones
               .map((zone) =>
-                acDeviceId || (zone?.deviceId ? String(zone.deviceId) : "")
+                acOverrideId || (zone?.deviceId ? String(zone.deviceId) : "")
               )
               .filter(Boolean);
             const uniqueAllIds = Array.from(new Set(allIds));
