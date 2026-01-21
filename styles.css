@@ -1905,8 +1905,14 @@ body.orchestrated-animation.reveal-home .room-card {
 [class*=-luzes-wrapper],
 .ambiente-grid,
 [class*=-cortinas-wrapper],
-[class*=-piscina-wrapper] {
-    --scroll-fade-size:56px;
+[class*=-piscina-wrapper],
+.controls-grid {
+    --scroll-fade-size:56px}
+.ambiente-grid.scroll-fade-active:not(.scroll-fade-end),
+[class*=-luzes-wrapper].scroll-fade-active:not(.scroll-fade-end),
+[class*=-cortinas-wrapper].scroll-fade-active:not(.scroll-fade-end),
+[class*=-piscina-wrapper].scroll-fade-active:not(.scroll-fade-end),
+.controls-grid.scroll-fade-active:not(.scroll-fade-end) {
     -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - var(--scroll-fade-size)),#0000 100%);
     mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - var(--scroll-fade-size)),#0000 100%);
     -webkit-mask-size:100% 100%;

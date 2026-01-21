@@ -5498,6 +5498,60 @@ function checkMobileCompatibility() {
   return true;
 }
 
+// Fade de scroll no rodape (remover quando chega ao fim da lista)
+const scrollFadeContainers = new Set();
+let scrollFadeResizeTimer = null;
+let scrollFadeResizeBound = false;
+
+function updateScrollFade(container) {
+  if (!container || !container.classList) return;
+  const maxScroll = container.scrollHeight - container.clientHeight;
+  if (!Number.isFinite(maxScroll) || maxScroll <= 1) {
+    container.classList.remove("scroll-fade-active", "scroll-fade-end");
+    return;
+  }
+  const atBottom = container.scrollTop >= maxScroll - 1;
+  container.classList.add("scroll-fade-active");
+  container.classList.toggle("scroll-fade-end", atBottom);
+}
+
+function registerScrollFade(container) {
+  if (!container || !container.classList || scrollFadeContainers.has(container)) {
+    return;
+  }
+  scrollFadeContainers.add(container);
+  const handler = () => updateScrollFade(container);
+  container.addEventListener("scroll", handler, { passive: true });
+  updateScrollFade(container);
+  setTimeout(() => updateScrollFade(container), 120);
+
+  if (!scrollFadeResizeBound) {
+    scrollFadeResizeBound = true;
+    window.addEventListener("resize", () => {
+      if (scrollFadeResizeTimer) clearTimeout(scrollFadeResizeTimer);
+      scrollFadeResizeTimer = setTimeout(() => {
+        scrollFadeContainers.forEach((el) => updateScrollFade(el));
+      }, 150);
+    });
+  }
+}
+
+function setupScrollFadeContainers(root = document) {
+  if (!root || !root.querySelectorAll) return;
+  const selectors = [
+    ".ambiente-grid",
+    ".controls-grid",
+    "[class*=-luzes-wrapper]",
+    "[class*=-cortinas-wrapper]",
+    "[class*=-piscina-wrapper]",
+  ];
+  const nodes = root.querySelectorAll(selectors.join(","));
+  nodes.forEach((node) => registerScrollFade(node));
+  if (root.matches && selectors.some((sel) => root.matches(sel))) {
+    registerScrollFade(root);
+  }
+}
+
 // Observador para sincronizar novos elementos no DOM
 function setupDomObserver() {
   const root = document.getElementById("spa-root") || document.body;
@@ -5505,6 +5559,7 @@ function setupDomObserver() {
   // Aplicar tokens e overrides de ícones imediatamente
   applyUiTokens(root);
   applyIconOverrides(root);
+  setupScrollFadeContainers(root);
 
   primeControlCaches({ root: root, force: true });
   pruneStaleEntries();
@@ -5553,6 +5608,7 @@ function setupDomObserver() {
             if (node && node.querySelectorAll) {
               applyUiTokens(node);
               applyIconOverrides(node);
+              setupScrollFadeContainers(node);
             }
           } catch (e) {
             // ignore
