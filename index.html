@@ -1153,7 +1153,8 @@
               .map((zone, index) => {
                 const label = String(index + 1);
                 const ariaLabel = zone.name || `Zona ${index + 1}`;
-                const deviceId = zone.deviceId ? String(zone.deviceId) : acDeviceId;
+                const deviceId =
+                  acDeviceId || (zone.deviceId ? String(zone.deviceId) : "");
                 return `
                   <button type="button" class="acv2-btn acv2-zone-btn" data-zone-button data-zone-ids="${deviceId}" aria-pressed="false" aria-label="${ariaLabel}">
                     ${label}
@@ -1163,7 +1164,9 @@
               .join("");
 
             const allIds = zones
-              .map((zone) => (zone?.deviceId ? String(zone.deviceId) : acDeviceId))
+              .map((zone) =>
+                acDeviceId || (zone?.deviceId ? String(zone.deviceId) : "")
+              )
               .filter(Boolean);
             const uniqueAllIds = Array.from(new Set(allIds));
             const allButton = uniqueAllIds.length

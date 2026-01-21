@@ -2648,6 +2648,7 @@ function initAirConditionerControl() {
     return getEnvironment(match[1])?.airConditioner || null;
   })();
 
+  const baseDeviceId = acConfig?.deviceId ? String(acConfig.deviceId) : "";
   const acBrandProfiles =
     (typeof CLIENT_CONFIG !== "undefined" &&
       CLIENT_CONFIG?.devices?.airConditionerBrands) ||
@@ -2703,12 +2704,12 @@ function initAirConditionerControl() {
     maxTemp,
     temperature: clampTemperature(defaultTemp),
     powerOn: false,
-    activeZoneIds: [],
+    activeZoneIds: baseDeviceId ? [baseDeviceId] : [],
     swing: null,
   };
 
   function getFallbackDeviceId() {
-    return root.dataset.deviceId || getACDeviceIdForCurrentRoute();
+    return baseDeviceId || root.dataset.deviceId || getACDeviceIdForCurrentRoute();
   }
 
   function parseZoneIds(button) {
@@ -2722,6 +2723,7 @@ function initAirConditionerControl() {
   }
 
   function getActiveZoneIds() {
+    if (baseDeviceId) return [baseDeviceId];
     if (state.activeZoneIds.length) return state.activeZoneIds;
     const fallback = getFallbackDeviceId();
     return fallback ? [String(fallback)] : [];
@@ -2768,7 +2770,11 @@ function initAirConditionerControl() {
 
   function setZoneSelection(button) {
     const ids = parseZoneIds(button);
-    state.activeZoneIds = ids.length ? ids : getActiveZoneIds();
+    state.activeZoneIds = baseDeviceId
+      ? [baseDeviceId]
+      : ids.length
+      ? ids
+      : getActiveZoneIds();
     zoneButtons.forEach((btn) => {
       btn.setAttribute("aria-pressed", (btn === button).toString());
     });
