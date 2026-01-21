@@ -131,6 +131,8 @@ const CLIENT_CONFIG = {
       ],
       airConditioner: {
         zones: [{ id: "Home", name: "home", deviceId: "347" }],
+        controls: { zoneSelector: false, aletas: true, windfree: true },
+        temperature: { min: 18, max: 25, default: 22 },
       },
       curtains: [],
       tv: [
@@ -168,7 +170,12 @@ const CLIENT_CONFIG = {
         { id: "361", name: "Varanda" },
       ],
       airConditioner: {
-        zones: [{ id: "living", name: "Living", deviceId: "167" }],
+        zones: [
+          { id: "living1", name: "Living I", deviceId: "167" },
+          { id: "living2", name: "Living II", deviceId: "166" },
+        ],
+        controls: { zoneSelector: true, aletas: true, windfree: false },
+        temperature: { min: 18, max: 25, default: 22 },
       },
     },
 
@@ -187,6 +194,8 @@ const CLIENT_CONFIG = {
       ],
       airConditioner: {
         zones: [{ id: "Varanda", name: "Varanda", deviceId: "168" }],
+        controls: { zoneSelector: true, aletas: true, windfree: true },
+        temperature: { min: 18, max: 25, default: 22 },
       },
       roku: [
         { id: "122", name: "Roku" },
@@ -227,6 +236,8 @@ const CLIENT_CONFIG = {
       ],
       airConditioner: {
         zones: [{ id: "escritorio", name: "Escritório", deviceId: "169" }],
+        controls: { zoneSelector: true, aletas: true, windfree: true },
+        temperature: { min: 18, max: 25, default: 22 },
       },
     },
 
@@ -251,6 +262,8 @@ const CLIENT_CONFIG = {
       ],
       airConditioner: {
         zones: [{ id: "Brinquedoteca", name: "Brinquedoteca", deviceId: "182" }],
+        controls: { zoneSelector: true, aletas: true, windfree: false },
+        temperature: { min: 18, max: 25, default: 22 },
       },
     },
 
@@ -264,6 +277,8 @@ const CLIENT_CONFIG = {
       ],
       airConditioner: {
         zones: [{ id: "suitemilena", name: "Suíte Milena", deviceId: "188" }],
+        controls: { zoneSelector: true, aletas: true, windfree: false },
+        temperature: { min: 18, max: 25, default: 22 },
       },
       tv: [
         { id: "53", name: "Televisão" }
@@ -285,6 +300,8 @@ const CLIENT_CONFIG = {
       curtains: [{ id: "52", name: "Veneziana" }],
       airConditioner: {
         zones: [{ id: "suitemaster", name: "Suíte Master", deviceId: "180" }],
+        controls: { zoneSelector: true, aletas: true, windfree: true },
+        temperature: { min: 18, max: 25, default: 22 },
       },
     },
 
@@ -297,6 +314,8 @@ const CLIENT_CONFIG = {
       curtains: [{ id: "52", name: "Veneziana" }],
       airConditioner: {
         zones: [{ id: "suitemaster", name: "Suíte Master", deviceId: "180" }],
+        controls: { zoneSelector: true, aletas: true, windfree: true },
+        temperature: { min: 18, max: 25, default: 22 },
       },
     },
   },

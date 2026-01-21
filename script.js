@@ -690,7 +690,7 @@ const AC_DEVICE_IDS =
     : {};
 
 // ID do dispositivo de Ar Condicionado atual (será atualizado dinamicamente)
-let AC_DEVICE_ID = AC_DEVICE_IDS["ambiente1"] || "110"; // Padrão: Ambiente 1
+let AC_DEVICE_ID = getACDeviceIdForCurrentRoute(); // Atualizado dinamicamente
 
 // Função para obter o ID do AC baseado na rota atual
 function getACDeviceIdForCurrentRoute() {
@@ -699,11 +699,21 @@ function getACDeviceIdForCurrentRoute() {
   const match = currentRoute.match(/^(ambiente\d+)/);
   if (match) {
     const ambiente = match[1];
+    if (typeof getEnvironment === "function") {
+      const env = getEnvironment(ambiente);
+      const zones = Array.isArray(env?.airConditioner?.zones)
+        ? env.airConditioner.zones
+        : [];
+      const zoneId = zones.find((zone) => zone?.deviceId)?.deviceId;
+      if (zoneId) {
+        return String(zoneId);
+      }
+    }
     if (AC_DEVICE_IDS[ambiente]) {
       return AC_DEVICE_IDS[ambiente];
     }
   }
-  return "110"; // Fallback para ambiente1
+  return AC_DEVICE_IDS["ambiente1"] || "110"; // Fallback para ambiente1
 }
 
 // ========================================
@@ -2622,575 +2632,151 @@ function initRoomPage() {
 
 // Função para inicializar o controle de AR quando a página de conforto for carregada
 function initAirConditionerControl() {
-  const fanLevels = ["low", "medium", "high"];
-  const temperatures = [18, 19, 20, 21, 22, 23, 24, 25];
-
-  // Detectar a página atual para aplicar configuração correta
-  const currentRoute = (window.location.hash || "").replace("#", "");
-  const isAmbiente1 = currentRoute.includes("ambiente1-conforto");
-  
-  // Atualizar o ID do AC para o ambiente atual
-  AC_DEVICE_ID = getACDeviceIdForCurrentRoute();
-  console.log(`🌡️ AC inicializado para ambiente: ${currentRoute}, Device ID: ${AC_DEVICE_ID}`);
-
-  // Configurações específicas por ambiente - todos usam 18-25
-  const tempConfig = { minTemp: 18, maxTemp: 25, defaultTemp: 22 };
-
-  const state = {
-    minTemp: tempConfig.minTemp,
-    maxTemp: tempConfig.maxTemp,
-    temperature: tempConfig.defaultTemp,
-    mode: "cool", // Sempre cool
-    powerOn: false,
-    fanLevel: "medium",
-    deviceId: AC_DEVICE_ID, // ID do dispositivo ar-condicionado (dinâmico)
-  };
-
-  // Configurações de modo - apenas Cool
-  const modeConfig = {
-    cool: {
-      minTemp: tempConfig.minTemp,
-      maxTemp: tempConfig.maxTemp,
-      defaultTemp: tempConfig.defaultTemp,
-      color: "rgba(59, 130, 246, 0.95)", // Azul
-    },
-  };
-
-  // Timer para debounce da temperatura
-  let temperatureDebounceTimer = null;
-
   const root = document.querySelector('[data-component="ac-control"]');
 
   if (!root) {
-    console.warn(
-      "Componente de controle de ar-condicionado não encontrado."
-    );
+    console.warn("Componente de controle de ar-condicionado n?o encontrado.");
     return;
   }
 
-  const knobWrapper = root.querySelector('[data-role="knob"]');
-  const knob = knobWrapper ? knobWrapper.querySelector(".ac-temp-knob") : null;
-  const progressArc = root.querySelector('[data-role="progress-ring"]');
+  const tempSlider = root.querySelector('[data-role="temp-slider"]');
   const tempCurrent = root.querySelector('[data-role="temp-current"]');
-  const tempPrev = root.querySelector('[data-role="temp-prev"]');
-  const tempNext = root.querySelector('[data-role="temp-next"]');
+  const tempDecreaseButtons = Array.from(
+    root.querySelectorAll('[data-role="temp-decrease"]')
+  );
+  const tempIncreaseButtons = Array.from(
+    root.querySelectorAll('[data-role="temp-increase"]')
+  );
+  const powerOnBtn = root.querySelector('[data-role="power-on"]');
+  const powerOffBtn = root.querySelector('[data-role="power-off"]');
   const liveRegion = root.querySelector('[data-role="temperature-live"]');
-  const fanButtons = Array.from(root.querySelectorAll("[data-fan-button]"));
-  const modeButtons = Array.from(root.querySelectorAll("[data-mode-button]"));
-  const powerButton = root.querySelector('[data-role="power"]');
-  const wrapper = root.querySelector(".ac-temp-wrapper");
-  const temperatureSection = document.querySelector(".ac-temperature-section");
+  const aletaButtons = Array.from(root.querySelectorAll('[data-aleta-button]'));
+  const zoneButtons = Array.from(root.querySelectorAll('[data-zone-button]'));
 
-  if (!progressArc || !knob || !wrapper) {
-    console.warn("Elementos essenciais do AC não encontrados");
+  if (!tempSlider || !tempCurrent || !powerOnBtn || !powerOffBtn) {
+    console.warn("Elementos essenciais do AC n?o encontrados.");
     return;
   }
 
-  if (!temperatureSection) {
-    console.warn("SeÃƒÂ§ÃƒÂ£o de temperatura não encontrada");
+  const minTemp = Number.parseInt(root.dataset.tempMin || "18", 10);
+  const maxTemp = Number.parseInt(root.dataset.tempMax || "25", 10);
+  const defaultTemp = Number.parseInt(root.dataset.tempDefault || "22", 10);
+
+  function clampTemperature(value) {
+    const num = Number.isFinite(value) ? value : minTemp;
+    return Math.min(Math.max(num, minTemp), maxTemp);
   }
 
-  // Constantes do arco
-  const ARC_LENGTH = 251.2; // Comprimento aproximado do arco SVG path
-  const ARC_START_ANGLE = 180; // Graus (esquerda)
-  const ARC_END_ANGLE = 0; // Graus (direita)
-  const ARC_RADIUS = 80; // Raio do arco no viewBox
-  const ARC_CENTER_X = 100; // Centro X no viewBox
-  const ARC_CENTER_Y = 100; // Centro Y no viewBox
+  const state = {
+    minTemp,
+    maxTemp,
+    temperature: clampTemperature(defaultTemp),
+    powerOn: false,
+    activeZoneIds: [],
+  };
 
-  let geometry = calculateGeometry();
-  let isDragging = false;
-  // Controle de sincronizaÃƒÂ§ÃƒÂ£o inicial (evita UI desatualizada ao reentrar)
-  let initialSyncDone = false;
-
-  function calculateGeometry() {
-    const rect = wrapper.getBoundingClientRect();
-    const svgElement = progressArc.closest("svg");
-    const svgRect = svgElement.getBoundingClientRect();
-    const viewBox = svgElement?.viewBox?.baseVal;
-    const vbWidth = viewBox ? viewBox.width : 200;
-    const vbHeight = viewBox ? viewBox.height : 120;
-
-    // O viewBox é 0 0 200 120
-    // O arco path é: M 20,100 A 80,80 0 0,1 180,100
-    // Isso significa que o centro do arco está em (100, 100) no viewBox
-    // O raio é 80
-
-    // Calcular a escala do SVG
-    const scaleX = svgRect.width / vbWidth;
-    const scaleY = svgRect.height / vbHeight;
-
-    let arcLength = ARC_LENGTH;
-    try {
-      if (typeof progressArc.getTotalLength === "function") {
-        arcLength = progressArc.getTotalLength();
-      }
-    } catch (error) {
-      console.warn("Falha ao obter comprimento do arco", error);
-    }
-
-    let strokeWidth = 0;
-    try {
-      strokeWidth = parseFloat(
-        window.getComputedStyle(progressArc).strokeWidth || "0"
-      );
-    } catch (error) {
-      strokeWidth = 0;
-    }
-
-    const ctm =
-      typeof progressArc.getScreenCTM === "function"
-        ? progressArc.getScreenCTM()
-        : typeof progressArc.getCTM === "function"
-        ? progressArc.getCTM()
-        : null;
-
-    return {
-      rect,
-      svgRect,
-      svgElement,
-      viewBox: { width: vbWidth, height: vbHeight },
-      // Centro do arco em coordenadas da página
-      centerX: svgRect.left + 100 * scaleX, // X=100 no viewBox
-      centerY: svgRect.top + 100 * scaleY, // Y=100 no viewBox
-      radius: 80 * Math.min(scaleX, scaleY), // Ajusta para manter o raio coerente
-      scaleX,
-      scaleY,
-      arcLength,
-      strokeWidth,
-      ctm,
-    };
+  function getFallbackDeviceId() {
+    return root.dataset.deviceId || getACDeviceIdForCurrentRoute();
   }
 
-  function clamp(value, min, max) {
-    return Math.min(Math.max(value, min), max);
+  function parseZoneIds(button) {
+    if (!button) return [];
+    const raw = button.dataset.zoneIds || "";
+    if (!raw) return [];
+    return raw
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
   }
 
-  function angleFromTemperature(temperature) {
-    const ratio =
-      (temperature - state.minTemp) / (state.maxTemp - state.minTemp);
-    // 180Ã‚Â° (esquerda/18Ã‚Â°C) para 0Ã‚Â° (direita/30Ã‚Â°C)
-    return 180 - ratio * 180;
+  function getActiveZoneIds() {
+    if (state.activeZoneIds.length) return state.activeZoneIds;
+    const fallback = getFallbackDeviceId();
+    return fallback ? [String(fallback)] : [];
   }
 
-  function temperatureFromAngle(angle) {
-    const ratio = (180 - angle) / 180;
-    const temp = state.minTemp + ratio * (state.maxTemp - state.minTemp);
-    return Math.round(clamp(temp, state.minTemp, state.maxTemp));
+  function getPrimaryDeviceId() {
+    return getActiveZoneIds()[0] || "";
   }
 
-  function updateKnobPosition(angle) {
-    if (!knob || !progressArc) return;
-
-    if (!geometry || !geometry.ctm) {
-      geometry = calculateGeometry();
-    }
-
-    const ratio = clamp((180 - angle) / 180, 0, 1);
-    const arcLength = geometry.arcLength ?? ARC_LENGTH;
-
-    let svgPoint;
-    try {
-      const length = arcLength * ratio;
-      svgPoint = progressArc.getPointAtLength(length);
-    } catch (error) {
-      svgPoint = null;
-    }
-
-    if (!svgPoint || !geometry.ctm) {
-      // Fallback para trigonometria clÃƒÂ¡ssica
-      const radians = (angle * Math.PI) / 180;
-      const radius = geometry.radius;
-      const x = geometry.centerX + radius * Math.cos(radians);
-      const y = geometry.centerY - radius * Math.sin(radians);
-      const wrapperRect = wrapper.getBoundingClientRect();
-
-      knob.style.left = `${x - wrapperRect.left}px`;
-      knob.style.top = `${y - wrapperRect.top}px`;
-      knob.style.transform = "translate(-50%, -50%)";
-      knob.classList.remove("is-hidden");
-      return;
-    }
-
-    let screenPoint;
-    const svgElement = geometry.svgElement;
-
-    if (typeof DOMPoint === "function") {
-      screenPoint = new DOMPoint(svgPoint.x, svgPoint.y).matrixTransform(
-        geometry.ctm
-      );
-    } else if (svgElement && typeof svgElement.createSVGPoint === "function") {
-      const point = svgElement.createSVGPoint();
-      point.x = svgPoint.x;
-      point.y = svgPoint.y;
-      screenPoint = point.matrixTransform(geometry.ctm);
-    } else {
-      return;
-    }
-
-    const wrapperRect = wrapper.getBoundingClientRect();
-    const relativeX = screenPoint.x - wrapperRect.left;
-    const relativeY = screenPoint.y - wrapperRect.top;
-
-    knob.style.left = `${relativeX}px`;
-    knob.style.top = `${relativeY}px`;
-    knob.style.transform = "translate(-50%, -50%)";
-    knob.classList.remove("is-hidden");
+  function setZoneSelection(button) {
+    const ids = parseZoneIds(button);
+    state.activeZoneIds = ids.length ? ids : getActiveZoneIds();
+    zoneButtons.forEach((btn) => {
+      btn.setAttribute("aria-pressed", (btn === button).toString());
+    });
+    AC_DEVICE_ID = getPrimaryDeviceId();
   }
 
-  function updateProgress(angle) {
-    if (!progressArc) return;
-
-    // Calcula o progresso (0 a 1)
-    const progress = clamp((180 - angle) / 180, 0, 1);
-    const arcLength = geometry.arcLength ?? ARC_LENGTH;
-    // Offset: comeÃƒÂ§a cheio e vai diminuindo conforme progride
-    const offset = arcLength - progress * arcLength;
-
-    let dashOffset;
-    if (progress <= 0) {
-      dashOffset = arcLength + (geometry.strokeWidth || 0) + 1;
-    } else if (progress >= 1) {
-      dashOffset = 0;
-    } else {
-      dashOffset = Math.max(0, Math.min(arcLength, offset));
-    }
-
-    progressArc.style.strokeDasharray = arcLength;
-    progressArc.style.strokeDashoffset = dashOffset;
+  function updateSliderVisual(temp) {
+    const range = state.maxTemp - state.minTemp;
+    const percent = range > 0 ? ((temp - state.minTemp) / range) * 100 : 0;
+    tempSlider.style.setProperty("--ac-temp-progress", `${percent}%`);
   }
 
-  function updateTemperatureDisplay() {
-    if (!tempCurrent) return;
-
-    const temp = state.temperature;
-
-    // Atualiza temperatura atual
-    tempCurrent.textContent = temp;
-
-    // Atualiza temperatura anterior
-    if (tempPrev) {
-      if (temp > state.minTemp) {
-        tempPrev.textContent = temp - 1;
-        tempPrev.style.opacity = "1";
-        tempPrev.style.visibility = "visible";
-      } else {
-        // Se é a temperatura mÃƒÂ­nima, esconde o anterior
-        tempPrev.style.opacity = "0";
-        tempPrev.style.visibility = "hidden";
-      }
-    }
-
-    // Atualiza temperatura seguinte
-    if (tempNext) {
-      if (temp < state.maxTemp) {
-        tempNext.textContent = temp + 1;
-        tempNext.style.opacity = "1";
-        tempNext.style.visibility = "visible";
-      } else {
-        // Se é a temperatura mÃƒÂ¡xima, esconde o seguinte
-        tempNext.style.opacity = "0";
-        tempNext.style.visibility = "hidden";
-      }
-    }
-  }
-
-  function updateTemperature(newTemp, options = {}) {
-    const temperature = clamp(newTemp, state.minTemp, state.maxTemp);
-    const angle = angleFromTemperature(temperature);
-
-    state.temperature = temperature;
+  function updateTemperatureDisplay(temp) {
+    tempCurrent.textContent = String(temp);
+    tempSlider.value = String(temp);
+    updateSliderVisual(temp);
 
     if (liveRegion) {
-      liveRegion.textContent = `Temperatura ajustada para ${temperature} graus.`;
+      liveRegion.textContent = `Temperatura ajustada para ${temp}.`;
+    }
+  }
+
+  function setControlsEnabled(enabled) {
+    tempSlider.toggleAttribute("disabled", !enabled);
+    tempDecreaseButtons.forEach((btn) => btn.toggleAttribute("disabled", !enabled));
+    tempIncreaseButtons.forEach((btn) => btn.toggleAttribute("disabled", !enabled));
+    aletaButtons.forEach((btn) => btn.toggleAttribute("disabled", !enabled));
+  }
+
+  let temperatureDebounceTimer = null;
+
+  function sendTemperatureCommand(temp) {
+    const ids = getActiveZoneIds();
+    if (!ids.length) return;
+    const command = `temp${temp}`;
+    ids.forEach((id) => sendHubitatCommand(id, command));
+  }
+
+  function updateTemperature(value, options = {}) {
+    const temp = clampTemperature(value);
+    state.temperature = temp;
+    updateTemperatureDisplay(temp);
+
+    if (!state.powerOn || options.silent) {
+      return;
     }
 
-    updateKnobPosition(angle);
-    updateProgress(angle);
-    updateTemperatureDisplay();
-
-    // Limpa o timer anterior se existir
     if (temperatureDebounceTimer) {
       clearTimeout(temperatureDebounceTimer);
     }
 
-    // Configura novo timer de 1.5 segundos para enviar comando
-    if (state.powerOn && !options.silent) {
-      temperatureDebounceTimer = setTimeout(() => {
-        const tempCommand = `temp${state.temperature}`;
-        console.log(
-          `Enviando comando de temperatura apÃƒÂ³s 1.5s: ${tempCommand}`
-        );
-        sendHubitatCommand(state.deviceId, tempCommand);
-        temperatureDebounceTimer = null;
-      }, 1500);
-    }
-  }
-
-  function getAngleFromPointer(event) {
-    const pointerX =
-      event.clientX ?? (event.touches && event.touches[0]?.clientX);
-    const pointerY =
-      event.clientY ?? (event.touches && event.touches[0]?.clientY);
-
-    if (typeof pointerX !== "number" || typeof pointerY !== "number") {
-      return null;
-    }
-
-    // Calcula a posiÃƒÂ§ÃƒÂ£o relativa ao centro do arco
-    const deltaX = pointerX - geometry.centerX;
-    const deltaY = geometry.centerY - pointerY; // INVERTIDO: centerY - pointerY (para cima é positivo)
-
-    // Calcula o ÃƒÂ¢ngulo em radianos, depois converte para graus
-    let angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-
-    // Normaliza para 0-360
-    if (angle < 0) angle += 360;
-
-    // Limita ao arco superior (0Ã‚Â° a 180Ã‚Â°)
-    // 0Ã‚Â° = direita, 90Ã‚Â° = cima, 180Ã‚Â° = esquerda
-    // Queremos apenas o arco superior, entÃƒÂ£o limitamos ÃƒÂ¢ngulos > 180Ã‚Â°
-    if (angle > 180) {
-      // Se está fora do arco superior, mapeia para a extremidade mais prÃƒÂ³xima
-      angle = angle > 270 ? 0 : 180;
-    }
-
-    return angle;
-  }
-
-  function handlePointerMove(event) {
-    if (!state.powerOn || !isDragging) return;
-
-    const angle = getAngleFromPointer(event);
-    if (angle !== null) {
-      const temperature = temperatureFromAngle(angle);
-      updateTemperature(temperature);
-    }
-  }
-
-  function startDragging(event) {
-    if (!state.powerOn) return;
-
-    event.preventDefault();
-    isDragging = true;
-    geometry = calculateGeometry();
-
-    if (knob) {
-      knob.classList.add("is-active");
-    }
-
-    handlePointerMove(event);
-
-    document.addEventListener("pointermove", handlePointerMove);
-    document.addEventListener("pointerup", stopDragging);
-    document.addEventListener("pointercancel", stopDragging);
-  }
-
-  function stopDragging() {
-    isDragging = false;
-
-    if (knob) {
-      knob.classList.remove("is-active");
-    }
-
-    // Comando de temperatura agora é enviado via debounce em updateTemperature()
-    // não precisa mais enviar aqui
-
-    document.removeEventListener("pointermove", handlePointerMove);
-    document.removeEventListener("pointerup", stopDragging);
-    document.removeEventListener("pointercancel", stopDragging);
-  }
-
-  function setFanLevel(level) {
-    if (!fanLevels.includes(level)) {
-      return;
-    }
-
-    state.fanLevel = level;
-    root.dataset.fanLevel = level;
-
-    fanButtons.forEach((button) => {
-      const isActive = button.dataset.fan === level;
-      button.setAttribute("aria-pressed", isActive.toString());
-    });
-  }
-
-  function setMode(mode) {
-    if (!modeConfig[mode]) return;
-
-    state.mode = mode;
-    root.dataset.mode = mode;
-
-    // NÃƒÆ’O envia comando para o Hubitat (modo fixo em Cool)
-    // sendHubitatCommand(state.deviceId, mode);
-
-    // Atualiza os limites de temperatura conforme o modo
-    const config = modeConfig[mode];
-    state.minTemp = config.minTemp;
-    state.maxTemp = config.maxTemp;
-
-    // Define a temperatura padrÃƒÂ£o do modo
-    state.temperature = config.defaultTemp;
-
-    // Atualiza a cor do arco de progresso e knob
-    updateModeColors(config.color);
-
-    // Atualiza os botÃƒÂµes de modo
-    modeButtons.forEach((button) => {
-      const isActive = button.dataset.mode === mode;
-      button.setAttribute("aria-pressed", isActive.toString());
-    });
-
-    // Atualiza a temperatura com os novos limites
-    updateTemperature(state.temperature);
-  }
-
-  function updateModeColors(color) {
-    if (!progressArc) return;
-
-    // Atualiza a cor do arco de progresso
-    progressArc.style.stroke = color;
-
-    // Atualiza a cor do glow do arco
-    if (color.includes("59, 130, 246")) {
-      // Azul (cool)
-      progressArc.style.filter = "drop-shadow(0 0 8px rgba(59, 130, 246, 0.5))";
-    } else if (color.includes("249, 115, 22")) {
-      // Laranja (heat)
-      progressArc.style.filter = "drop-shadow(0 0 8px rgba(249, 115, 22, 0.5))";
-    } else {
-      // Branco (auto)
-      progressArc.style.filter =
-        "drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))";
-    }
+    temperatureDebounceTimer = setTimeout(() => {
+      sendTemperatureCommand(temp);
+      temperatureDebounceTimer = null;
+    }, 900);
   }
 
   function setPowerState(isOn, options = {}) {
     state.powerOn = isOn;
-    console.log(
-      "setPowerState chamado:",
-      isOn,
-      "temperatureSection:",
-      temperatureSection
-    );
-
-    // Envia comando para o Hubitat (a menos que esteja em modo silencioso)
-    if (!options.silent) {
-      const command = isOn ? "on" : "off";
-      sendHubitatCommand(state.deviceId, command);
-    }
-
-    if (powerButton) {
-      powerButton.setAttribute("aria-pressed", isOn.toString());
-      powerButton.setAttribute(
-        "aria-label",
-        isOn ? "Desligar o ar-condicionado" : "Ligar o ar-condicionado"
-      );
-    }
-
-    modeButtons.forEach((button) => {
-      // Para AC Living, não desabilita os botões de seleção (I, II, Ambos)
-      const mode = button.dataset.mode;
-      if (mode === 'living1' || mode === 'living2' || mode === 'livingBoth') {
-        return; // Não desabilita esses botões
-      }
-      button.toggleAttribute("disabled", !isOn);
-    });
-
-    fanButtons.forEach((button) => {
-      button.toggleAttribute("disabled", !isOn);
-    });
-
-    // Desabilita os botÃƒÂµes de aleta quando o AC está desligado
-    aletaButtons.forEach((button) => {
-      button.toggleAttribute("disabled", !isOn);
-    });
-
     root.toggleAttribute("data-power-off", !isOn);
+    powerOnBtn.setAttribute("aria-pressed", isOn.toString());
+    powerOffBtn.setAttribute("aria-pressed", (!isOn).toString());
+    setControlsEnabled(isOn);
 
-    // Controla o fade in/out do seletor de temperatura
-    if (temperatureSection) {
-      if (isOn) {
-        console.log("Removendo power-off");
-        temperatureSection.classList.add("power-on");
-      } else {
-        console.log("Adicionando power-off");
-        temperatureSection.classList.remove("power-on");
-      }
+    if (temperatureDebounceTimer) {
+      clearTimeout(temperatureDebounceTimer);
+      temperatureDebounceTimer = null;
+    }
+
+    if (!options.silent) {
+      const ids = getActiveZoneIds();
+      const command = isOn ? "on" : "off";
+      ids.forEach((id) => sendHubitatCommand(id, command));
     }
   }
-
-  function togglePower() {
-    setPowerState(!state.powerOn);
-  }
-
-  // Event listeners
-  if (knob) {
-    knob.addEventListener("pointerdown", startDragging);
-  }
-
-  fanButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      if (!state.powerOn) return;
-      const level = button.dataset.fan;
-      if (level) {
-        setFanLevel(level);
-      }
-    });
-  });
-
-  // Verifica se é AC Living antes de adicionar handlers de modo
-  const isLivingAC = root.hasAttribute('data-ac-living');
-  let livingSelectedAC = null; // null, 'living1', 'living2', 'livingBoth'
-
-  modeButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const mode = button.dataset.mode;
-      
-      // Para AC Living, os botões de seleção funcionam mesmo com power off
-      if (isLivingAC && (mode === 'living1' || mode === 'living2' || mode === 'livingBoth')) {
-        // Se clicar no mesmo botão já ativo, desativa
-        if (livingSelectedAC === mode) {
-          livingSelectedAC = null;
-          button.setAttribute('aria-pressed', 'false');
-          
-          // Desabilita power novamente
-          if (powerButton) {
-            powerButton.classList.add('ac-command-btn--disabled');
-            powerButton.disabled = true;
-          }
-        } else {
-          // Desativa todos os outros e ativa o clicado
-          modeButtons.forEach(btn => {
-            btn.setAttribute('aria-pressed', 'false');
-          });
-          
-          livingSelectedAC = mode;
-          button.setAttribute('aria-pressed', 'true');
-          
-          // Habilita o botão power
-          if (powerButton) {
-            powerButton.classList.remove('ac-command-btn--disabled');
-            powerButton.disabled = false;
-          }
-        }
-        return; // Não executa a lógica padrão de modo
-      }
-      
-      // Lógica padrão para outros ACs
-      if (!state.powerOn) return;
-      if (mode) {
-        setMode(mode);
-      }
-    });
-  });
-
-  if (powerButton) {
-    powerButton.addEventListener("click", togglePower);
-  }
-
-  // BotÃƒÂµes de aleta
-  const aletaButtons = Array.from(root.querySelectorAll("[data-aleta-button]"));
 
   function setAletaState(aleta) {
     if (!state.powerOn) return;
@@ -3200,215 +2786,117 @@ function initAirConditionerControl() {
       btn.setAttribute("aria-pressed", isActive.toString());
     });
 
-    // Envia comandos para o Hubitat (modo Cool fixo)
-    if (aleta === "moving") {
-      console.log("ALETA MOVIMENTO: Executando comando swingOn (mover aletas)");
-      sendHubitatCommand(state.deviceId, "swingOn");
-    } else if (aleta === "windfree") {
-      console.log("WINDFREE: Executando comando windfree");
-      sendHubitatCommand(state.deviceId, "windfree");
-    } else if (aleta === "parada") {
-      console.log("ALETA PARADA: Executando comando swingOff (parar aletas)");
-      sendHubitatCommand(state.deviceId, "swingOff");
-    }
+    const command =
+      aleta === "moving"
+        ? "swingOn"
+        : aleta === "parada"
+        ? "swingOff"
+        : aleta === "windfree"
+        ? "windfree"
+        : null;
+
+    if (!command) return;
+
+    getActiveZoneIds().forEach((id) => sendHubitatCommand(id, command));
   }
 
-  aletaButtons.forEach((btn) => {
+  zoneButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      if (!state.powerOn) return;
-      setAletaState(btn.dataset.aleta);
+      setZoneSelection(btn);
+      applyACFromPolling({ needPower: true, needTemp: true });
     });
   });
 
-  // === Lógica específica para AC Living (2 ACs: I, II, Ambos) ===
-  if (isLivingAC) {
-    // Estado inicial: nenhum AC selecionado, power desabilitado
-    if (powerButton) {
-      powerButton.classList.add('ac-command-btn--disabled');
-      powerButton.disabled = true;
-    }
+  powerOnBtn.addEventListener("click", () => setPowerState(true));
+  powerOffBtn.addEventListener("click", () => setPowerState(false));
 
-    // Sobrescreve o togglePower para usar o AC selecionado
-    const livingTogglePower = () => {
-      if (!livingSelectedAC) {
-        console.log("AC Living: Nenhum AC selecionado");
-        return;
-      }
-      
-      // IDs dos ACs do Living
-      const acIds = {
-        living1: "167", // AC I
-        living2: "166", // AC II
-        livingBoth: ["167", "166"] // Ambos
-      };
-      
-      const selectedIds = acIds[livingSelectedAC];
-      const command = !state.powerOn ? "on" : "off";
-      
-      if (Array.isArray(selectedIds)) {
-        // Enviar para múltiplos ACs
-        selectedIds.forEach(id => {
-          sendHubitatCommand(id, command);
-        });
-      } else {
-        sendHubitatCommand(selectedIds, command);
-      }
-      
-      // Atualiza estado visual
-      state.powerOn = !state.powerOn;
-      if (powerButton) {
-        powerButton.setAttribute("aria-pressed", state.powerOn.toString());
-      }
-      
-      // Habilita/desabilita botões de aleta
-      aletaButtons.forEach((button) => {
-        button.toggleAttribute("disabled", !state.powerOn);
-      });
-      
-      // Atualiza atributo data-power-off no root
-      root.toggleAttribute("data-power-off", !state.powerOn);
-      
-      if (temperatureSection) {
-        if (state.powerOn) {
-          temperatureSection.classList.add("power-on");
-        } else {
-          temperatureSection.classList.remove("power-on");
-        }
-      }
-    };
-    
-    // Remove listener antigo e adiciona novo
-    if (powerButton) {
-      powerButton.removeEventListener("click", togglePower);
-      powerButton.addEventListener("click", livingTogglePower);
-    }
-  }
-  // === Fim da lógica específica do AC Living ===
-
-  window.addEventListener("resize", () => {
-    geometry = calculateGeometry();
-    const angle = angleFromTemperature(state.temperature);
-    updateKnobPosition(angle);
-    updateProgress(angle);
+  tempSlider.addEventListener("input", () => {
+    updateTemperature(Number.parseInt(tempSlider.value, 10));
   });
 
-  // Inicializa (sem enviar comandos no primeiro render)
-  setPowerState(state.powerOn, { silent: true });
-  setMode(state.mode);
-  setFanLevel(state.fanLevel);
+  tempDecreaseButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      updateTemperature(state.temperature - 1);
+    });
+  });
+
+  tempIncreaseButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      updateTemperature(state.temperature + 1);
+    });
+  });
+
+  aletaButtons.forEach((btn) => {
+    btn.addEventListener("click", () => setAletaState(btn.dataset.aleta));
+  });
+
+  if (zoneButtons.length) {
+    const defaultButton =
+      zoneButtons.find((btn) => btn.dataset.zoneDefault === "true") ||
+      zoneButtons[0];
+    if (defaultButton) {
+      setZoneSelection(defaultButton);
+    }
+  } else {
+    const fallback = getFallbackDeviceId();
+    state.activeZoneIds = fallback ? [String(fallback)] : [];
+    AC_DEVICE_ID = getPrimaryDeviceId();
+  }
+
   updateTemperature(state.temperature, { silent: true });
+  setPowerState(false, { silent: true });
 
-  // Recalcula geometria apÃƒÂ³s renderizaÃƒÂ§ÃƒÂ£o inicial (mÃƒÂºltiplas tentativas para garantir)
-  const recalculate = () => {
-    geometry = calculateGeometry();
-    const angle = angleFromTemperature(state.temperature);
-    updateKnobPosition(angle);
-    updateProgress(angle);
-  };
-
-  setTimeout(recalculate, 50);
-  setTimeout(recalculate, 150);
-  setTimeout(recalculate, 300);
-
-  // Fallback: buscar estado completo via /polling e aplicar valores ausentes
-  async function applyACFromPolling({
-    needPower = true,
-    needTemp = true,
-    needFan = true,
-  } = {}) {
+  async function applyACFromPolling({ needPower = true, needTemp = true } = {}) {
     try {
-      const url = `/polling?devices=${encodeURIComponent(AC_DEVICE_ID)}`;
+      const deviceId = getPrimaryDeviceId();
+      if (!deviceId) return;
+      const url = `/polling?devices=${encodeURIComponent(deviceId)}`;
       const resp = await fetch(url, { cache: "no-store" });
       if (!resp.ok) return;
       const payload = await resp.json();
       const list = Array.isArray(payload?.data) ? payload.data : [];
-      const device = list.find((d) => String(d?.id) === String(AC_DEVICE_ID));
+      const device = list.find((d) => String(d?.id) === String(deviceId));
       if (!device) return;
 
-      // Normaliza atributos para um mapa { name: value }
       let attrsMap = {};
       if (Array.isArray(device.attributes)) {
-        device.attributes.forEach((a) => {
-          if (!a || !a.name) return;
-          const key = String(a.name).toLowerCase();
-          const v = a.currentValue ?? a.value;
-          attrsMap[key] = v;
+        device.attributes.forEach((attr) => {
+          if (!attr || !attr.name) return;
+          attrsMap[String(attr.name).toLowerCase()] =
+            attr.currentValue ?? attr.value;
         });
       } else if (device.attributes && typeof device.attributes === "object") {
-        Object.keys(device.attributes).forEach((k) => {
-          attrsMap[String(k).toLowerCase()] = device.attributes[k];
+        Object.keys(device.attributes).forEach((key) => {
+          attrsMap[String(key).toLowerCase()] = device.attributes[key];
         });
       }
 
-      let applied = false;
-      // PotÃƒÂªncia
       if (needPower) {
         const sw = String(attrsMap["switch"] ?? "").toLowerCase();
         if (sw) {
           setPowerState(sw === "on", { silent: true });
-          applied = true;
         }
       }
 
-      // Temperatura / setpoint
       if (needTemp) {
-        let t =
+        let temp =
           attrsMap["coolingsetpoint"] ??
           attrsMap["thermostatsetpoint"] ??
           attrsMap["setpoint"] ??
           attrsMap["temperature"];
-        if (typeof t === "string") {
-          const m = t.match(/(-?\d{1,2})/);
-          if (m) t = parseInt(m[1], 10);
+        if (typeof temp === "string") {
+          const match = temp.match(/(-?\d{1,2})/);
+          if (match) temp = Number.parseInt(match[1], 10);
         }
-        if (typeof t === "number" && !Number.isNaN(t)) {
-          updateTemperature(Math.round(t), { silent: true });
-          applied = true;
-        }
-      }
-
-      // VentilaÃƒÂ§ÃƒÂ£o
-      if (needFan) {
-        let f =
-          attrsMap["thermostatfanmode"] ??
-          attrsMap["fan"] ??
-          attrsMap["fanlevel"];
-        if (typeof f === "string") {
-          const val = f.toLowerCase();
-          const mapped =
-            val === "med" || val === "mid" || val === "auto"
-              ? "medium"
-              : val === "min"
-              ? "low"
-              : val === "max"
-              ? "high"
-              : val;
-          if (["low", "medium", "high"].includes(mapped)) {
-            setFanLevel(mapped);
-            applied = true;
-          }
-        } else if (typeof f === "number") {
-          if (f <= 1) {
-            setFanLevel("low");
-            applied = true;
-          } else if (f === 2) {
-            setFanLevel("medium");
-            applied = true;
-          } else if (f >= 3) {
-            setFanLevel("high");
-            applied = true;
-          }
+        if (typeof temp === "number" && !Number.isNaN(temp)) {
+          updateTemperature(Math.round(temp), { silent: true });
         }
       }
-
-      recalculate();
-      if (applied) initialSyncDone = true;
-    } catch (e) {
-      console.warn("Falha no fallback de polling do AC:", e);
+    } catch (error) {
+      console.warn("Falha no polling do AC:", error);
     }
   }
 
-  // Buscar ÃƒÂºltimo status do AC via webhook e aplicar na UI (modo silencioso)
   (async function syncFromWebhook() {
     try {
       const resp = await fetch("/webhook/eletr1z33333d4sh/status", {
@@ -3418,119 +2906,56 @@ function initAirConditionerControl() {
       const data = await resp.json();
       const evt = data && data.lastACStatus;
       if (!evt) {
-        return applyACFromPolling({
-          needPower: true,
-          needTemp: true,
-          needFan: true,
-        });
+        return applyACFromPolling({ needPower: true, needTemp: true });
       }
 
-      // Verifica se corresponde ao nosso dispositivo (quando presente)
-      if (evt.deviceId && String(evt.deviceId) !== String(AC_DEVICE_ID)) {
-        return applyACFromPolling({
-          needPower: true,
-          needTemp: true,
-          needFan: true,
-        });
+      const activeIds = getActiveZoneIds().map(String);
+      if (evt.deviceId && !activeIds.includes(String(evt.deviceId))) {
+        return applyACFromPolling({ needPower: true, needTemp: true });
       }
 
       const name = (evt.name || "").toLowerCase();
       const rawVal = evt.value;
-      const val = (
-        rawVal !== undefined && rawVal !== null ? String(rawVal) : ""
-      ).toLowerCase();
+      const val =
+        rawVal !== undefined && rawVal !== null ? String(rawVal).toLowerCase() : "";
 
       let desiredPower = null;
       let desiredTemp = null;
-      let desiredFan = null;
-      let desiredMode = null;
 
-      // PotÃƒÂªncia
-      if (
-        name === "switch" ||
-        name === "power" ||
-        name === "ac" ||
-        name === "acpower"
-      ) {
+      if (name === "switch" || name === "power" || name === "ac" || name === "acpower") {
         desiredPower = val === "on" || val === "true" || val === "1";
       }
 
-      // Temperatura / setpoint
       if (name.includes("temp") || name.includes("setpoint")) {
-        const m = val.match(/(-?\d{1,2})/);
-        if (m) {
-          const t = parseInt(m[1], 10);
-          if (!Number.isNaN(t)) desiredTemp = t;
+        const match = val.match(/(-?\d{1,2})/);
+        if (match) {
+          const parsed = Number.parseInt(match[1], 10);
+          if (!Number.isNaN(parsed)) desiredTemp = parsed;
         } else if (typeof rawVal === "number") {
           desiredTemp = Math.round(rawVal);
         }
       }
 
-      // VentilaÃƒÂ§ÃƒÂ£o
-      if (name.includes("fan")) {
-        if (
-          [
-            "low",
-            "medium",
-            "med",
-            "mid",
-            "high",
-            "auto",
-            "min",
-            "max",
-          ].includes(val)
-        ) {
-          desiredFan =
-            val === "med" || val === "mid" || val === "auto"
-              ? "medium"
-              : val === "min"
-              ? "low"
-              : val === "max"
-              ? "high"
-              : val;
-        } else {
-          const n = parseInt(val, 10);
-          if (!Number.isNaN(n)) {
-            if (n <= 1) desiredFan = "low";
-            else if (n === 2) desiredFan = "medium";
-            else if (n >= 3) desiredFan = "high";
-          }
-        }
-      }
-
-      // Modo (o UI suporta apenas 'cool' visualmente)
-      if (name.includes("mode")) {
-        desiredMode = "cool";
-      }
-
-      // Aplica incrementos do evento (se houver), por cima do persistido
-      if (desiredMode) setMode(desiredMode);
-      if (typeof desiredTemp === "number")
+      if (typeof desiredTemp === "number") {
         updateTemperature(desiredTemp, { silent: true });
-      if (desiredFan) setFanLevel(desiredFan);
-      if (desiredPower !== null)
-        setPowerState(!!desiredPower, { silent: true });
+      }
 
-      // Se faltou algum dado, completa pelo polling
+      if (desiredPower !== null) {
+        setPowerState(!!desiredPower, { silent: true });
+      }
+
       const needPower = desiredPower === null;
       const needTemp = !(typeof desiredTemp === "number");
-      const needFan = !desiredFan;
-      if (needPower || needTemp || needFan) {
-        await applyACFromPolling({ needPower, needTemp, needFan });
+      if (needPower || needTemp) {
+        await applyACFromPolling({ needPower, needTemp });
       }
-
-      // Recalcula posiÃƒÂ§ÃƒÂ£o do knob apÃƒÂ³s aplicar
-      recalculate();
-    } catch (e) {
-      console.warn("Falha ao sincronizar AC via webhook:", e);
+    } catch (error) {
+      console.warn("Falha ao sincronizar AC via webhook:", error);
     }
   })();
 
-  // Garantir sincronizaÃƒÂ§ÃƒÂ£o: tenta também via polling apÃƒÂ³s um pequeno atraso
   setTimeout(() => {
-    try {
-      applyACFromPolling({ needPower: true, needTemp: true, needFan: true });
-    } catch (_) {}
+    applyACFromPolling({ needPower: true, needTemp: true });
   }, 1200);
 }
 

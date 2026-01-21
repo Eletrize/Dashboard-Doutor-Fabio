@@ -1104,6 +1104,166 @@
         `;
       }
 
+      function renderAcControlPage(envKey) {
+        const env = typeof getEnvironment === "function" ? getEnvironment(envKey) : null;
+        const envName = env?.name || envKey;
+        const ac = env?.airConditioner || null;
+
+        if (!ac) {
+          return `
+            <div class="top-bar-custom"></div>
+            <div class="page active page-container ${envKey}-page ${envKey}-conforto-page">
+              <div class="page-header">
+                <button class="back-btn" onclick="spaNavigate('${envKey}')"><img src="images/icons/back-button.svg" alt="Voltar"></button>
+                <h1 class="page-title">${envName}</h1>
+              </div>
+              <div class="page-body empty-state">
+                <p>Defina <strong>airConditioner</strong> no config.js para este ambiente.</p>
+              </div>
+            </div>
+          `;
+        }
+
+        const zones = Array.isArray(ac.zones) ? ac.zones : [];
+        const controls = ac.controls || {};
+        const showZones = !!controls.zoneSelector;
+        const showAletas = !!controls.aletas;
+        const showWindfree = !!controls.windfree;
+
+        const tempConfig = ac.temperature || {};
+        const minTemp = Number.isFinite(tempConfig.min) ? tempConfig.min : 18;
+        const maxTemp = Number.isFinite(tempConfig.max) ? tempConfig.max : 25;
+        const defaultTemp = Number.isFinite(tempConfig.default) ? tempConfig.default : 22;
+        const safeDefaultTemp = Math.min(maxTemp, Math.max(minTemp, defaultTemp));
+        const defaultDeviceId =
+          zones.length && zones[0]?.deviceId ? String(zones[0].deviceId) : "";
+
+        let zoneRow = "";
+        if (showZones) {
+          if (!zones.length) {
+            zoneRow = `
+              <div class="acv2-row acv2-row--empty">
+                <div class="acv2-empty">Defina <strong>zones</strong> no config.js.</div>
+              </div>
+            `;
+          } else {
+            const zoneButtons = zones
+              .map((zone, index) => {
+                const label = String(index + 1);
+                const ariaLabel = zone.name || `Zona ${index + 1}`;
+                const deviceId = zone.deviceId ? String(zone.deviceId) : "";
+                return `
+                  <button type="button" class="acv2-btn acv2-zone-btn" data-zone-button data-zone-ids="${deviceId}" aria-pressed="false" aria-label="${ariaLabel}">
+                    ${label}
+                  </button>
+                `;
+              })
+              .join("");
+
+            const allIds = zones
+              .map((zone) => (zone?.deviceId ? String(zone.deviceId) : ""))
+              .filter(Boolean);
+            const allButton = allIds.length
+              ? `
+                <button type="button" class="acv2-btn acv2-zone-btn acv2-zone-btn--all" data-zone-button data-zone-ids="${allIds.join(",")}" data-zone-default="true" aria-pressed="true" aria-label="Ambas">
+                  Ambas
+                </button>
+              `
+              : "";
+
+            zoneRow = `
+              <div class="acv2-row acv2-row--zones">
+                ${zoneButtons}
+                ${allButton}
+              </div>
+            `;
+          }
+        }
+
+        let aletaRow = "";
+        if (showAletas) {
+          const windfreeButton = showWindfree
+            ? `
+              <button type="button" class="acv2-btn acv2-action-btn" data-aleta-button data-aleta="windfree" aria-pressed="false" aria-label="WindFree">
+                <img src="images/icons/icon-windfree.svg" alt="">
+                <span>WindFree</span>
+              </button>
+            `
+            : "";
+
+          aletaRow = `
+            <div class="acv2-row acv2-row--aletas">
+              <button type="button" class="acv2-btn acv2-action-btn" data-aleta-button data-aleta="moving" aria-pressed="false" aria-label="Aletas em movimento">
+                <img src="images/icons/icon-ac-aleta-moving.svg" alt="">
+                <span>Movendo</span>
+              </button>
+              ${windfreeButton}
+              <button type="button" class="acv2-btn acv2-action-btn" data-aleta-button data-aleta="parada" aria-pressed="false" aria-label="Aletas paradas">
+                <img src="images/icons/icon-ac-aleta-parada.svg" alt="">
+                <span>Parada</span>
+              </button>
+            </div>
+          `;
+        }
+
+
+        const comfortLabel = uiLabel("comfort", "Ar Condicionado");
+
+        return `
+          <div class="top-bar-custom"></div>
+
+          <div class="page active page-container ${envKey}-page ${envKey}-conforto-page">
+            <div class="page-header">
+              <button class="back-btn" onclick="spaNavigate('${envKey}')">
+                <img src="images/icons/back-button.svg" alt="Voltar">
+              </button>
+              <h1 class="page-title">${envName}, ${comfortLabel}</h1>
+            </div>
+
+            <div class="ac-page-wrapper">
+              <main class="ac-container acv2-container" data-component="ac-control" data-temp-min="${minTemp}" data-temp-max="${maxTemp}" data-temp-default="${safeDefaultTemp}" data-device-id="${defaultDeviceId}">
+                <section class="acv2-card acv2-temp">
+                  <div class="acv2-header">
+                    <h2 class="acv2-title">Temperatura</h2>
+                    <span class="acv2-title-line"></span>
+                  </div>
+                  <div class="acv2-temp-display">
+                    <span class="acv2-temp-value" data-role="temp-current">${safeDefaultTemp}</span>
+                    <span class="acv2-temp-unit">C</span>
+                  </div>
+                  <div class="acv2-slider-block acv2-temp-controls">
+                    <input type="range" class="acv2-temp-slider" data-role="temp-slider" min="${minTemp}" max="${maxTemp}" value="${safeDefaultTemp}" step="1" aria-label="Temperatura">
+                    <div class="acv2-temp-buttons acv2-temp-buttons--commands">
+                      <button type="button" class="acv2-btn" data-role="temp-increase" aria-label="Aumentar temperatura">
+                        <img src="images/icons/arrow-up.svg" alt="">
+                      </button>
+                      <button type="button" class="acv2-btn" data-role="temp-decrease" aria-label="Diminuir temperatura">
+                        <img src="images/icons/arrow-down.svg" alt="">
+                      </button>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="acv2-card acv2-commands">
+                  <div class="acv2-header">
+                    <h2 class="acv2-title">Comandos</h2>
+                    <span class="acv2-title-line"></span>
+                  </div>
+                  ${zoneRow}
+                  ${aletaRow}
+                  <div class="acv2-row acv2-row--power">
+                    <button type="button" class="acv2-btn acv2-btn--power" data-role="power-on" aria-pressed="false">On</button>
+                    <button type="button" class="acv2-btn acv2-btn--power" data-role="power-off" aria-pressed="true">Off</button>
+                  </div>
+                </section>
+
+                <span class="sr-only" role="status" aria-live="polite" data-role="temperature-live">Temperatura ajustada para ${safeDefaultTemp}.</span>
+              </main>
+            </div>
+          </div>
+        `;
+      }
+
       const CONFIG_SUBPAGE_RULES = [
         { field: "lights", suffix: "luzes" },
         { field: "curtains", suffix: "cortinas" },
@@ -1122,7 +1282,7 @@
         if (!pageKey || !pagesRef) return;
         if (typeof getEnvironment !== "function") return;
 
-        const match = String(pageKey).match(/^(ambiente\d+)(?:-(luzes|cortinas|musica|tv|htv|bluray|appletv|clarotv|roku|games|hidromassagem))?$/);
+        const match = String(pageKey).match(/^(ambiente\d+)(?:-(luzes|cortinas|conforto|musica|tv|htv|bluray|appletv|clarotv|roku|games|hidromassagem))?$/);
         if (!match) return;
 
         const envKey = match[1];
@@ -1331,6 +1491,13 @@
           };
         }
 
+        if (sub === "conforto") {
+          const env = getEnvironment(envKey);
+          if (!env?.airConditioner) return;
+          pagesRef[pageKey] = () => renderAcControlPage(envKey);
+          return;
+        }
+
         if (sub === "musica") {
           pagesRef[pageKey] = () => renderMusicPage(envKey);
           return;
@@ -1358,6 +1525,10 @@
             }
 
             routes.add(envKey);
+
+            if (env?.airConditioner !== null && env?.airConditioner !== undefined) {
+              routes.add(`${envKey}-conforto`);
+            }
 
             CONFIG_SUBPAGE_RULES.forEach(({ field, suffix }) => {
               const value = env?.[field];
@@ -4810,6 +4981,12 @@
 
       LEGACY_CONFIG_ROUTES.forEach((route) => {
         if (pages[route]) {
+          delete pages[route];
+        }
+      });
+
+      Object.keys(pages).forEach((route) => {
+        if (/^ambiente\d+-conforto$/.test(route)) {
           delete pages[route];
         }
       });

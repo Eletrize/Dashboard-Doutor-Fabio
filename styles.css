@@ -1038,6 +1038,13 @@ to {
 [data-component=ac-control][data-power-off] .ac-mode-btn[aria-pressed=true]:before,
 [data-component=ac-control][data-power-off] .ac-aleta-btn[aria-pressed=true]:before {
     opacity:0}
+[data-component=ac-control][data-power-off] .ac-temperature-section,
+[data-component=ac-control][data-power-off] .ac-controls-wrapper > :not(.ac-commands-section) {
+    opacity:0;pointer-events:none}
+[data-component=ac-control][data-power-off] .ac-commands-section .ac-section-title,
+[data-component=ac-control][data-power-off] .ac-commands-section .ac-commands-grid > :not([data-role=power]),
+[data-component=ac-control][data-power-off] .ac-commands-section .ac-command-btn:not([data-role=power]) {
+    opacity:0;pointer-events:none}
 .sr-only {
     clip:rect(0,0,0,0);white-space:nowrap;border:0;width:1px;height:1px;margin:-1px;padding:0;position:absolute;overflow:hidden}
 @media (width<=520px) {
@@ -1163,7 +1170,7 @@ to {
 .ac-aleta-grid,
 .ac-commands-grid {
     gap:10px!important}
-.ac-container {
+.ac-container:not(.acv2-container) {
     gap:0!important}
 .ac-aleta-grid {
     grid-template-columns:repeat(3,1fr)!important}
@@ -2588,6 +2595,338 @@ body.app-ready #spa-root {
     }
     100% {
         opacity: 1;
+    }
+}
+
+/* AC v2 layout */
+.acv2-container {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    grid-auto-rows: 1fr;
+    gap: 28px;
+    align-items: stretch;
+}
+
+.acv2-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 18px;
+    box-shadow: var(--glass-shadow), var(--glass-inner-top), var(--glass-inner-bottom);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    align-self: stretch;
+    height: auto;
+    margin: 0;
+}
+
+.acv2-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+}
+
+.acv2-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 400;
+    color: #fff;
+    font-family: Raleway, sans-serif;
+}
+
+.acv2-title-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, #ffffff4d, #ffffff00);
+}
+
+.acv2-temp {
+    text-align: center;
+    gap: 16px;
+    padding-top: 20px;
+}
+
+.acv2-temp-display {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 12px;
+    padding: 20px 0 8px;
+    font-size: clamp(140px, 38vw, 240px);
+    font-weight: 400;
+    color: #fff;
+    text-shadow: 0 12px 30px #00000070;
+}
+
+.acv2-temp-unit {
+    font-size: 0.22em;
+    opacity: 0.8;
+    line-height: 1;
+    margin-bottom: 0.12em;
+}
+
+.acv2-temp-slider-wrap {
+    width: 100%;
+}
+
+.acv2-slider-block {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    width: 100%;
+    margin-top: 0;
+}
+
+.acv2-temp-controls {
+    margin-top: auto;
+    padding-top: 16px;
+}
+
+.acv2-temp-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 14px;
+    border-radius: 14px;
+    background: linear-gradient(90deg, #ffffffcc var(--ac-temp-progress, 50%), #ffffff33 var(--ac-temp-progress, 50%));
+    outline: none;
+}
+
+.acv2-temp-slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 14px;
+    border-radius: 14px;
+    background: linear-gradient(90deg, #ffffffcc var(--ac-temp-progress, 50%), #ffffff33 var(--ac-temp-progress, 50%));
+}
+
+.acv2-temp-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 38px;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 4px 12px #0006;
+    cursor: pointer;
+    margin-top: -12px;
+}
+
+.acv2-temp-slider::-moz-range-thumb {
+    width: 22px;
+    height: 38px;
+    border-radius: 12px;
+    border: none;
+    background: #fff;
+    box-shadow: 0 4px 12px #0006;
+    cursor: pointer;
+    margin-top: -12px;
+}
+
+.acv2-temp-slider::-moz-range-track {
+    width: 100%;
+    height: 14px;
+    border-radius: 14px;
+    background: #ffffff33;
+}
+
+.acv2-temp-slider::-moz-range-progress {
+    width: 100%;
+    height: 14px;
+    border-radius: 14px;
+    background: #ffffffcc;
+}
+
+.acv2-temp-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+    gap: 14px;
+}
+
+.acv2-temp-buttons--commands .acv2-btn {
+    min-height: 70px;
+}
+
+.acv2-row {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+}
+
+.acv2-row--power {
+    margin-top: auto;
+}
+
+.acv2-btn {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: #fff;
+    border-radius: 12px;
+    padding: 12px 10px;
+    font-family: Raleway, sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.acv2-btn--icon {
+    padding: 12px;
+    min-height: 48px;
+}
+
+.acv2-zone-btn {
+    min-height: 70px;
+}
+
+.acv2-btn--power {
+    min-height: 70px;
+    font-size: 20px;
+}
+
+.acv2-btn:active {
+    transform: translateY(1px);
+    background: var(--glass-bg-active);
+    border-color: var(--glass-border-strong);
+    box-shadow: inset 0 3px 10px #00000055;
+}
+
+.acv2-btn[aria-pressed="true"] {
+    background: var(--glass-bg-active);
+    border-color: var(--glass-border-strong);
+    box-shadow: inset 0 3px 10px #00000055;
+}
+
+.acv2-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.acv2-btn--icon img {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert();
+}
+
+.acv2-action-btn {
+    flex-direction: column;
+}
+
+.acv2-action-btn img {
+    width: 28px;
+    height: 28px;
+    filter: brightness(0) invert();
+}
+
+.acv2-commands {
+    flex: 1;
+}
+
+
+.acv2-zone-btn--all {
+    font-weight: 600;
+}
+
+.acv2-empty {
+    color: #fff;
+    opacity: 0.7;
+    font-size: 13px;
+}
+
+[data-component="ac-control"][data-power-off] .acv2-temp-display,
+[data-component="ac-control"][data-power-off] .acv2-action-btn {
+    opacity: 0.7;
+}
+[data-component="ac-control"][data-power-off] .acv2-temp,
+[data-component="ac-control"][data-power-off] .acv2-commands > :not(.acv2-row--power) {
+    opacity: 0;
+    pointer-events: none;
+}
+
+@supports (font-size: 1cqw) {
+    .acv2-temp {
+        container-type: inline-size;
+    }
+
+    .acv2-temp-display {
+        font-size: clamp(140px, 48cqw, 240px);
+    }
+}
+
+@media (orientation: portrait) {
+    .acv2-container {
+        grid-auto-rows: auto;
+    }
+}
+
+@media (orientation: landscape) {
+    .acv2-container {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+        gap: 24px;
+    }
+
+    .acv2-temp {
+        text-align: center;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .acv2-slider-block {
+        gap: 32px;
+    }
+
+    .acv2-temp-slider {
+        width: 100%;
+        height: 14px;
+        border-radius: 14px;
+        background: linear-gradient(90deg, #ffffffcc var(--ac-temp-progress, 50%), #ffffff33 var(--ac-temp-progress, 50%));
+    }
+
+    .acv2-temp-slider::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 14px;
+        border-radius: 14px;
+        background: linear-gradient(90deg, #ffffffcc var(--ac-temp-progress, 50%), #ffffff33 var(--ac-temp-progress, 50%));
+    }
+
+    .acv2-temp-slider::-moz-range-track {
+        width: 100%;
+        height: 14px;
+        border-radius: 14px;
+        background: #ffffff33;
+    }
+
+    .acv2-temp-slider::-moz-range-progress {
+        width: 100%;
+        height: 14px;
+        border-radius: 14px;
+        background: #ffffffcc;
+    }
+
+    .acv2-temp-slider::-webkit-slider-thumb {
+        width: 22px;
+        height: 38px;
+        border-radius: 12px;
+        margin-top: -12px;
+    }
+
+    .acv2-temp-slider::-moz-range-thumb {
+        width: 22px;
+        height: 38px;
+        border-radius: 12px;
+        margin-top: -12px;
+    }
+
+    .acv2-btn--power {
+        min-height: 96px;
+        font-size: 24px;
     }
 }
 
