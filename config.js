@@ -170,12 +170,11 @@ const CLIENT_CONFIG = {
         { id: "361", name: "Varanda" },
       ],
       airConditioner: {
-        zones: [
-          { id: "living1", name: "Living I", deviceId: "167" },
-          { id: "living2", name: "Living II", deviceId: "166" },
-        ],
-        controls: { zoneSelector: true, aletas: true, windfree: false },
-        temperature: { min: 18, max: 25, default: 22 },
+        deviceId: "348",
+        brand: "carrier",
+        zones: [{ id: "Living", name: "Living" }],
+        controls: { zoneSelector: false, aletas: true, windfree: false },
+        temperature: { min: 17, max: 24, default: 23 },
       },
     },
 
