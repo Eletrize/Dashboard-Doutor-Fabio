@@ -193,8 +193,10 @@ const CLIENT_CONFIG = {
         { id: "121", name: "Cortina" }
       ],
       airConditioner: {
-        zones: [{ id: "Varanda", name: "Varanda", deviceId: "168" }],
-        controls: { zoneSelector: true, aletas: true, windfree: true },
+        deviceId: "348",
+        brand: "carrier",
+        zones: [{ id: "Varanda", name: "Varanda" }],
+        controls: { zoneSelector: true, aletas: true, windfree: false },
         temperature: { min: 18, max: 25, default: 22 },
       },
       roku: [
@@ -321,6 +323,74 @@ const CLIENT_CONFIG = {
   },
 
   devices: {
+    airConditionerBrands: {
+      default: {
+        label: "Padrao",
+        commands: {
+          powerOn: "on",
+          powerOff: "off",
+          tempPrefix: "temp",
+          swingOn: "swingOn",
+          swingOff: "swingOff",
+          windfree: "windfree",
+        },
+        attributes: {
+          swing: {
+            key: "swing",
+            on: ["on", "moving", "swing", "true"],
+            off: ["off", "parada", "stop", "stopped", "false"],
+          },
+          temperature: [
+            "temperature",
+            "coolingsetpoint",
+            "thermostatsetpoint",
+            "setpoint",
+          ],
+        },
+      },
+      carrier: {
+        label: "Carrier",
+        commands: {
+          powerOn: "on",
+          powerOff: "off",
+          tempPrefix: "temp",
+          swingToggle: "swingToggle",
+        },
+        attributes: {
+          swing: {
+            key: "swing",
+            on: ["on", "moving", "swing", "true"],
+            off: ["off", "parada", "stop", "stopped", "false"],
+          },
+          temperature: [
+            "temperature",
+            "coolingsetpoint",
+            "thermostatsetpoint",
+            "setpoint",
+          ],
+        },
+        availableCommands: [
+          "configure",
+          "initialize",
+          "keepalive",
+          "off",
+          "on",
+          "push",
+          "reconnect",
+          "refresh",
+          "setVariable",
+          "swingToggle",
+          "temp17",
+          "temp18",
+          "temp19",
+          "temp20",
+          "temp21",
+          "temp22",
+          "temp23",
+          "temp24",
+        ],
+      },
+    },
     airConditioners: {
       ambiente1: "110",
       ambiente2: "167",
@@ -393,7 +463,16 @@ function getAllLightIds() {
 }
 
 function getAcDeviceIds() {
-  return (CLIENT_CONFIG?.devices?.airConditioners && { ...CLIENT_CONFIG.devices.airConditioners }) || {};
+  const ids =
+    (CLIENT_CONFIG?.devices?.airConditioners && { ...CLIENT_CONFIG.devices.airConditioners }) ||
+    {};
+  getVisibleEnvironments().forEach((env) => {
+    const acId = env?.airConditioner?.deviceId;
+    if (acId) {
+      ids[env.key] = String(acId);
+    }
+  });
+  return ids;
 }
 
 function getHomeRoomsData() {

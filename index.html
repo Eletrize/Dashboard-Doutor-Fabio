@@ -1135,8 +1135,10 @@
         const maxTemp = Number.isFinite(tempConfig.max) ? tempConfig.max : 25;
         const defaultTemp = Number.isFinite(tempConfig.default) ? tempConfig.default : 22;
         const safeDefaultTemp = Math.min(maxTemp, Math.max(minTemp, defaultTemp));
+        const acDeviceId = ac?.deviceId ? String(ac.deviceId) : "";
         const defaultDeviceId =
-          zones.length && zones[0]?.deviceId ? String(zones[0].deviceId) : "";
+          acDeviceId ||
+          (zones.length && zones[0]?.deviceId ? String(zones[0].deviceId) : "");
 
         let zoneRow = "";
         if (showZones) {
@@ -1151,7 +1153,7 @@
               .map((zone, index) => {
                 const label = String(index + 1);
                 const ariaLabel = zone.name || `Zona ${index + 1}`;
-                const deviceId = zone.deviceId ? String(zone.deviceId) : "";
+                const deviceId = zone.deviceId ? String(zone.deviceId) : acDeviceId;
                 return `
                   <button type="button" class="acv2-btn acv2-zone-btn" data-zone-button data-zone-ids="${deviceId}" aria-pressed="false" aria-label="${ariaLabel}">
                     ${label}
@@ -1161,11 +1163,12 @@
               .join("");
 
             const allIds = zones
-              .map((zone) => (zone?.deviceId ? String(zone.deviceId) : ""))
+              .map((zone) => (zone?.deviceId ? String(zone.deviceId) : acDeviceId))
               .filter(Boolean);
-            const allButton = allIds.length
+            const uniqueAllIds = Array.from(new Set(allIds));
+            const allButton = uniqueAllIds.length
               ? `
-                <button type="button" class="acv2-btn acv2-zone-btn acv2-zone-btn--all" data-zone-button data-zone-ids="${allIds.join(",")}" data-zone-default="true" aria-pressed="true" aria-label="Ambas">
+                <button type="button" class="acv2-btn acv2-zone-btn acv2-zone-btn--all" data-zone-button data-zone-ids="${uniqueAllIds.join(",")}" data-zone-default="true" aria-pressed="true" aria-label="Ambas">
                   Ambas
                 </button>
               `

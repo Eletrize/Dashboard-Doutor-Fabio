@@ -2838,14 +2838,57 @@ body.app-ready #spa-root {
     font-size: 13px;
 }
 
-[data-component="ac-control"][data-power-off] .acv2-temp-display,
-[data-component="ac-control"][data-power-off] .acv2-action-btn {
-    opacity: 0.7;
+.acv2-card {
+    transition: gap 0.6s ease;
 }
+
+.acv2-temp-display,
+.acv2-temp-controls,
+.acv2-commands .acv2-row:not(.acv2-row--power),
+.acv2-commands .acv2-empty {
+    max-height: 600px;
+    opacity: 1;
+    transform: translateY(0);
+    overflow: hidden;
+    transition:
+        max-height 0.6s ease 0s,
+        opacity 0.25s ease 0.35s,
+        transform 0.6s ease 0s,
+        padding-top 0.6s ease 0s,
+        padding-bottom 0.6s ease 0s,
+        margin-top 0.6s ease 0s,
+        margin-bottom 0.6s ease 0s;
+}
+
 [data-component="ac-control"][data-power-off] .acv2-temp,
-[data-component="ac-control"][data-power-off] .acv2-commands > :not(.acv2-row--power) {
+[data-component="ac-control"][data-power-off] .acv2-commands {
+    gap: 0;
+}
+
+[data-component="ac-control"][data-power-off] .acv2-temp-display,
+[data-component="ac-control"][data-power-off] .acv2-temp-controls,
+[data-component="ac-control"][data-power-off] .acv2-commands .acv2-row:not(.acv2-row--power),
+[data-component="ac-control"][data-power-off] .acv2-commands .acv2-empty {
+    max-height: 0;
     opacity: 0;
+    transform: translateY(-6px);
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 0;
     pointer-events: none;
+    transition:
+        opacity 0.2s ease 0s,
+        max-height 0.6s ease 0.2s,
+        transform 0.6s ease 0.2s,
+        padding-top 0.6s ease 0.2s,
+        padding-bottom 0.6s ease 0.2s,
+        margin-top 0.6s ease 0.2s,
+        margin-bottom 0.6s ease 0.2s;
+}
+
+[data-component="ac-control"][data-power-off] .acv2-commands .acv2-row--power {
+    margin-top: 12px;
 }
 
 @supports (font-size: 1cqw) {

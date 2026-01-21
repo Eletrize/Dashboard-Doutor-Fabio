@@ -701,9 +701,11 @@ function getACDeviceIdForCurrentRoute() {
     const ambiente = match[1];
     if (typeof getEnvironment === "function") {
       const env = getEnvironment(ambiente);
-      const zones = Array.isArray(env?.airConditioner?.zones)
-        ? env.airConditioner.zones
-        : [];
+      const acConfig = env?.airConditioner || null;
+      if (acConfig?.deviceId) {
+        return String(acConfig.deviceId);
+      }
+      const zones = Array.isArray(acConfig?.zones) ? acConfig.zones : [];
       const zoneId = zones.find((zone) => zone?.deviceId)?.deviceId;
       if (zoneId) {
         return String(zoneId);
@@ -2639,6 +2641,35 @@ function initAirConditionerControl() {
     return;
   }
 
+  const acConfig = (() => {
+    const route = (window.location.hash || "").replace("#", "");
+    const match = route.match(/^(ambiente\d+)/);
+    if (!match || typeof getEnvironment !== "function") return null;
+    return getEnvironment(match[1])?.airConditioner || null;
+  })();
+
+  const acBrandProfiles =
+    (typeof CLIENT_CONFIG !== "undefined" &&
+      CLIENT_CONFIG?.devices?.airConditionerBrands) ||
+    {};
+  const acBrandKey = String(acConfig?.brand || "").toLowerCase();
+  const acBrandProfile =
+    (acBrandKey && acBrandProfiles[acBrandKey]) ||
+    acBrandProfiles.default ||
+    {};
+  const acCommands = {
+    ...(acBrandProfile.commands || {}),
+    ...(acConfig?.commands || {}),
+  };
+  const swingConfig = acBrandProfile?.attributes?.swing || {
+    key: "swing",
+    on: ["on", "moving", "swing", "true"],
+    off: ["off", "parada", "stop", "stopped", "false"],
+  };
+  const tempKeys = Array.isArray(acBrandProfile?.attributes?.temperature)
+    ? acBrandProfile.attributes.temperature
+    : ["temperature", "coolingsetpoint", "thermostatsetpoint", "setpoint"];
+
   const tempSlider = root.querySelector('[data-role="temp-slider"]');
   const tempCurrent = root.querySelector('[data-role="temp-current"]');
   const tempDecreaseButtons = Array.from(
@@ -2673,6 +2704,7 @@ function initAirConditionerControl() {
     temperature: clampTemperature(defaultTemp),
     powerOn: false,
     activeZoneIds: [],
+    swing: null,
   };
 
   function getFallbackDeviceId() {
@@ -2697,6 +2729,41 @@ function initAirConditionerControl() {
 
   function getPrimaryDeviceId() {
     return getActiveZoneIds()[0] || "";
+  }
+
+  function buildTempCommand(temp) {
+    if (typeof acCommands.tempTemplate === "string") {
+      return acCommands.tempTemplate.replace("{temp}", String(temp));
+    }
+    if (typeof acCommands.tempPrefix === "string" && acCommands.tempPrefix) {
+      return `${acCommands.tempPrefix}${temp}`;
+    }
+    return `temp${temp}`;
+  }
+
+  function normalizeSwingValue(value) {
+    if (value === null || value === undefined) return null;
+    const normalized = String(value).trim().toLowerCase();
+    if (!normalized) return null;
+    const onValues = Array.isArray(swingConfig.on) ? swingConfig.on : [swingConfig.on];
+    const offValues = Array.isArray(swingConfig.off) ? swingConfig.off : [swingConfig.off];
+    if (onValues.map((v) => String(v).toLowerCase()).includes(normalized)) {
+      return "moving";
+    }
+    if (offValues.map((v) => String(v).toLowerCase()).includes(normalized)) {
+      return "parada";
+    }
+    if (normalized === "on") return "moving";
+    if (normalized === "off") return "parada";
+    return null;
+  }
+
+  function setAletaButtonsActive(aleta) {
+    if (!aleta) return;
+    aletaButtons.forEach((btn) => {
+      const isActive = btn.dataset.aleta === aleta;
+      btn.setAttribute("aria-pressed", isActive.toString());
+    });
   }
 
   function setZoneSelection(button) {
@@ -2736,7 +2803,8 @@ function initAirConditionerControl() {
   function sendTemperatureCommand(temp) {
     const ids = getActiveZoneIds();
     if (!ids.length) return;
-    const command = `temp${temp}`;
+    const command = buildTempCommand(temp);
+    if (!command) return;
     ids.forEach((id) => sendHubitatCommand(id, command));
   }
 
@@ -2773,37 +2841,53 @@ function initAirConditionerControl() {
 
     if (!options.silent) {
       const ids = getActiveZoneIds();
-      const command = isOn ? "on" : "off";
-      ids.forEach((id) => sendHubitatCommand(id, command));
+      const command = isOn
+        ? acCommands.powerOn || "on"
+        : acCommands.powerOff || "off";
+      if (command) {
+        ids.forEach((id) => sendHubitatCommand(id, command));
+      }
     }
   }
 
   function setAletaState(aleta) {
     if (!state.powerOn) return;
+    if (aleta === "windfree") {
+      const command = acCommands.windfree;
+      if (!command) return;
+      setAletaButtonsActive(aleta);
+      getActiveZoneIds().forEach((id) => sendHubitatCommand(id, command));
+      return;
+    }
 
-    aletaButtons.forEach((btn) => {
-      const isActive = btn.dataset.aleta === aleta;
-      btn.setAttribute("aria-pressed", isActive.toString());
-    });
+    const desired =
+      aleta === "moving" ? "moving" : aleta === "parada" ? "parada" : null;
+    if (!desired) return;
+
+    if (acCommands.swingToggle) {
+      if (state.swing && state.swing === desired) return;
+      setAletaButtonsActive(desired);
+      state.swing = desired;
+      getActiveZoneIds().forEach((id) =>
+        sendHubitatCommand(id, acCommands.swingToggle)
+      );
+      return;
+    }
 
     const command =
-      aleta === "moving"
-        ? "swingOn"
-        : aleta === "parada"
-        ? "swingOff"
-        : aleta === "windfree"
-        ? "windfree"
-        : null;
-
+      desired === "moving"
+        ? acCommands.swingOn || "swingOn"
+        : acCommands.swingOff || "swingOff";
     if (!command) return;
-
+    setAletaButtonsActive(desired);
+    state.swing = desired;
     getActiveZoneIds().forEach((id) => sendHubitatCommand(id, command));
   }
 
   zoneButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       setZoneSelection(btn);
-      applyACFromPolling({ needPower: true, needTemp: true });
+      applyACFromPolling({ needPower: true, needTemp: true, needSwing: true });
     });
   });
 
@@ -2845,8 +2929,13 @@ function initAirConditionerControl() {
 
   updateTemperature(state.temperature, { silent: true });
   setPowerState(false, { silent: true });
+  applyACFromPolling({ needPower: true, needTemp: true, needSwing: true });
 
-  async function applyACFromPolling({ needPower = true, needTemp = true } = {}) {
+  async function applyACFromPolling({
+    needPower = true,
+    needTemp = true,
+    needSwing = true,
+  } = {}) {
     try {
       const deviceId = getPrimaryDeviceId();
       if (!deviceId) return;
@@ -2879,17 +2968,29 @@ function initAirConditionerControl() {
       }
 
       if (needTemp) {
-        let temp =
-          attrsMap["coolingsetpoint"] ??
-          attrsMap["thermostatsetpoint"] ??
-          attrsMap["setpoint"] ??
-          attrsMap["temperature"];
+        let temp;
+        for (const key of tempKeys) {
+          if (key && attrsMap[key.toLowerCase()] !== undefined) {
+            temp = attrsMap[key.toLowerCase()];
+            break;
+          }
+        }
         if (typeof temp === "string") {
           const match = temp.match(/(-?\d{1,2})/);
           if (match) temp = Number.parseInt(match[1], 10);
         }
         if (typeof temp === "number" && !Number.isNaN(temp)) {
           updateTemperature(Math.round(temp), { silent: true });
+        }
+      }
+
+      if (needSwing) {
+        const swingKey = String(swingConfig.key || "swing").toLowerCase();
+        const swingValue = attrsMap[swingKey];
+        const swingMode = normalizeSwingValue(swingValue);
+        if (swingMode) {
+          state.swing = swingMode;
+          setAletaButtonsActive(swingMode);
         }
       }
     } catch (error) {
@@ -2906,12 +3007,12 @@ function initAirConditionerControl() {
       const data = await resp.json();
       const evt = data && data.lastACStatus;
       if (!evt) {
-        return applyACFromPolling({ needPower: true, needTemp: true });
+        return applyACFromPolling({ needPower: true, needTemp: true, needSwing: true });
       }
 
       const activeIds = getActiveZoneIds().map(String);
       if (evt.deviceId && !activeIds.includes(String(evt.deviceId))) {
-        return applyACFromPolling({ needPower: true, needTemp: true });
+        return applyACFromPolling({ needPower: true, needTemp: true, needSwing: true });
       }
 
       const name = (evt.name || "").toLowerCase();
@@ -2921,6 +3022,7 @@ function initAirConditionerControl() {
 
       let desiredPower = null;
       let desiredTemp = null;
+      let desiredSwing = null;
 
       if (name === "switch" || name === "power" || name === "ac" || name === "acpower") {
         desiredPower = val === "on" || val === "true" || val === "1";
@@ -2936,6 +3038,10 @@ function initAirConditionerControl() {
         }
       }
 
+      if (name.includes("swing")) {
+        desiredSwing = normalizeSwingValue(val);
+      }
+
       if (typeof desiredTemp === "number") {
         updateTemperature(desiredTemp, { silent: true });
       }
@@ -2944,10 +3050,16 @@ function initAirConditionerControl() {
         setPowerState(!!desiredPower, { silent: true });
       }
 
+      if (desiredSwing) {
+        state.swing = desiredSwing;
+        setAletaButtonsActive(desiredSwing);
+      }
+
       const needPower = desiredPower === null;
       const needTemp = !(typeof desiredTemp === "number");
-      if (needPower || needTemp) {
-        await applyACFromPolling({ needPower, needTemp });
+      const needSwing = desiredSwing === null;
+      if (needPower || needTemp || needSwing) {
+        await applyACFromPolling({ needPower, needTemp, needSwing });
       }
     } catch (error) {
       console.warn("Falha ao sincronizar AC via webhook:", error);
@@ -2955,7 +3067,7 @@ function initAirConditionerControl() {
   })();
 
   setTimeout(() => {
-    applyACFromPolling({ needPower: true, needTemp: true });
+    applyACFromPolling({ needPower: true, needTemp: true, needSwing: true });
   }, 1200);
 }
 
