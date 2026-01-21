@@ -568,6 +568,8 @@ div {
     filter:brightness(0)invert();width:32px;height:32px}
 .controls-grid {
     z-index:1;grid-template-columns:1fr 1fr;grid-auto-rows:131px;align-items:center;gap:10px;display:grid;position:absolute;inset:115px 21px 90px}
+.controls-grid > :last-child:nth-child(odd) {
+    grid-column:1/-1}
 .controls-grid:has(.control-card-curtain:only-child) {
     grid-template-columns:1fr;grid-auto-rows:min-content;align-items:start}
 .control-card {
@@ -1897,6 +1899,20 @@ body.orchestrated-animation.reveal-home .room-card {
 .ambiente8-page .ambiente8-controls-wrapper.ambiente-grid,
 .ambiente9-page .ambiente9-controls-wrapper.ambiente-grid {
     z-index:1;grid-template-columns:1fr;grid-auto-rows:126px;align-items:start;gap:15px;display:grid;position:absolute;top:103px;left:21px;right:21px;overflow-y:auto;padding-bottom:0!important;bottom:77px!important}
+.ambiente-grid > :last-child:nth-child(odd),
+[class*=-luzes-wrapper] > :last-child:nth-child(odd) {
+    grid-column:1/-1}
+[class*=-luzes-wrapper],
+.ambiente-grid,
+[class*=-cortinas-wrapper],
+[class*=-piscina-wrapper] {
+    --scroll-fade-size:56px;
+    -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - var(--scroll-fade-size)),#0000 100%);
+    mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - var(--scroll-fade-size)),#0000 100%);
+    -webkit-mask-size:100% 100%;
+    mask-size:100% 100%;
+    -webkit-mask-repeat:no-repeat;
+    mask-repeat:no-repeat}
 @media (width>=600px) {
     .ambiente2-page .ambiente2-controls-wrapper.ambiente-grid,
 .ambiente3-page .ambiente3-controls-wrapper.ambiente-grid,

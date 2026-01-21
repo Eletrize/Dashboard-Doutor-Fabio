@@ -567,13 +567,15 @@ function generateLightsControls(envKey) {
       const defaultIconOn = dimmerEnabled ? DIMMER_ICON_ON : DEFAULT_ICON_ON;
       const defaultIconOff = dimmerEnabled ? DIMMER_ICON_OFF : DEFAULT_ICON_OFF;
       
-      const iconOn =
-        light?.iconOn || light?.icon?.on || light?.icons?.on || defaultIconOn;
-      const iconOff =
-        light?.iconOff ||
-        light?.icon?.off ||
-        light?.icons?.off ||
-        defaultIconOff;
+      const iconOn = dimmerEnabled
+        ? light?.iconOn || light?.icon?.on || light?.icons?.on || defaultIconOn
+        : DEFAULT_ICON_ON;
+      const iconOff = dimmerEnabled
+        ? light?.iconOff ||
+          light?.icon?.off ||
+          light?.icons?.off ||
+          defaultIconOff
+        : DEFAULT_ICON_OFF;
       const defaultLevel = normalizeDimmerLevel(light?.defaultLevel, 80);
       const deviceId = String(light.id);
       
