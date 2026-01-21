@@ -1,17 +1,18 @@
-﻿const CACHE_VERSION = "v1.3.4";
+﻿const CACHE_VERSION = "v1.3.5";
 const CACHE_NAME = `eletrize-${CACHE_VERSION}`;
 const PRECACHE_ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=1.0.9",
+  "/styles.css?v=1.0.10",
   "/script.js?v=1.0.17",
-  "/config.js?v=1.0.12",
+  "/config.js?v=1.0.13",
   "/fonts-raleway.css",
   "/manifest.json",
   "/images/pwa/app-icon-192.png",
   "/images/pwa/app-icon-512-transparent.png",
   "/images/icons/open-curtain.svg",
   "/images/icons/close-curtain.svg",
+  "/images/icons/icon-dimmer.svg",
 ];
 const DEBUG_SW = false;
 

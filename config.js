@@ -83,8 +83,8 @@ const CLIENT_CONFIG = {
         off: "images/icons/icon-small-light-off.svg",
       },
       dimmer: {
-        on: "images/icons/icon-dimmer-off.svg",
-        off: "images/icons/icon-dimmer-off.svg",
+        on: "images/icons/icon-dimmer.svg",
+        off: "images/icons/icon-dimmer.svg",
       },
       tv: {
         on: "images/icons/icon-small-tv-on.svg",
@@ -563,7 +563,7 @@ function generateLightsControls(envKey) {
     .map((light, index) => {
       const dimmerEnabled = isDimmerLight(light);
       
-      // Dimmers usam icon-dimmer-off quando desligado e icon-small-light-on (background) quando ligado
+      // Dimmers usam icon-dimmer; a luz acesa aparece no background quando on.
       const defaultIconOn = dimmerEnabled ? DIMMER_ICON_ON : DEFAULT_ICON_ON;
       const defaultIconOff = dimmerEnabled ? DIMMER_ICON_OFF : DEFAULT_ICON_OFF;
       
