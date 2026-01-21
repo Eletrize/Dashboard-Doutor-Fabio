@@ -1,4 +1,4 @@
-﻿<!doctype html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
@@ -66,7 +66,7 @@
           if (!window.__cfBeaconWarningShown) {
             window.__cfBeaconWarningShown = true;
             console.info(
-              "Cloudflare Insights nÃ£o pÃ´de ser carregado (uso offline ou script bloqueado). Nenhuma aÃ§Ã£o adicional Ã© necessÃ¡ria.",
+              "Cloudflare Insights nÃ£o pÃ´de ser carregado (uso offline ou script bloqueado). Nenhuma aÃ§Ã£o adicional Ã© necessÃ¡ria."
             );
           }
         }
@@ -129,24 +129,24 @@
     </style>
     <script>
       // Garantir que a animaÃ§Ã£o de inicializaÃ§Ã£o rode imediatamente
-      document.addEventListener("DOMContentLoaded", function () {
-        const loader = document.getElementById("global-loader");
-        const loaderContent = loader?.querySelector(".loader-content");
-
+      document.addEventListener('DOMContentLoaded', function() {
+        const loader = document.getElementById('global-loader');
+        const loaderContent = loader?.querySelector('.loader-content');
+        
         if (loaderContent) {
           // Remover e readicionar a animaÃ§Ã£o para garantir que rode
-          loaderContent.style.animation = "none";
+          loaderContent.style.animation = 'none';
           void loaderContent.offsetWidth; // ForÃ§ar reflow
-          loaderContent.style.animation = "0.6s ease-out fadeInUp";
+          loaderContent.style.animation = '0.6s ease-out fadeInUp';
         }
       });
-
+      
       // Fallback para garantir que o loader seja visÃ­vel mesmo se houver erro
-      if (document.readyState !== "loading") {
-        const loader = document.getElementById("global-loader");
-        const loaderContent = loader?.querySelector(".loader-content");
+      if (document.readyState !== 'loading') {
+        const loader = document.getElementById('global-loader');
+        const loaderContent = loader?.querySelector('.loader-content');
         if (loaderContent) {
-          loaderContent.style.animation = "0.6s ease-out fadeInUp";
+          loaderContent.style.animation = '0.6s ease-out fadeInUp';
         }
       }
     </script>
@@ -157,11 +157,7 @@
       <div class="loader-content">
         <!-- Logo que vai animar para o header -->
         <div class="loader-logo" id="loader-logo">
-          <button
-            class="app-logo-trigger loader-logo-btn"
-            type="button"
-            aria-label="Dashboard Eletrize"
-          >
+          <button class="app-logo-trigger loader-logo-btn" type="button" aria-label="Dashboard Eletrize">
             <img
               src="images/icons/eletrize.svg"
               alt="Dashboard Eletrize"
@@ -187,21 +183,9 @@
 
     <!-- Elementos fixos (fora do fade das pÃ¡ginas) -->
     <div id="spa-static-topbar" class="top-bar-custom spa-static-chrome"></div>
-    <h1
-      id="spa-static-header"
-      class="page-title fixed-header spa-static-chrome"
-      style="display: flex; justify-content: center; align-items: center"
-    >
-      <button
-        class="app-logo-trigger"
-        type="button"
-        aria-label="Abrir informacoes do aplicativo"
-      >
-        <img
-          class="logo-round"
-          src="images/icons/eletrize.svg"
-          alt="Dashboard Eletrize"
-        />
+    <h1 id="spa-static-header" class="page-title fixed-header spa-static-chrome" style="display:flex;justify-content:center;align-items:center;">
+      <button class="app-logo-trigger" type="button" aria-label="Abrir informacoes do aplicativo">
+        <img class="logo-round" src="images/icons/eletrize.svg" alt="Dashboard Eletrize" />
       </button>
     </h1>
 
@@ -387,7 +371,7 @@
             try {
               window.localStorage.setItem(
                 "dashboard_debug",
-                enabled ? "1" : "0",
+                enabled ? "1" : "0"
               );
             } catch (error) {}
           }
@@ -405,39 +389,35 @@
     <script src="script.js?v=1.0.17" defer></script>
     <script>
       // FunÃ§Ã£o temporÃ¡ria updateProgress atÃ© script.js carregar
-      window.updateProgress =
-        window.updateProgress ||
-        function (percentage, text) {
-          try {
-            const progressFill = document.getElementById("progress-fill");
-            const progressText = document.getElementById("progress-text");
-            const loaderText = document.querySelector(".loader-text");
+      window.updateProgress = window.updateProgress || function(percentage, text) {
+        try {
+          const progressFill = document.getElementById("progress-fill");
+          const progressText = document.getElementById("progress-text");
+          const loaderText = document.querySelector(".loader-text");
 
-            if (progressFill) {
-              progressFill.style.width = percentage + "%";
-            }
-
-            if (progressText) {
-              progressText.textContent = Math.round(percentage) + "%";
-            }
-
-            if (loaderText && text) {
-              loaderText.textContent = text;
-            }
-
-            console.log(
-              `ðŸ“Š Progresso: ${percentage}% - ${text || "Carregando..."}`,
-            );
-          } catch (error) {
-            console.warn("âš ï¸ Erro ao atualizar progresso:", error);
+          if (progressFill) {
+            progressFill.style.width = percentage + "%";
           }
-        };
+
+          if (progressText) {
+            progressText.textContent = Math.round(percentage) + "%";
+          }
+
+          if (loaderText && text) {
+            loaderText.textContent = text;
+          }
+
+          console.log(`ðŸ“Š Progresso: ${percentage}% - ${text || "Carregando..."}`);
+        } catch (error) {
+          console.warn("âš ï¸ Erro ao atualizar progresso:", error);
+        }
+      };
 
       // PWA: registra service worker (desativado em localhost para evitar cache no desenvolvimento)
 
       if ("serviceWorker" in navigator) {
         const isLocalhost = ["localhost", "127.0.0.1", "::1"].includes(
-          location.hostname,
+          location.hostname
         );
 
         if (isLocalhost) {
@@ -466,7 +446,7 @@
       // --- SPA Core ---
 
       const spaRoot = document.getElementById("spa-root");
-      const pageCache = new Map();
+  const pageCache = new Map();
 
       // --- UI tokens vindos do config.js (Ã­cone + label) ---
       function uiItem(key, fallback) {
@@ -491,7 +471,11 @@
       function uiToggleIcon(key, state, fallback) {
         try {
           if (typeof getUiToggleIcon === "function") {
-            return getUiToggleIcon(key, state) || fallback || "";
+            return (
+              getUiToggleIcon(key, state) ||
+              fallback ||
+              ""
+            );
           }
         } catch (e) {}
         return fallback || "";
@@ -522,9 +506,7 @@
 
         // If config provides a filename with extension (e.g. "photo-x.webp"), treat it as a direct asset.
         if (raw && hasExtension) {
-          const url = looksLikePath
-            ? raw.replace(/\\/g, "/")
-            : `images/Images/${raw}`;
+          const url = looksLikePath ? raw.replace(/\\/g, "/") : `images/Images/${raw}`;
           return { kind: "direct", url, base: raw };
         }
 
@@ -559,7 +541,7 @@
 
           return acc;
         },
-        {},
+        {}
       );
 
       const WEBP_SUPPORTED = false;
@@ -758,8 +740,7 @@
             ];
 
       function getEnvDevices(envKey, prop) {
-        const env =
-          typeof getEnvironment === "function" ? getEnvironment(envKey) : null;
+        const env = typeof getEnvironment === "function" ? getEnvironment(envKey) : null;
         if (!env) return [];
         const list = Array.isArray(env[prop]) ? env[prop] : [];
         return list
@@ -784,8 +765,7 @@
       }
 
       function renderTvControlPage(envKey, deviceType, headingLabel) {
-        const env =
-          typeof getEnvironment === "function" ? getEnvironment(envKey) : null;
+        const env = typeof getEnvironment === "function" ? getEnvironment(envKey) : null;
         const envName = env?.name || envKey;
         const device = getEnvPrimaryDevice(envKey, deviceType);
 
@@ -805,8 +785,7 @@
         }
 
         const deviceId = device.id;
-        const title =
-          headingLabel || uiLabel(deviceType, deviceType.toUpperCase());
+        const title = headingLabel || uiLabel(deviceType, deviceType.toUpperCase());
 
         return `
 <div class="top-bar-custom"></div>
@@ -1001,10 +980,7 @@
         `;
       }
 
-      function renderMusicAlbum(
-        route,
-        { loading = "lazy", decoding = "async" } = {},
-      ) {
+      function renderMusicAlbum(route, { loading = "lazy", decoding = "async" } = {}) {
         const data = ROOM_IMAGE_DATA[route];
         if (!data) return "";
         return `
@@ -1015,8 +991,7 @@
       }
 
       function renderMusicPage(envKey) {
-        const env =
-          typeof getEnvironment === "function" ? getEnvironment(envKey) : null;
+        const env = typeof getEnvironment === "function" ? getEnvironment(envKey) : null;
         const envName = env?.name || envKey;
         const device = getEnvPrimaryDevice(envKey, "music");
 
@@ -1041,10 +1016,7 @@
         const transportId = String(device.transportId || device.id);
         const volumeId = String(device.volumeId || device.id);
         const powerId = String(device.powerId || device.id);
-        const albumPhoto = renderMusicAlbum(envKey, {
-          loading: "lazy",
-          decoding: "async",
-        });
+        const albumPhoto = renderMusicAlbum(envKey, { loading: "lazy", decoding: "async" });
 
         return `
 
@@ -1133,8 +1105,7 @@
       }
 
       function renderAcControlPage(envKey) {
-        const env =
-          typeof getEnvironment === "function" ? getEnvironment(envKey) : null;
+        const env = typeof getEnvironment === "function" ? getEnvironment(envKey) : null;
         const envName = env?.name || envKey;
         const ac = env?.airConditioner || null;
 
@@ -1162,13 +1133,8 @@
         const tempConfig = ac.temperature || {};
         const minTemp = Number.isFinite(tempConfig.min) ? tempConfig.min : 18;
         const maxTemp = Number.isFinite(tempConfig.max) ? tempConfig.max : 25;
-        const defaultTemp = Number.isFinite(tempConfig.default)
-          ? tempConfig.default
-          : 22;
-        const safeDefaultTemp = Math.min(
-          maxTemp,
-          Math.max(minTemp, defaultTemp),
-        );
+        const defaultTemp = Number.isFinite(tempConfig.default) ? tempConfig.default : 22;
+        const safeDefaultTemp = Math.min(maxTemp, Math.max(minTemp, defaultTemp));
         const acDeviceId = ac?.deviceId ? String(ac.deviceId) : "";
         const acDeviceMap =
           typeof getAcDeviceIds === "function" ? getAcDeviceIds() : {};
@@ -1203,9 +1169,8 @@
               .join("");
 
             const allIds = zones
-              .map(
-                (zone) =>
-                  acOverrideId || (zone?.deviceId ? String(zone.deviceId) : ""),
+              .map((zone) =>
+                acOverrideId || (zone?.deviceId ? String(zone.deviceId) : "")
               )
               .filter(Boolean);
             const uniqueAllIds = Array.from(new Set(allIds));
@@ -1251,6 +1216,7 @@
             </div>
           `;
         }
+
 
         const comfortLabel = uiLabel("comfort", "Ar Condicionado");
 
@@ -1327,9 +1293,7 @@
         if (!pageKey || !pagesRef) return;
         if (typeof getEnvironment !== "function") return;
 
-        const match = String(pageKey).match(
-          /^(ambiente\d+)(?:-(luzes|cortinas|conforto|musica|tv|htv|bluray|appletv|clarotv|roku|games|hidromassagem))?$/,
-        );
+        const match = String(pageKey).match(/^(ambiente\d+)(?:-(luzes|cortinas|conforto|musica|tv|htv|bluray|appletv|clarotv|roku|games|hidromassagem))?$/);
         if (!match) return;
 
         const envKey = match[1];
@@ -1338,9 +1302,7 @@
         if (!getEnvironment(envKey)) return;
 
         if (typeof pagesRef[pageKey] === "function") {
-          console.log(
-            `[ensureConfigPage] PÃ¡gina ${pageKey} jÃ¡ existe, substituindo por config.js`,
-          );
+          console.log(`[ensureConfigPage] PÃ¡gina ${pageKey} jÃ¡ existe, substituindo por config.js`);
         }
 
         if (!sub) {
@@ -1348,39 +1310,21 @@
             const env = getEnvironment(envKey);
             const envName = env?.name || envKey;
 
-            const hasLights =
-              Array.isArray(env?.lights) && env.lights.length > 0;
-            const hasCurtains =
-              Array.isArray(env?.curtains) && env.curtains.length > 0;
-            const hasAC =
-              env?.airConditioner !== null && env?.airConditioner !== undefined;
+            const hasLights = Array.isArray(env?.lights) && env.lights.length > 0;
+            const hasCurtains = Array.isArray(env?.curtains) && env.curtains.length > 0;
+            const hasAC = env?.airConditioner !== null && env?.airConditioner !== undefined;
             const hasMusic = Array.isArray(env?.music) && env.music.length > 0;
             const hasTV = Array.isArray(env?.tv) && env.tv.length > 0;
             const hasHTV = Array.isArray(env?.htv) && env.htv.length > 0;
-            const hasBluray =
-              Array.isArray(env?.bluray) && env.bluray.length > 0;
-            const hasAppleTV =
-              Array.isArray(env?.appletv) && env.appletv.length > 0;
-            const hasClaroTV =
-              Array.isArray(env?.clarotv) && env.clarotv.length > 0;
+            const hasBluray = Array.isArray(env?.bluray) && env.bluray.length > 0;
+            const hasAppleTV = Array.isArray(env?.appletv) && env.appletv.length > 0;
+            const hasClaroTV = Array.isArray(env?.clarotv) && env.clarotv.length > 0;
             const hasRoku = Array.isArray(env?.roku) && env.roku.length > 0;
             const hasGames = Array.isArray(env?.games) && env.games.length > 0;
-            const hasHidro =
-              Array.isArray(env?.hidromassagem) && env.hidromassagem.length > 0;
+            const hasHidro = Array.isArray(env?.hidromassagem) && env.hidromassagem.length > 0;
 
             console.log(`[ensureConfigPage] Gerando ${envKey}:`, {
-              hasLights,
-              hasCurtains,
-              hasAC,
-              hasMusic,
-              hasTV,
-              hasHTV,
-              hasBluray,
-              hasAppleTV,
-              hasClaroTV,
-              hasRoku,
-              hasGames,
-              hasHidro,
+              hasLights, hasCurtains, hasAC, hasMusic, hasTV, hasHTV, hasBluray, hasAppleTV, hasClaroTV, hasRoku, hasGames, hasHidro
             });
 
             const buttons = [];
@@ -1388,8 +1332,8 @@
             if (hasLights) {
               buttons.push(`
                 <div class="control-card" data-ui-item="lights" onclick="spaNavigate('${envKey}-luzes')">
-                  <img class="control-icon" src="${uiToggleIcon("light", "off", "images/icons/icon-small-light-off.svg")}" alt="${uiLabel("lights", "Luzes")}">
-                  <div class="control-label">${uiLabel("lights", "Luzes")}</div>
+                  <img class="control-icon" src="${uiToggleIcon('light','off','images/icons/icon-small-light-off.svg')}" alt="${uiLabel('lights','Luzes')}">
+                  <div class="control-label">${uiLabel('lights','Luzes')}</div>
                 </div>
               `);
             }
@@ -1397,8 +1341,8 @@
             if (hasCurtains) {
               buttons.push(`
                 <div class="control-card" data-ui-item="curtains" onclick="spaNavigate('${envKey}-cortinas')">
-                  <img class="control-icon" src="${uiIcon("curtains", "images/icons/icon-curtain.svg")}" alt="${uiLabel("curtains", "Cortinas")}">
-                  <div class="control-label">${uiLabel("curtains", "Cortinas")}</div>
+                  <img class="control-icon" src="${uiIcon('curtains','images/icons/icon-curtain.svg')}" alt="${uiLabel('curtains','Cortinas')}">
+                  <div class="control-label">${uiLabel('curtains','Cortinas')}</div>
                 </div>
               `);
             }
@@ -1406,8 +1350,8 @@
             if (hasAC) {
               buttons.push(`
                 <div class="control-card" data-ui-item="comfort" onclick="spaNavigate('${envKey}-conforto')">
-                  <img class="control-icon" src="${uiIcon("comfort", "images/icons/ar-condicionado.svg")}" alt="${uiLabel("comfort", "Ar Condicionado")}">
-                  <div class="control-label">${uiLabel("comfort", "Ar Condicionado")}</div>
+                  <img class="control-icon" src="${uiIcon('comfort','images/icons/ar-condicionado.svg')}" alt="${uiLabel('comfort','Ar Condicionado')}">
+                  <div class="control-label">${uiLabel('comfort','Ar Condicionado')}</div>
                 </div>
               `);
             }
@@ -1415,8 +1359,8 @@
             if (hasMusic) {
               buttons.push(`
                 <div class="control-card" data-ui-item="music" onclick="spaNavigate('${envKey}-musica')">
-                  <img class="control-icon" src="${uiIcon("music", "images/icons/icon-musica.svg")}" alt="${uiLabel("music", "MÃºsica")}">
-                  <div class="control-label">${uiLabel("music", "MÃºsica")}</div>
+                  <img class="control-icon" src="${uiIcon('music','images/icons/icon-musica.svg')}" alt="${uiLabel('music','MÃºsica')}">
+                  <div class="control-label">${uiLabel('music','MÃºsica')}</div>
                 </div>
               `);
             }
@@ -1424,8 +1368,8 @@
             if (hasTV) {
               buttons.push(`
                 <div class="control-card" data-ui-item="tv" onclick="spaNavigate('${envKey}-tv')">
-                  <img class="control-icon" src="${uiIcon("tv", "images/icons/icon-tv.svg")}" alt="${uiLabel("tv", "TelevisÃ£o")}">
-                  <div class="control-label">${uiLabel("tv", "TelevisÃ£o")}</div>
+                  <img class="control-icon" src="${uiIcon('tv','images/icons/icon-tv.svg')}" alt="${uiLabel('tv','TelevisÃ£o')}">
+                  <div class="control-label">${uiLabel('tv','TelevisÃ£o')}</div>
                 </div>
               `);
             }
@@ -1433,8 +1377,8 @@
             if (hasHTV) {
               buttons.push(`
                 <div class="control-card" data-ui-item="htv" onclick="spaNavigate('${envKey}-htv')">
-                  <img class="control-icon" src="${uiIcon("htv", "images/icons/icon-htv.svg")}" alt="${uiLabel("htv", "HTV")}">
-                  <div class="control-label">${uiLabel("htv", "HTV")}</div>
+                  <img class="control-icon" src="${uiIcon('htv','images/icons/icon-htv.svg')}" alt="${uiLabel('htv','HTV')}">
+                  <div class="control-label">${uiLabel('htv','HTV')}</div>
                 </div>
               `);
             }
@@ -1442,8 +1386,8 @@
             if (hasBluray) {
               buttons.push(`
                 <div class="control-card" data-ui-item="bluray" onclick="spaNavigate('${envKey}-bluray')">
-                  <img class="control-icon" src="${uiIcon("bluray", "images/icons/icon-bluray.svg")}" alt="${uiLabel("bluray", "Blu-ray")}">
-                  <div class="control-label">${uiLabel("bluray", "Blu-ray")}</div>
+                  <img class="control-icon" src="${uiIcon('bluray','images/icons/icon-bluray.svg')}" alt="${uiLabel('bluray','Blu-ray')}">
+                  <div class="control-label">${uiLabel('bluray','Blu-ray')}</div>
                 </div>
               `);
             }
@@ -1451,8 +1395,8 @@
             if (hasAppleTV) {
               buttons.push(`
                 <div class="control-card" data-ui-item="appletv" onclick="spaNavigate('${envKey}-appletv')">
-                  <img class="control-icon" src="${uiIcon("appletv", "images/icons/icon-apple-tv.svg")}" alt="${uiLabel("appletv", "Apple TV")}">
-                  <div class="control-label">${uiLabel("appletv", "Apple TV")}</div>
+                  <img class="control-icon" src="${uiIcon('appletv','images/icons/icon-apple-tv.svg')}" alt="${uiLabel('appletv','Apple TV')}">
+                  <div class="control-label">${uiLabel('appletv','Apple TV')}</div>
                 </div>
               `);
             }
@@ -1460,8 +1404,8 @@
             if (hasClaroTV) {
               buttons.push(`
                 <div class="control-card" data-ui-item="clarotv" onclick="spaNavigate('${envKey}-clarotv')">
-                  <img class="control-icon" src="${uiIcon("clarotv", "images/icons/icon-clarotv.svg")}" alt="${uiLabel("clarotv", "Clarotv")}">
-                  <div class="control-label">${uiLabel("clarotv", "Clarotv")}</div>
+                  <img class="control-icon" src="${uiIcon('clarotv','images/icons/icon-clarotv.svg')}" alt="${uiLabel('clarotv','Clarotv')}">
+                  <div class="control-label">${uiLabel('clarotv','Clarotv')}</div>
                 </div>
               `);
             }
@@ -1469,8 +1413,8 @@
             if (hasRoku) {
               buttons.push(`
                 <div class="control-card" data-ui-item="roku" onclick="spaNavigate('${envKey}-roku')">
-                  <img class="control-icon" src="${uiIcon("roku", "images/icons/icon-roku.svg")}" alt="${uiLabel("roku", "Roku")}">
-                  <div class="control-label">${uiLabel("roku", "Roku")}</div>
+                  <img class="control-icon" src="${uiIcon('roku','images/icons/icon-roku.svg')}" alt="${uiLabel('roku','Roku')}">
+                  <div class="control-label">${uiLabel('roku','Roku')}</div>
                 </div>
               `);
             }
@@ -1478,8 +1422,8 @@
             if (hasGames) {
               buttons.push(`
                 <div class="control-card" data-ui-item="games" onclick="spaNavigate('${envKey}-games')">
-                  <img class="control-icon" src="${uiIcon("games", "images/icons/icon-games.svg")}" alt="${uiLabel("games", "Games")}">
-                  <div class="control-label">${uiLabel("games", "Games")}</div>
+                  <img class="control-icon" src="${uiIcon('games','images/icons/icon-games.svg')}" alt="${uiLabel('games','Games')}">
+                  <div class="control-label">${uiLabel('games','Games')}</div>
                 </div>
               `);
             }
@@ -1487,8 +1431,8 @@
             if (hasHidro) {
               buttons.push(`
                 <div class="control-card" data-ui-item="hidromassagem" onclick="spaNavigate('${envKey}-hidromassagem')">
-                  <img class="control-icon" src="${uiIcon("hidromassagem", "images/icons/icon-hidromassagem.svg")}" alt="${uiLabel("hidromassagem", "Hidromassagem")}">
-                  <div class="control-label">${uiLabel("hidromassagem", "Hidromassagem")}</div>
+                  <img class="control-icon" src="${uiIcon('hidromassagem','images/icons/icon-hidromassagem.svg')}" alt="${uiLabel('hidromassagem','Hidromassagem')}">
+                  <div class="control-label">${uiLabel('hidromassagem','Hidromassagem')}</div>
                 </div>
               `);
             }
@@ -1515,10 +1459,7 @@
           pagesRef[pageKey] = () => {
             const env = getEnvironment(envKey);
             const envName = env?.name || envKey;
-            const cards =
-              typeof generateLightsControls === "function"
-                ? generateLightsControls(envKey)
-                : "";
+            const cards = typeof generateLightsControls === "function" ? generateLightsControls(envKey) : "";
 
             return `
               <div class="top-bar-custom"></div>
@@ -1542,10 +1483,7 @@
           pagesRef[pageKey] = () => {
             const env = getEnvironment(envKey);
             const envName = env?.name || envKey;
-            const cards =
-              typeof generateCurtainsControls === "function"
-                ? generateCurtainsControls(envKey)
-                : "";
+            const cards = typeof generateCurtainsControls === "function" ? generateCurtainsControls(envKey) : "";
 
             return `
               <div class="top-bar-custom"></div>
@@ -1576,18 +1514,8 @@
           return;
         }
 
-        if (
-          sub === "tv" ||
-          sub === "htv" ||
-          sub === "bluray" ||
-          sub === "appletv" ||
-          sub === "clarotv" ||
-          sub === "roku" ||
-          sub === "games" ||
-          sub === "hidromassagem"
-        ) {
-          pagesRef[pageKey] = () =>
-            renderTvControlPage(envKey, sub, uiLabel(sub, sub.toUpperCase()));
+        if (sub === "tv" || sub === "htv" || sub === "bluray" || sub === "appletv" || sub === "clarotv" || sub === "roku" || sub === "games" || sub === "hidromassagem") {
+          pagesRef[pageKey] = () => renderTvControlPage(envKey, sub, uiLabel(sub, sub.toUpperCase()));
           return;
         }
       }
@@ -1609,10 +1537,7 @@
 
             routes.add(envKey);
 
-            if (
-              env?.airConditioner !== null &&
-              env?.airConditioner !== undefined
-            ) {
+            if (env?.airConditioner !== null && env?.airConditioner !== undefined) {
               routes.add(`${envKey}-conforto`);
             }
 
@@ -1636,77 +1561,65 @@
         }
 
         return new Promise((resolve) => {
-          requestIdleCallback(
-            () => {
-              try {
-                const routes = collectConfigDrivenRoutes();
-                let processed = 0;
-                const total = routes.length;
+          requestIdleCallback(() => {
+            try {
+              const routes = collectConfigDrivenRoutes();
+              let processed = 0;
+              const total = routes.length;
 
-                if (typeof window.updateProgress === "function") {
-                  window.updateProgress(5, `Preparando ${total} pÃ¡ginas...`);
+              if (typeof window.updateProgress === 'function') {
+                window.updateProgress(5, `Preparando ${total} pÃ¡ginas...`);
+              }
+
+              const processChunk = () => {
+                const chunkSize = 3;
+                const start = processed;
+                const end = Math.min(start + chunkSize, routes.length);
+
+                for (let i = start; i < end; i++) {
+                  const route = routes[i];
+
+                  if (typeof ensureConfigPage === "function") {
+                    ensureConfigPage(route, pagesRef);
+                  }
+
+                  if (typeof pagesRef[route] !== "function" || pageCache.has(route)) {
+                    continue;
+                  }
+
+                  const template = document.createElement("template");
+                  template.innerHTML = pagesRef[route]();
+                  pageCache.set(route, template.content);
+
+                  const envMatch = /^[a-z]+\d+$/.test(route) ? route : null;
+                  if (envMatch) {
+                    preloadRoomBackground(route);
+                  }
                 }
 
-                const processChunk = () => {
-                  const chunkSize = 3;
-                  const start = processed;
-                  const end = Math.min(start + chunkSize, routes.length);
+                processed = end;
 
-                  for (let i = start; i < end; i++) {
-                    const route = routes[i];
+                if (typeof window.updateProgress === 'function' && total > 0) {
+                  const progress = 5 + Math.round((processed / total) * 10);
+                  window.updateProgress(progress, `PÃ¡gina ${processed}/${total}`);
+                }
 
-                    if (typeof ensureConfigPage === "function") {
-                      ensureConfigPage(route, pagesRef);
-                    }
-
-                    if (
-                      typeof pagesRef[route] !== "function" ||
-                      pageCache.has(route)
-                    ) {
-                      continue;
-                    }
-
-                    const template = document.createElement("template");
-                    template.innerHTML = pagesRef[route]();
-                    pageCache.set(route, template.content);
-
-                    const envMatch = /^[a-z]+\d+$/.test(route) ? route : null;
-                    if (envMatch) {
-                      preloadRoomBackground(route);
-                    }
+                if (processed < routes.length) {
+                  requestIdleCallback(processChunk, { timeout: 100 });
+                } else {
+                  if (typeof window.updateProgress === 'function') {
+                    window.updateProgress(15, "PÃ¡ginas prontas!");
                   }
+                  resolve();
+                }
+              };
 
-                  processed = end;
-
-                  if (
-                    typeof window.updateProgress === "function" &&
-                    total > 0
-                  ) {
-                    const progress = 5 + Math.round((processed / total) * 10);
-                    window.updateProgress(
-                      progress,
-                      `PÃ¡gina ${processed}/${total}`,
-                    );
-                  }
-
-                  if (processed < routes.length) {
-                    requestIdleCallback(processChunk, { timeout: 100 });
-                  } else {
-                    if (typeof window.updateProgress === "function") {
-                      window.updateProgress(15, "PÃ¡ginas !");
-                    }
-                    resolve();
-                  }
-                };
-
-                processChunk();
-              } catch (error) {
-                console.warn("prebuildConfigPages falhou", error);
-                resolve();
-              }
-            },
-            { timeout: 50 },
-          );
+              processChunk();
+            } catch (error) {
+              console.warn("prebuildConfigPages falhou", error);
+              resolve();
+            }
+          }, { timeout: 50 });
         });
       }
 
@@ -1747,7 +1660,7 @@
                 <div class="curtain-section__grid">
                     ${section.curtains
                       .map((curtain) =>
-                        renderCurtainControlCard(curtain, section.name),
+                        renderCurtainControlCard(curtain, section.name)
                       )
                       .join("")}
                 </div>
@@ -1764,7 +1677,7 @@
       const appInfoVersionLabel = document.getElementById("app-info-version");
 
       const fullscreenToggleBtn = document.getElementById(
-        "app-fullscreen-toggle",
+        "app-fullscreen-toggle"
       );
       const cacheClearBtn = document.getElementById("app-cache-clear");
       const instagramLink = document.getElementById("app-instagram-link");
@@ -1847,8 +1760,8 @@
       function isFullscreenActive() {
         return Boolean(
           document.fullscreenElement ||
-          document.webkitFullscreenElement ||
-          document.msFullscreenElement,
+            document.webkitFullscreenElement ||
+            document.msFullscreenElement
         );
       }
 
@@ -1856,7 +1769,7 @@
         if (!fullscreenToggleBtn) return;
 
         const label = fullscreenToggleBtn.querySelector(
-          ".app-info-option__label",
+          ".app-info-option__label"
         );
 
         if (!label) return;
@@ -1973,12 +1886,12 @@
         if (fullscreenToggleBtn) {
           fullscreenToggleBtn.removeEventListener(
             "click",
-            onFullscreenToggleClick,
+            onFullscreenToggleClick
           );
 
           fullscreenToggleBtn.addEventListener(
             "click",
-            onFullscreenToggleClick,
+            onFullscreenToggleClick
           );
 
           updateFullscreenOptionLabel();
@@ -5153,19 +5066,17 @@
         if (!envLabel) return null;
         const pageLabel = Object.prototype.hasOwnProperty.call(
           PAGE_SUFFIX_LABELS,
-          suffix,
+          suffix
         )
           ? PAGE_SUFFIX_LABELS[suffix]
           : suffix
-            ? suffix
-                .split("-")
-                .map((segment) =>
-                  segment
-                    ? segment[0].toUpperCase() + segment.slice(1)
-                    : segment,
-                )
-                .join(" ")
-            : PAGE_SUFFIX_LABELS[""];
+          ? suffix
+              .split("-")
+              .map((segment) =>
+                segment ? segment[0].toUpperCase() + segment.slice(1) : segment
+              )
+              .join(" ")
+          : PAGE_SUFFIX_LABELS[""];
         return `${envLabel} | ${pageLabel}`;
       }
 
@@ -5185,10 +5096,8 @@
           const staticHeader = document.getElementById("spa-static-header");
           const showStaticChrome =
             page === "home" || page === "curtains" || page === "scenes";
-          if (staticTopbar)
-            staticTopbar.classList.toggle("is-hidden", !showStaticChrome);
-          if (staticHeader)
-            staticHeader.classList.toggle("is-hidden", !showStaticChrome);
+          if (staticTopbar) staticTopbar.classList.toggle("is-hidden", !showStaticChrome);
+          if (staticHeader) staticHeader.classList.toggle("is-hidden", !showStaticChrome);
         } catch (e) {}
 
         const previousPage = spaRoot.dataset.currentPage;
@@ -5314,7 +5223,8 @@
                 : rooms
                     .filter((r) => order.includes(r.route))
                     .sort(
-                      (a, b) => order.indexOf(a.route) - order.indexOf(b.route),
+                      (a, b) =>
+                        order.indexOf(a.route) - order.indexOf(b.route)
                     );
 
             const firstVisibleRoute = visible[0]?.route || null;
@@ -5348,7 +5258,7 @@
                             ? `<button class="room-master-btn" data-route="${
                                 r.route
                               }" data-device-ids="${ids.join(
-                                ",",
+                                ","
                               )}" onclick="onHomeMasterClick(event,this)" aria-label="Master"><img class="room-master-icon" src="images/icons/icon-small-light-off.svg" alt="Master"></button>`
                             : ""
                         }
@@ -5380,10 +5290,7 @@
             applyBackground(container, baseAmbiente);
           } else {
             const fallbackContainer = document.querySelector(".page.active");
-            if (
-              fallbackContainer &&
-              !fallbackContainer.classList.contains("page-ready")
-            ) {
+            if (fallbackContainer && !fallbackContainer.classList.contains("page-ready")) {
               requestAnimationFrame(() => {
                 fallbackContainer.classList.add("page-ready");
               });
@@ -5400,7 +5307,7 @@
         const items = nav.querySelectorAll(".nav-item");
 
         const navPages = Array.from(items).map((i) =>
-          i.getAttribute("data-page"),
+          i.getAttribute("data-page")
         );
 
         const navPage = navPages.includes(page) ? page : "home";
@@ -5410,7 +5317,7 @@
         if (activeIndex < 0) activeIndex = navPages.indexOf("home");
 
         items.forEach((item, idx) =>
-          item.classList.toggle("active", idx === activeIndex),
+          item.classList.toggle("active", idx === activeIndex)
         );
 
         const activeItem = items[activeIndex];
@@ -5457,7 +5364,7 @@
               }
             })
             .catch((error) =>
-              console.error("Erro ao carregar scenes.js", error),
+              console.error("Erro ao carregar scenes.js", error)
             );
         }
 
@@ -5548,15 +5455,15 @@
         Promise.allSettled(promises)
           .then((results) => {
             const successes = results.filter(
-              (r) => r.status === "fulfilled",
+              (r) => r.status === "fulfilled"
             ).length;
 
             const failures = results.filter(
-              (r) => r.status === "rejected",
+              (r) => r.status === "rejected"
             ).length;
 
             console.log(
-              `âœ… Master ${cmd}: ${successes} sucessos, ${failures} falhas`,
+              `âœ… Master ${cmd}: ${successes} sucessos, ${failures} falhas`
             );
 
             // Segunda sincronizaÃ§Ã£o apÃ³s comandos completos
@@ -5639,29 +5546,18 @@
         // tenta inicializar e/ou remove o loader para nÃ£o travar a UI.
         setTimeout(() => {
           try {
-            if (
-              !window.initializationStarted &&
-              typeof window.initializeApp === "function"
-            ) {
+            if (!window.initializationStarted && typeof window.initializeApp === "function") {
               window.initializeApp();
             }
 
             const loader = document.getElementById("global-loader");
-            if (
-              !window.initializationStarted &&
-              loader &&
-              loader.style.display !== "none"
-            ) {
+            if (!window.initializationStarted && loader && loader.style.display !== "none") {
               const loaderText = document.querySelector(".loader-text");
               if (loaderText) loaderText.textContent = "Inicializando...";
 
               // Ãšltimo recurso: esconder loader apÃ³s alguns segundos
               setTimeout(() => {
-                if (
-                  !window.appFullyInitialized &&
-                  loader &&
-                  loader.style.display !== "none"
-                ) {
+                if (!window.appFullyInitialized && loader && loader.style.display !== "none") {
                   if (typeof window.hideLoader === "function") {
                     window.hideLoader();
                   } else if (typeof window.startHomeAnimation === "function") {
