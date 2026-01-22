@@ -237,6 +237,10 @@ const CRITICAL_IMAGE_BASES = ROOM_IMAGE_BASES.slice(0, 3);
 const ICON_ASSET_PATHS = [
   "images/icons/icon-tv.svg",
   "images/icons/icon-htv.svg",
+  "images/icons/icon-bluray.svg",
+  "images/icons/icon-apple-tv.svg",
+  "images/icons/icon-clarotv.svg",
+  "images/icons/icon-roku.svg",
   "images/icons/icon-musica.svg",
   "images/icons/icon-curtain.svg",
   "images/icons/icon-firetv.svg",
@@ -1349,8 +1353,10 @@ function updateTVPowerState(newState) {
 
   // Selecionar todos os outros controles
   const otherControls = document.querySelectorAll(
-    ".tv-volume-canais-wrapper, .tv-commands-grid, .tv-directional-pad, .tv-numpad, .tv-logo-section"
+    ".tv-volume-canais-wrapper, .tv-commands-grid, .tv-directional-pad, .tv-numpad, .tv-logo-section, .tv-control-mode-toggle"
   );
+  const gestureIcons = document.querySelectorAll(".tv-gesture-icons");
+  const gestureSurface = document.querySelectorAll(".tv-gesture-surface");
 
   // Selecionar tÃƒÂ­tulos das seÃƒÂ§ÃƒÂµes de controle
   const titles = document.querySelectorAll(".tv-section-title");
@@ -1364,6 +1370,14 @@ function updateTVPowerState(newState) {
     otherControls.forEach((control) => {
       control.style.opacity = "1";
       control.style.pointerEvents = "auto";
+    });
+    gestureIcons.forEach((control) => {
+      control.style.opacity = "";
+      control.style.pointerEvents = "none";
+    });
+    gestureSurface.forEach((control) => {
+      control.style.opacity = "";
+      control.style.pointerEvents = "";
     });
 
     // Mostrar tÃƒÂ­tulos
@@ -1379,6 +1393,14 @@ function updateTVPowerState(newState) {
 
     // Escurecer e desabilitar outros controles
     otherControls.forEach((control) => {
+      control.style.opacity = "0.15";
+      control.style.pointerEvents = "none";
+    });
+    gestureIcons.forEach((control) => {
+      control.style.opacity = "0.15";
+      control.style.pointerEvents = "none";
+    });
+    gestureSurface.forEach((control) => {
       control.style.opacity = "0.15";
       control.style.pointerEvents = "none";
     });
@@ -1404,8 +1426,12 @@ function tvCommand(el, command) {
     updateTVPowerState("off");
   }
 
-  // Feedback visual
-  el.style.transform = "scale(0.92)";
+  // Feedback visual (preserva transform base quando existir)
+  const computedTransform = window.getComputedStyle(el).transform;
+  const baseTransform = computedTransform !== "none" ? computedTransform : "";
+  el.style.transform = baseTransform
+    ? `${baseTransform} scale(0.99)`
+    : "scale(0.99)";
   el.style.background = "rgba(255, 255, 255, 0.15)";
   el.style.borderColor = "rgba(255, 255, 255, 0.3)";
   setTimeout(() => {
@@ -1433,6 +1459,123 @@ function tvCommand(el, command) {
       );
     });
 }
+
+function syncAppleTvControlMode(section) {
+  if (!section) return;
+  const mode = section.dataset.controlMode || "cursor";
+  section.dataset.controlMode = mode;
+
+  const toggle = section.querySelector(".tv-control-mode-toggle");
+  if (toggle) {
+    toggle.dataset.mode = mode;
+  }
+
+  const buttons = section.querySelectorAll(".tv-control-mode-btn");
+  buttons.forEach((btn) => {
+    const isActive = btn.dataset.mode === mode;
+    btn.classList.toggle("is-active", isActive);
+    btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+}
+
+function initAppleTvGestureControls(root = document) {
+  const sections = root.querySelectorAll(
+    '.tv-control-wrapper[data-control-type="appletv"] .tv-control-section--dpad'
+  );
+
+  sections.forEach((section) => {
+    if (section.dataset.gestureInit === "true") {
+      syncAppleTvControlMode(section);
+      return;
+    }
+
+    const surface = section.querySelector(".tv-gesture-surface");
+    if (!surface) return;
+
+    const buttons = {
+      up: section.querySelector(".tv-directional-btn--up"),
+      down: section.querySelector(".tv-directional-btn--down"),
+      left: section.querySelector(".tv-directional-btn--left"),
+      right: section.querySelector(".tv-directional-btn--right"),
+      center: section.querySelector(".tv-directional-btn--ok"),
+    };
+
+    const sendCommand = (command, btn) => {
+      if (btn) {
+        tvCommand(btn, command);
+        return;
+      }
+
+      const deviceId = section.dataset.deviceId;
+      if (!deviceId) return;
+      sendHubitatCommand(deviceId, command).catch(() => {});
+    };
+
+    const threshold = 24;
+    let startX = 0;
+    let startY = 0;
+    let moved = false;
+    let pointerId = null;
+
+    const resetGesture = () => {
+      startX = 0;
+      startY = 0;
+      moved = false;
+      pointerId = null;
+    };
+
+    const isGesturesMode = () =>
+      section.dataset.controlMode === "gestures";
+
+    surface.addEventListener("pointerdown", (e) => {
+      if (!isGesturesMode()) return;
+      pointerId = e.pointerId;
+      startX = e.clientX;
+      startY = e.clientY;
+      moved = false;
+      surface.setPointerCapture(pointerId);
+    });
+
+    surface.addEventListener("pointermove", (e) => {
+      if (!isGesturesMode() || pointerId !== e.pointerId || moved) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (Math.hypot(dx, dy) < threshold) return;
+      moved = true;
+
+      if (Math.abs(dx) > Math.abs(dy)) {
+        sendCommand(dx > 0 ? "cursorRight" : "cursorLeft", dx > 0 ? buttons.right : buttons.left);
+      } else {
+        sendCommand(dy > 0 ? "cursorDown" : "cursorUp", dy > 0 ? buttons.down : buttons.up);
+      }
+    });
+
+    surface.addEventListener("pointerup", (e) => {
+      if (pointerId !== e.pointerId) return;
+      if (isGesturesMode() && !moved) {
+        sendCommand("cursorCenter", buttons.center);
+      }
+      resetGesture();
+    });
+
+    surface.addEventListener("pointercancel", resetGesture);
+
+    section.dataset.gestureInit = "true";
+    syncAppleTvControlMode(section);
+  });
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".tv-control-mode-btn");
+  if (!btn) return;
+  const section = btn.closest(".tv-control-section--dpad");
+  if (!section) return;
+  const mode = btn.dataset.mode;
+  if (!mode) return;
+  if (section.dataset.controlMode === mode) return;
+  section.dataset.controlMode = mode;
+  syncAppleTvControlMode(section);
+});
 
 // Macro para ligar HTV + TV + Receiver de uma vez
 
@@ -2161,11 +2304,13 @@ function applyDenonPowerState(rawState) {
 document.addEventListener("DOMContentLoaded", () => {
   updateTVPowerState("off");
   initVolumeSlider();
+  initAppleTvGestureControls();
 
   // Re-inicializar quando a página mudar (para SPAs)
   window.addEventListener("hashchange", () => {
     setTimeout(() => {
       initVolumeSlider();
+      initAppleTvGestureControls();
     }, 100);
   });
 
@@ -5507,11 +5652,17 @@ function updateScrollFade(container) {
   if (!container || !container.classList) return;
   const maxScroll = container.scrollHeight - container.clientHeight;
   if (!Number.isFinite(maxScroll) || maxScroll <= 1) {
-    container.classList.remove("scroll-fade-active", "scroll-fade-end");
+    container.classList.remove(
+      "scroll-fade-active",
+      "scroll-fade-start",
+      "scroll-fade-end"
+    );
     return;
   }
+  const atTop = container.scrollTop <= 1;
   const atBottom = container.scrollTop >= maxScroll - 1;
   container.classList.add("scroll-fade-active");
+  container.classList.toggle("scroll-fade-start", atTop);
   container.classList.toggle("scroll-fade-end", atBottom);
 }
 

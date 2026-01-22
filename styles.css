@@ -561,7 +561,12 @@ div {
 .curtain-btn-minimal:hover img {
     opacity:1}
 .page-header .page-title {
-    color:#fff;text-shadow:0 4px 8px #00000080;margin:0;font-family:Raleway,sans-serif;font-size:30px;font-weight:400}
+    color:#fff;text-shadow:0 4px 8px #00000080;margin:0;font-family:Raleway,sans-serif;font-size:30px;font-weight:400;text-align:center;line-height:1.1}
+.page-title--split{display:inline-flex;align-items:baseline;gap:8px}
+.page-title__secondary{font-size:.82em;opacity:.85}
+.page-title__secondary:before{content:attr(data-separator);margin-right:8px;opacity:.6}
+@media (max-width:520px){.page-title--split{flex-direction:column;gap:2px;align-items:center;text-align:center;transform:translateY(-8px)}.page-title__secondary:before{content:"";margin-right:0}.page-title__secondary{font-size:.7em}}
+
 .back-btn {
     cursor:pointer;background:0 0;border:none;position:absolute;left:0}
 .back-btn img {
@@ -1907,18 +1912,24 @@ body.orchestrated-animation.reveal-home .room-card {
 [class*=-cortinas-wrapper],
 [class*=-piscina-wrapper],
 .controls-grid {
-    --scroll-fade-size:56px}
-.ambiente-grid.scroll-fade-active:not(.scroll-fade-end),
-[class*=-luzes-wrapper].scroll-fade-active:not(.scroll-fade-end),
-[class*=-cortinas-wrapper].scroll-fade-active:not(.scroll-fade-end),
-[class*=-piscina-wrapper].scroll-fade-active:not(.scroll-fade-end),
-.controls-grid.scroll-fade-active:not(.scroll-fade-end) {
-    -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - var(--scroll-fade-size)),#0000 100%);
-    mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - var(--scroll-fade-size)),#0000 100%);
+    --scroll-fade-size:56px;
+    --scroll-fade-top:var(--scroll-fade-size);
+    --scroll-fade-bottom:var(--scroll-fade-size)}
+.ambiente-grid.scroll-fade-active,
+[class*=-luzes-wrapper].scroll-fade-active,
+[class*=-cortinas-wrapper].scroll-fade-active,
+[class*=-piscina-wrapper].scroll-fade-active,
+.controls-grid.scroll-fade-active {
+    -webkit-mask-image:linear-gradient(180deg,#0000 0%,#000 var(--scroll-fade-top),#000 calc(100% - var(--scroll-fade-bottom)),#0000 100%);
+    mask-image:linear-gradient(180deg,#0000 0%,#000 var(--scroll-fade-top),#000 calc(100% - var(--scroll-fade-bottom)),#0000 100%);
     -webkit-mask-size:100% 100%;
     mask-size:100% 100%;
     -webkit-mask-repeat:no-repeat;
     mask-repeat:no-repeat}
+.scroll-fade-active.scroll-fade-start {
+    --scroll-fade-top:0px}
+.scroll-fade-active.scroll-fade-end {
+    --scroll-fade-bottom:0px}
 @media (width>=600px) {
     .ambiente2-page .ambiente2-controls-wrapper.ambiente-grid,
 .ambiente3-page .ambiente3-controls-wrapper.ambiente-grid,
@@ -2102,11 +2113,160 @@ body.orchestrated-animation.reveal-home .room-card {
     background:0 0;border:none;flex:1;grid-template-columns:1fr 1fr 1fr 1fr;align-items:center;gap:10px;margin:0;padding:0;transition:opacity .3s,pointer-events .3s;display:grid}
 .tv-commands-grid .tv-btn--icon-only {
     flex:none;width:100%;height:56px}
+.tv-control-wrapper[data-control-type=appletv] {
+    --appletv-dpad-size:240px;--appletv-dpad-btn:90px;--appletv-dpad-btn-size:clamp(56px,10vw,140px);--appletv-dpad-gap:clamp(8px,1.6vw,16px);--appletv-dpad-icon-size:calc(var(--appletv-dpad-btn-size) * 0.42);--appletv-ok-size:calc(var(--appletv-dpad-btn-size) * 0.26);--appletv-gesture-icon-size:calc(var(--appletv-dpad-btn-size) * 0.38)}
+.tv-control-wrapper[data-control-type=appletv] .tv-col-1 {
+    gap:10px;grid-template-rows:1fr 1fr auto;min-height:0;display:grid}
+.tv-control-wrapper[data-control-type=appletv] .tv-col-apple-right {
+    gap:10px;grid-template-rows:auto 1fr;min-height:0;display:grid}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--commands {
+    flex-direction:column;display:flex}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--commands .tv-control-group {
+    flex:1;align-items:stretch}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--commands .tv-commands-grid {
+    width:100%}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--commands .tv-commands-grid {
+    grid-template-columns:1fr;grid-template-rows:repeat(2,auto);align-items:stretch;justify-items:stretch;gap:12px}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--commands .tv-btn--icon-only img,
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--commands .tv-btn--icon-only svg {
+    width:42px;height:42px}
+.tv-control-wrapper[data-control-type=appletv] .tv-btn-press {
+    background:#ffffff1c;border-color:#ffffff40;box-shadow:inset 0 0 0 1px #ffffff14,0 6px 16px #00000052}
+.tv-control-wrapper[data-control-type=appletv] .tv-btn-press:not(.tv-directional-btn--diamond) {
+    transform:scale(.985)}
+.tv-control-wrapper[data-control-type=appletv] .tv-btn--power-on,
+.tv-control-wrapper[data-control-type=appletv] .tv-btn--power-off {
+    text-transform:none;letter-spacing:.3px;background:#ffffff14;border-color:#ffffff26;font-family:Raleway,Arial,sans-serif;font-size:20px}
+.tv-control-wrapper[data-control-type=appletv] .tv-btn--power-on.active,
+.tv-control-wrapper[data-control-type=appletv] .tv-btn--power-off.active {
+    background:#ffffff1f;border-color:#ffffff40;box-shadow:0 0 14px #ffffff1f}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-mode-toggle {
+    background:#ffffff0f;border:1px solid #ffffff1f;border-radius:14px;gap:6px;margin-bottom:14px;padding:6px;display:grid;grid-template-columns:1fr 1fr;position:relative}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-mode-indicator {
+    background:#ffffff1a;border:1px solid #ffffff33;border-radius:10px;box-shadow:0 6px 14px #0000004d;pointer-events:none;position:absolute;top:6px;bottom:6px;left:6px;width:calc(50% - 6px);transition:transform .25s ease}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-mode-toggle[data-mode=gestures] .tv-control-mode-indicator {
+    transform:translateX(calc(100% + 6px))}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-mode-btn {
+    color:#ffffffb3;text-transform:none;background:#0000;border:1px solid #ffffff00;border-radius:10px;flex:1;padding:8px 12px;font-family:Raleway,Arial,sans-serif;font-size:13px;font-weight:600;letter-spacing:.3px;transition:color .2s;position:relative;z-index:1}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-mode-btn.is-active {
+    color:#fff}
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-row {
+    position:relative}
+.tv-control-wrapper[data-control-type=appletv] .tv-gesture-surface {
+    position:absolute;inset:0;border-radius:18px;touch-action:none;z-index:2}
+.tv-control-wrapper[data-control-type=appletv] .tv-gesture-icons {
+    position:absolute;inset:0;opacity:0;transform:scale(.98);transition:opacity .25s ease,transform .25s ease;pointer-events:none;z-index:1}
+.tv-control-wrapper[data-control-type=appletv] .tv-gesture-icon {
+    position:absolute;width:var(--appletv-gesture-icon-size);height:var(--appletv-gesture-icon-size);opacity:.6}
+.tv-control-wrapper[data-control-type=appletv] .tv-gesture-icon--up {
+    top:14px;left:50%;transform:translateX(-50%)}
+.tv-control-wrapper[data-control-type=appletv] .tv-gesture-icon--down {
+    bottom:14px;left:50%;transform:translateX(-50%)}
+.tv-control-wrapper[data-control-type=appletv] .tv-gesture-icon--left {
+    left:14px;top:50%;transform:translateY(-50%)}
+.tv-control-wrapper[data-control-type=appletv] .tv-gesture-icon--right {
+    right:14px;top:50%;transform:translateY(-50%)}
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-section {
+    transition:opacity .25s ease}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--dpad[data-control-mode=cursor] .tv-gesture-surface {
+    pointer-events:none}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--dpad[data-control-mode=gestures] .tv-gesture-surface {
+    pointer-events:auto}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--dpad[data-control-mode=gestures] .tv-directional-pad {
+    pointer-events:none;opacity:0}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--dpad[data-control-mode=gestures] .tv-directional-section {
+    opacity:0;pointer-events:none}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--dpad[data-control-mode=gestures] .tv-gesture-icons {
+    opacity:.6;transform:scale(1)}
+@media (orientation:portrait) {
+    .tv-control-wrapper[data-control-type=appletv] .tv-control-section--power {
+    order:1}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--commands {
+    order:2}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--volume {
+    order:3}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--dpad {
+    order:4;flex:0;min-height:auto}
+.tv-control-wrapper[data-control-type=appletv] .tv-logo-section--left {
+    order:5}
+.tv-control-wrapper[data-control-type=appletv] .tv-controls-col,
+.tv-control-wrapper[data-control-type=appletv] .tv-col-1,
+.tv-control-wrapper[data-control-type=appletv] .tv-col-apple-right {
+    display:contents}
+}
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-pad,
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-row-line {
+    gap:var(--appletv-dpad-gap)}
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-btn {
+    width:var(--appletv-dpad-btn-size);height:var(--appletv-dpad-btn-size)}
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-btn svg,
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-btn .tv-btn-icon-img {
+    width:var(--appletv-dpad-icon-size);height:var(--appletv-dpad-icon-size)}
+.tv-control-wrapper[data-control-type=appletv] .tv-ok-circle {
+    width:var(--appletv-ok-size);height:var(--appletv-ok-size)}
+.tv-control-wrapper[data-control-type=appletv] .tv-logo-section--left {
+    margin-top:auto;min-height:0;padding:12px}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--dpad {
+    flex:1;min-height:0}
+@media (orientation:portrait) {
+    .tv-control-wrapper[data-control-type=appletv] .tv-control-section--dpad {
+    flex:0 0 auto;min-height:auto}
+}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--volume {
+    flex:0;min-height:80px;padding:12px;overflow:visible}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--volume .tv-section-header {
+    margin-bottom:6px}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--volume .tv-control-group {
+    flex:0;align-items:stretch;margin-top:auto;margin-bottom:auto}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--volume .tv-volume-slider-container {
+    padding:10px 12px;overflow:visible}
+.tv-control-wrapper[data-control-type=appletv] .tv-volume-slider {
+    height:10px}
+.tv-control-wrapper[data-control-type=appletv] .tv-volume-slider::-webkit-slider-thumb {
+    width:26px;height:26px;box-shadow:0 8px 18px #6496ff80,0 0 12px #fffc,inset -1px -1px 3px #0003}
+.tv-control-wrapper[data-control-type=appletv] .tv-volume-slider::-moz-range-thumb {
+    width:26px;height:26px;box-shadow:0 8px 18px #6496ff80,0 0 12px #fffc,inset -1px -1px 3px #0003}
+.tv-control-wrapper[data-control-type=appletv] .tv-volume-slider::-webkit-slider-thumb:hover,
+.tv-control-wrapper[data-control-type=appletv] .tv-volume-slider::-webkit-slider-thumb:active {
+    transform:scale(1.08)}
+.tv-control-wrapper[data-control-type=appletv] .tv-volume-slider::-moz-range-thumb:hover,
+.tv-control-wrapper[data-control-type=appletv] .tv-volume-slider::-moz-range-thumb:active {
+    transform:scale(1.08)}
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-pad--diamond {
+    position:relative;width:var(--appletv-dpad-size);height:var(--appletv-dpad-size);margin:0 auto;display:block}
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-btn--diamond {
+    --btn-scale:1;position:absolute;width:var(--appletv-dpad-btn);height:var(--appletv-dpad-btn);border-radius:14px}
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-btn--diamond.tv-directional-btn--up {
+    top:0;left:50%;transform:translate(-50%,0) rotate(45deg) scale(var(--btn-scale,1))}
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-btn--diamond.tv-directional-btn--right {
+    top:50%;right:0;transform:translate(0,-50%) rotate(45deg) scale(var(--btn-scale,1))}
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-btn--diamond.tv-directional-btn--down {
+    bottom:0;left:50%;transform:translate(-50%,0) rotate(45deg) scale(var(--btn-scale,1))}
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-btn--diamond.tv-directional-btn--left {
+    top:50%;left:0;transform:translate(0,-50%) rotate(45deg) scale(var(--btn-scale,1))}
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-btn--diamond,
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-btn--diamond:hover,
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-btn--diamond:active {
+    transition:none}
+.tv-control-wrapper[data-control-type=appletv] .tv-directional-btn--diamond .tv-btn-icon-img {
+    transform:rotate(-45deg)}
 @media (width>=900px) {
     .tv-commands-grid {
     flex:none;grid-template-rows:auto;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;min-height:80px}
 .tv-commands-grid .tv-btn--icon-only {
     width:100%;height:100%;min-height:70px}
+.tv-control-wrapper[data-control-type=appletv] {
+    grid-template-columns:3fr 7fr;--appletv-dpad-size:320px;--appletv-dpad-btn:120px}
+.tv-control-wrapper[data-control-type=appletv] .tv-col-1 {
+    grid-area:1/1}
+.tv-control-wrapper[data-control-type=appletv] .tv-col-apple-right {
+    grid-area:1/2}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--dpad {
+    flex:1;min-height:0}
+.tv-control-wrapper[data-control-type=appletv] .tv-control-section--volume {
+    flex:0;min-height:96px;padding:12px;overflow:visible}
+.tv-control-wrapper[data-control-type=appletv] .tv-logo-section--left {
+    min-height:0;padding:12px}
 }
 .tv-top-buttons {
     background:0 0;border:none;gap:12px;width:100%;margin:0;padding:0;display:flex}

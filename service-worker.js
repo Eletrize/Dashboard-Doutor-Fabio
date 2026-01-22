@@ -1,10 +1,10 @@
-ï»¿const CACHE_VERSION = "v1.3.7";
+const CACHE_VERSION = "v1.3.20";
 const CACHE_NAME = `eletrize-${CACHE_VERSION}`;
 const PRECACHE_ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=1.0.12",
-  "/script.js?v=1.0.18",
+  "/styles.css?v=1.0.23",
+  "/script.js?v=1.0.26",
   "/config.js?v=1.0.15",
   "/fonts-raleway.css",
   "/manifest.json",
@@ -60,7 +60,7 @@ self.addEventListener("fetch", (event) => {
     /cloud\.hubitat\.com$/i.test(url.hostname) ||
     /\/apps\/api\//i.test(url.pathname);
 
-  // NÃ£o interceptar chamadas ao proxy local do Hubitat â€” deixar ir direto Ã  rede.
+  // Não interceptar chamadas ao proxy local do Hubitat — deixar ir direto à rede.
   if (url.pathname.startsWith("/hubitat-proxy")) {
     return;
   }
@@ -78,8 +78,8 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // config.js deve refletir alteraÃ§Ãµes imediatamente apÃ³s refresh.
-  // Evita stale-while-revalidate aqui (senÃ£o pode exigir 2 reloads).
+  // config.js deve refletir alterações imediatamente após refresh.
+  // Evita stale-while-revalidate aqui (senão pode exigir 2 reloads).
   if (url.pathname === "/config.js") {
     event.respondWith(fetchConfigNoStore(request));
     return;
