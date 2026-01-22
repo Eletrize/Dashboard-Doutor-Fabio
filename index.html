@@ -953,6 +953,117 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         }
 
         const deviceId = device.id;
+        const isClaroTv = typeKey === "clarotv";
+        const powerOnLabel = isClaroTv ? "On" : "ON";
+        const powerOffLabel = isClaroTv ? "Off" : "OFF";
+        const commandsMarkup = isClaroTv
+          ? `
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'favorites')" data-device-id="${deviceId}" aria-label="Favoritos">
+                        <img src="images/icons/icon-fav.svg" alt="Favoritos">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'menu')" data-device-id="${deviceId}" aria-label="Menu">
+                        <img src="images/icons/icon-menu.svg" alt="Menu">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'exit')" data-device-id="${deviceId}" aria-label="Sair">
+                        <img src="images/icons/icon-exit.svg" alt="Sair">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'home')" data-device-id="${deviceId}" aria-label="Portal">
+                        <img src="images/icons/icon-home.svg" alt="Portal">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'info')" data-device-id="${deviceId}" aria-label="Info">
+                        <img src="images/icons/icon-info.svg" alt="Info">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'music')" data-device-id="${deviceId}" aria-label="Musica">
+                        <img src="images/icons/icon-music.svg" alt="Musica">
+                    </button>
+                `
+          : `
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'returnButton')" data-device-id="${deviceId}" aria-label="Voltar">
+                        <img src="images/icons/back-button.svg" alt="Voltar">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'hdmi2')" data-device-id="${deviceId}" aria-label="Menu">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'mute')" data-device-id="${deviceId}" aria-label="Mudo">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <line x1="23" y1="9" x2="17" y2="15"></line>
+                            <line x1="17" y1="9" x2="23" y2="15"></line>
+                        </svg>
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'home')" data-device-id="${deviceId}" aria-label="Home">
+                        <img src="images/icons/icon-home.svg" alt="Home">
+                    </button>
+                `;
+        const numpadFooterMarkup = isClaroTv
+          ? `
+                        <button class="tv-numpad-btn tv-numpad-btn--icon" onclick="tvCommand(this, 'returnButton')" data-device-id="${deviceId}" aria-label="Voltar">
+                            <img src="images/icons/back-button.svg" alt="Voltar">
+                        </button>
+                        <button class="tv-numpad-btn" onclick="tvCommand(this, 'num0')" data-device-id="${deviceId}" aria-label="0">0</button>
+                        <div class="tv-numpad-btn tv-numpad-btn--icon tv-numpad-btn--static" aria-hidden="true">
+                            <img src="images/icons/icon-eletrize.svg" alt="Eletrize">
+                        </div>
+                `
+          : `
+                        <button class="tv-numpad-btn tv-numpad-btn--icon" onclick="tvCommand(this, 'returnButton')" data-device-id="${deviceId}" aria-label="Voltar">
+                            <img src="images/icons/back-button.svg" alt="Back">
+                        </button>
+                        <button class="tv-numpad-btn" onclick="tvCommand(this, 'num0')" data-device-id="${deviceId}" aria-label="0">0</button>
+                        <button class="tv-numpad-btn tv-numpad-btn--icon" onclick="tvCommand(this, 'mouse')" data-device-id="${deviceId}" aria-label="Mouse">
+                            <img src="images/icons/icon-mouse.svg" alt="Mouse">
+                        </button>
+                `;
+        const mediaMarkup = isClaroTv
+          ? `
+                <div class="tv-control-section tv-control-section--media">
+                    <header class="tv-section-header">
+                        <h3 class="tv-section-title">M&iacute;dia</h3>
+                        <div class="tv-section-line"></div>
+                    </header>
+                    <div class="tv-control-group tv-media-grid">
+                        <button class="tv-btn-square" onclick="tvCommand(this, 'rewind')" data-device-id="${deviceId}" aria-label="Rewind">
+                            <img src="images/icons/icon-previous-track.svg" alt="Rewind" class="tv-btn-icon-img">
+                        </button>
+                        <button class="tv-btn-square" onclick="tvCommand(this, 'forward')" data-device-id="${deviceId}" aria-label="Forward">
+                            <img src="images/icons/icon-next-track.svg" alt="Forward" class="tv-btn-icon-img">
+                        </button>
+                        <button class="tv-btn-square" onclick="tvCommand(this, 'pause')" data-device-id="${deviceId}" aria-label="Pause">
+                            <img src="images/icons/icon-pause.svg" alt="Pause" class="tv-btn-icon-img">
+                        </button>
+                        <button class="tv-btn-square" onclick="tvCommand(this, 'play')" data-device-id="${deviceId}" aria-label="Play">
+                            <img src="images/icons/icon-play.svg" alt="Play" class="tv-btn-icon-img">
+                        </button>
+                    </div>
+                </div>
+                `
+          : `
+                <div class="tv-control-section">
+                    <header class="tv-section-header">
+                        <h3 class="tv-section-title">Canais</h3>
+                        <div class="tv-section-line"></div>
+                    </header>
+                    <div class="tv-control-group tv-volume-channels-inline">
+                        
+                        <!-- Coluna Canais -->
+                        <div class="tv-channels-column">
+                            <div class="tv-channels-buttons">
+                <button class="tv-btn-square" onclick="tvCommand(this, 'channelDown')" data-device-id="${deviceId}" aria-label="Canal +">
+                                    <img src="images/icons/arrow-up.svg" alt="Canal +" class="tv-btn-icon-img">
+                                </button>
+                <button class="tv-btn-square" onclick="tvCommand(this, 'channelUp')" data-device-id="${deviceId}" aria-label="Canal -">
+                                    <img src="images/icons/arrow-down.svg" alt="Canal -" class="tv-btn-icon-img">
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                `;
         const title =
           headingLabel ||
           resolveRemoteControlHeading(typeKey, typeKey.toUpperCase());
@@ -978,26 +1089,26 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         <!-- COLUNA 1 -->
         <div class="tv-controls-col tv-col-1">
             <!-- BLOCO 1: ON/OFF -->
-            <div class="tv-control-section">
+            <div class="tv-control-section tv-control-section--power">
                 <header class="tv-section-header">
                     <h3 class="tv-section-title">On / Off</h3>
                     <div class="tv-section-line"></div>
                 </header>
                 <div class="tv-control-group tv-power-group">
                   <button class="tv-btn tv-btn--power-on" onclick="tvCommand(this, 'on')" data-device-id="${deviceId}" aria-label="Ligar">
-                    ON
+                    ${powerOnLabel}
                   </button>
                   <button class="tv-btn tv-btn--power-off" onclick="tvCommand(this, 'off')" data-device-id="${deviceId}" aria-label="Desligar">
-                    OFF
+                    ${powerOffLabel}
                   </button>
                 </div>
             </div>
 
-            <!-- BLOCO 4 E 5: VOLUME E CANAIS (lado a lado) -->
+            <!-- BLOCO 4 E 5: VOLUME E MIDIA (lado a lado) -->
             <div class="tv-volume-canais-wrapper">
                 
                 <!-- BLOCO 4: VOLUME -->
-                <div class="tv-control-section">
+                <div class="tv-control-section tv-control-section--volume">
                     <header class="tv-section-header">
                         <h3 class="tv-section-title">Volume</h3>
                         <span class="tv-volume-value" id="tv-volume-display">50</span>
@@ -1017,28 +1128,8 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                     </div>
                 </div>
 
-                <!-- BLOCO 5: CANAIS -->
-                <div class="tv-control-section">
-                    <header class="tv-section-header">
-                        <h3 class="tv-section-title">Canais</h3>
-                        <div class="tv-section-line"></div>
-                    </header>
-                    <div class="tv-control-group tv-volume-channels-inline">
-                        
-                        <!-- Coluna Canais -->
-                        <div class="tv-channels-column">
-                            <div class="tv-channels-buttons">
-                <button class="tv-btn-square" onclick="tvCommand(this, 'channelDown')" data-device-id="${deviceId}" aria-label="Canal +">
-                                    <img src="images/icons/arrow-up.svg" alt="Canal +" class="tv-btn-icon-img">
-                                </button>
-                <button class="tv-btn-square" onclick="tvCommand(this, 'channelUp')" data-device-id="${deviceId}" aria-label="Canal -">
-                                    <img src="images/icons/arrow-down.svg" alt="Canal -" class="tv-btn-icon-img">
-                                </button>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
+                <!-- BLOCO 5: CANAIS / MIDIA -->
+                ${mediaMarkup}
 
             </div>
         </div>
@@ -1052,26 +1143,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                     <div class="tv-section-line"></div>
                 </header>
                 <div class="tv-control-group tv-commands-grid">
-                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'returnButton')" data-device-id="${deviceId}" aria-label="Voltar">
-                        <img src="images/icons/back-button.svg" alt="Voltar">
-                    </button>
-                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'hdmi2')" data-device-id="${deviceId}" aria-label="Menu">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="3" y1="12" x2="21" y2="12"></line>
-                            <line x1="3" y1="6" x2="21" y2="6"></line>
-                            <line x1="3" y1="18" x2="21" y2="18"></line>
-                        </svg>
-                    </button>
-                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'mute')" data-device-id="${deviceId}" aria-label="Mudo">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                            <line x1="23" y1="9" x2="17" y2="15"></line>
-                            <line x1="17" y1="9" x2="23" y2="15"></line>
-                        </svg>
-                    </button>
-                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'home')" data-device-id="${deviceId}" aria-label="Home">
-                        <img src="images/icons/icon-home.svg" alt="Home">
-                    </button>
+                    ${commandsMarkup}
                 </div>
             </div>
 
@@ -1129,7 +1201,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             <!-- BLOCO 6: NÃšMEROS -->
             <div class="tv-control-section">
                 <header class="tv-section-header">
-                    <h3 class="tv-section-title">Números</h3>
+                    <h3 class="tv-section-title">N&uacute;meros</h3>
                     <div class="tv-section-line"></div>
                 </header>
                 <div class="tv-control-group">
@@ -1143,13 +1215,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                         <button class="tv-numpad-btn" onclick="tvCommand(this, 'num7')" data-device-id="${deviceId}" aria-label="7">7</button>
                         <button class="tv-numpad-btn" onclick="tvCommand(this, 'num8')" data-device-id="${deviceId}" aria-label="8">8</button>
                         <button class="tv-numpad-btn" onclick="tvCommand(this, 'num9')" data-device-id="${deviceId}" aria-label="9">9</button>
-                        <button class="tv-numpad-btn tv-numpad-btn--icon" onclick="tvCommand(this, 'returnButton')" data-device-id="${deviceId}" aria-label="Voltar">
-                            <img src="images/icons/back-button.svg" alt="Back">
-                        </button>
-                        <button class="tv-numpad-btn" onclick="tvCommand(this, 'num0')" data-device-id="${deviceId}" aria-label="0">0</button>
-                        <button class="tv-numpad-btn tv-numpad-btn--icon" onclick="tvCommand(this, 'mouse')" data-device-id="${deviceId}" aria-label="Mouse">
-                            <img src="images/icons/icon-mouse.svg" alt="Mouse">
-                        </button>
+                        ${numpadFooterMarkup}
                     </div>
                 </div>
             </div>
@@ -2531,7 +2597,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 </div>
             </div>
 
-            <!-- BLOCO 4 E 5: VOLUME E CANAIS (lado a lado) -->
+            <!-- BLOCO 4 E 5: VOLUME E MIDIA (lado a lado) -->
             <div class="tv-volume-canais-wrapper">
                 
                 <!-- BLOCO 4: VOLUME -->
@@ -2655,7 +2721,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             <!-- BLOCO 6: NÃšMEROS -->
             <div class="tv-control-section">
                 <header class="tv-section-header">
-                    <h3 class="tv-section-title">Números</h3>
+                    <h3 class="tv-section-title">N&uacute;meros</h3>
                     <div class="tv-section-line"></div>
                 </header>
                 <div class="tv-control-group">
@@ -2725,7 +2791,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             </div>
           </div>
 
-          <!-- BLOCO 4 E 5: VOLUME E CANAIS (lado a lado) -->
+          <!-- BLOCO 4 E 5: VOLUME E MIDIA (lado a lado) -->
           <div class="tv-volume-canais-wrapper">
                 
             <!-- BLOCO 4: VOLUME -->
@@ -2849,7 +2915,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           <!-- BLOCO 6: NÃšMEROS -->
           <div class="tv-control-section">
             <header class="tv-section-header">
-              <h3 class="tv-section-title">Números</h3>
+              <h3 class="tv-section-title">N&uacute;meros</h3>
               <div class="tv-section-line"></div>
             </header>
             <div class="tv-control-group">
@@ -3627,7 +3693,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             </div>
           </div>
 
-          <!-- BLOCO 4 E 5: VOLUME E CANAIS (lado a lado) -->
+          <!-- BLOCO 4 E 5: VOLUME E MIDIA (lado a lado) -->
           <div class="tv-volume-canais-wrapper">
                 
             <!-- BLOCO 4: VOLUME -->
@@ -3751,7 +3817,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           <!-- BLOCO 6: NÃšMEROS -->
           <div class="tv-control-section">
             <header class="tv-section-header">
-              <h3 class="tv-section-title">Números</h3>
+              <h3 class="tv-section-title">N&uacute;meros</h3>
               <div class="tv-section-line"></div>
             </header>
             <div class="tv-control-group">
@@ -3911,7 +3977,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 </div>
             </div>
 
-            <!-- BLOCO 4 E 5: VOLUME E CANAIS (lado a lado) -->
+            <!-- BLOCO 4 E 5: VOLUME E MIDIA (lado a lado) -->
             <div class="tv-volume-canais-wrapper">
                 
                 <!-- BLOCO 4: VOLUME -->
@@ -4035,7 +4101,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             <!-- BLOCO 6: NÃšMEROS -->
             <div class="tv-control-section">
                 <header class="tv-section-header">
-                    <h3 class="tv-section-title">Números</h3>
+                    <h3 class="tv-section-title">N&uacute;meros</h3>
                     <div class="tv-section-line"></div>
                 </header>
                 <div class="tv-control-group">
@@ -4105,7 +4171,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             </div>
           </div>
 
-          <!-- BLOCO 4 E 5: VOLUME E CANAIS (lado a lado) -->
+          <!-- BLOCO 4 E 5: VOLUME E MIDIA (lado a lado) -->
           <div class="tv-volume-canais-wrapper">
                 
             <!-- BLOCO 4: VOLUME -->
@@ -4229,7 +4295,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           <!-- BLOCO 6: NÃšMEROS -->
           <div class="tv-control-section">
             <header class="tv-section-header">
-              <h3 class="tv-section-title">Números</h3>
+              <h3 class="tv-section-title">N&uacute;meros</h3>
               <div class="tv-section-line"></div>
             </header>
             <div class="tv-control-group">
@@ -4389,7 +4455,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 </div>
             </div>
 
-            <!-- BLOCO 4 E 5: VOLUME E CANAIS (lado a lado) -->
+            <!-- BLOCO 4 E 5: VOLUME E MIDIA (lado a lado) -->
             <div class="tv-volume-canais-wrapper">
                 
                 <!-- BLOCO 4: VOLUME -->
@@ -4513,7 +4579,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             <!-- BLOCO 6: NÃšMEROS -->
             <div class="tv-control-section">
                 <header class="tv-section-header">
-                    <h3 class="tv-section-title">Números</h3>
+                    <h3 class="tv-section-title">N&uacute;meros</h3>
                     <div class="tv-section-line"></div>
                 </header>
                 <div class="tv-control-group">
@@ -4583,7 +4649,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             </div>
           </div>
 
-          <!-- BLOCO 4 E 5: VOLUME E CANAIS (lado a lado) -->
+          <!-- BLOCO 4 E 5: VOLUME E MIDIA (lado a lado) -->
           <div class="tv-volume-canais-wrapper">
                 
             <!-- BLOCO 4: VOLUME -->
@@ -4707,7 +4773,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           <!-- BLOCO 6: NÃšMEROS -->
           <div class="tv-control-section">
             <header class="tv-section-header">
-              <h3 class="tv-section-title">Números</h3>
+              <h3 class="tv-section-title">N&uacute;meros</h3>
               <div class="tv-section-line"></div>
             </header>
             <div class="tv-control-group">
@@ -4870,7 +4936,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 </div>
             </div>
 
-            <!-- BLOCO 4 E 5: VOLUME E CANAIS (lado a lado) -->
+            <!-- BLOCO 4 E 5: VOLUME E MIDIA (lado a lado) -->
             <div class="tv-volume-canais-wrapper">
                 
                 <!-- BLOCO 4: VOLUME -->
@@ -4994,7 +5060,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             <!-- BLOCO 6: NÃšMEROS -->
             <div class="tv-control-section">
                 <header class="tv-section-header">
-                    <h3 class="tv-section-title">Números</h3>
+                    <h3 class="tv-section-title">N&uacute;meros</h3>
                     <div class="tv-section-line"></div>
                 </header>
                 <div class="tv-control-group">
@@ -5064,7 +5130,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             </div>
           </div>
 
-          <!-- BLOCO 4 E 5: VOLUME E CANAIS (lado a lado) -->
+          <!-- BLOCO 4 E 5: VOLUME E MIDIA (lado a lado) -->
           <div class="tv-volume-canais-wrapper">
                 
             <!-- BLOCO 4: VOLUME -->
@@ -5188,7 +5254,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           <!-- BLOCO 6: NÃšMEROS -->
           <div class="tv-control-section">
             <header class="tv-section-header">
-              <h3 class="tv-section-title">Números</h3>
+              <h3 class="tv-section-title">N&uacute;meros</h3>
               <div class="tv-section-line"></div>
             </header>
             <div class="tv-control-group">
