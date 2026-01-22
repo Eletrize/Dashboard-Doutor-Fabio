@@ -1076,12 +1076,24 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             </div>
 
             <!-- BLOCO 2: CONTROLE (D-PAD) -->
-            <div class="tv-control-section">
+            <div class="tv-control-section tv-control-section--dpad" data-device-id="${deviceId}" data-control-mode="cursor">
                 <header class="tv-section-header">
                     <h3 class="tv-section-title">Controle</h3>
                     <div class="tv-section-line"></div>
                 </header>
+                <div class="tv-control-mode-toggle" role="tablist" aria-label="Modo de controle">
+                    <span class="tv-control-mode-indicator" aria-hidden="true"></span>
+                    <button class="tv-control-mode-btn is-active" type="button" data-mode="cursor" aria-pressed="true">Cursor</button>
+                    <button class="tv-control-mode-btn" type="button" data-mode="gestures" aria-pressed="false">Gestos</button>
+                </div>
                 <div class="tv-control-group tv-directional-row">
+                    <div class="tv-gesture-surface" aria-hidden="true"></div>
+                    <div class="tv-gesture-icons" aria-hidden="true">
+                        <img class="tv-gesture-icon tv-gesture-icon--up" src="images/icons/gesture-up.svg" alt="">
+                        <img class="tv-gesture-icon tv-gesture-icon--left" src="images/icons/gesture-left.svg" alt="">
+                        <img class="tv-gesture-icon tv-gesture-icon--right" src="images/icons/gesture-right.svg" alt="">
+                        <img class="tv-gesture-icon tv-gesture-icon--down" src="images/icons/gesture-down.svg" alt="">
+                    </div>
                     <div class="tv-directional-section">
                         <div class="tv-directional-pad">
                             <!-- Linha 1: UP -->

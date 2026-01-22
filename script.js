@@ -1460,6 +1460,30 @@ function tvCommand(el, command) {
     });
 }
 
+function positionAppleTvModeIndicator(section) {
+  if (!section) return;
+  const toggle = section.querySelector(".tv-control-mode-toggle");
+  if (!toggle) return;
+  const indicator = toggle.querySelector(".tv-control-mode-indicator");
+  if (!indicator) return;
+  const activeBtn =
+    toggle.querySelector(".tv-control-mode-btn.is-active") ||
+    toggle.querySelector(".tv-control-mode-btn");
+  if (!activeBtn) return;
+
+  const toggleRect = toggle.getBoundingClientRect();
+  const btnRect = activeBtn.getBoundingClientRect();
+  if (!toggleRect.width || !btnRect.width) return;
+
+  const left = btnRect.left - toggleRect.left;
+  const top = btnRect.top - toggleRect.top;
+  indicator.style.left = `${left}px`;
+  indicator.style.top = `${top}px`;
+  indicator.style.width = `${btnRect.width}px`;
+  indicator.style.height = `${btnRect.height}px`;
+  indicator.style.bottom = "auto";
+}
+
 function syncAppleTvControlMode(section) {
   if (!section) return;
   const mode = section.dataset.controlMode || "cursor";
@@ -1476,11 +1500,15 @@ function syncAppleTvControlMode(section) {
     btn.classList.toggle("is-active", isActive);
     btn.setAttribute("aria-pressed", isActive ? "true" : "false");
   });
+
+  window.requestAnimationFrame(() => {
+    positionAppleTvModeIndicator(section);
+  });
 }
 
 function initAppleTvGestureControls(root = document) {
   const sections = root.querySelectorAll(
-    '.tv-control-wrapper[data-control-type="appletv"] .tv-control-section--dpad'
+    ".tv-control-wrapper .tv-control-section--dpad"
   );
 
   sections.forEach((section) => {
@@ -1563,6 +1591,17 @@ function initAppleTvGestureControls(root = document) {
     section.dataset.gestureInit = "true";
     syncAppleTvControlMode(section);
   });
+
+  if (!window.__APPLE_TV_TOGGLE_RESIZE__) {
+    window.__APPLE_TV_TOGGLE_RESIZE__ = true;
+    window.addEventListener("resize", () => {
+      document
+        .querySelectorAll(
+          ".tv-control-wrapper .tv-control-section--dpad"
+        )
+        .forEach((section) => syncAppleTvControlMode(section));
+    });
+  }
 }
 
 document.addEventListener("click", (e) => {

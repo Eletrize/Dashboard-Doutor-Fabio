@@ -2066,7 +2066,7 @@ body.orchestrated-animation.reveal-home .room-card {
 .ambiente1-htv-page {
     overflow:hidden}
 .tv-control-wrapper {
-    flex-direction:column;gap:20px;padding:10px;display:flex;position:absolute;inset:103px 21px 87px;overflow:hidden auto}
+    --tv-gesture-icon-size:clamp(20px,3vmin,32px);--tv-dpad-btn-size:clamp(44px,6vmin,86px);--tv-dpad-gap:clamp(6px,1.4vmin,12px);--tv-dpad-icon-size:calc(var(--tv-dpad-btn-size) * 0.44);--tv-ok-size:calc(var(--tv-dpad-btn-size) * 0.3);flex-direction:column;gap:20px;padding:10px;display:flex;position:absolute;inset:103px 21px 87px;overflow:hidden auto}
 @media screen and (width>=768px) and (orientation:landscape) {
     .tv-control-wrapper {
     height:calc(100vh - 190px);overflow:hidden}
@@ -2114,7 +2114,7 @@ body.orchestrated-animation.reveal-home .room-card {
 .tv-commands-grid .tv-btn--icon-only {
     flex:none;width:100%;height:56px}
 .tv-control-wrapper[data-control-type=appletv] {
-    --appletv-dpad-size:240px;--appletv-dpad-btn:90px;--appletv-dpad-btn-size:clamp(48px,9.5vmin,120px);--appletv-dpad-gap:clamp(6px,1.6vmin,14px);--appletv-dpad-icon-size:calc(var(--appletv-dpad-btn-size) * 0.42);--appletv-ok-size:calc(var(--appletv-dpad-btn-size) * 0.26);--appletv-gesture-icon-size:calc(var(--appletv-dpad-btn-size) * 0.38)}
+    --appletv-dpad-size:240px;--appletv-dpad-btn:90px;--appletv-dpad-btn-size:clamp(48px,9.5vmin,120px);--appletv-dpad-gap:clamp(6px,1.6vmin,14px);--appletv-dpad-icon-size:calc(var(--appletv-dpad-btn-size) * 0.42);--appletv-ok-size:calc(var(--appletv-dpad-btn-size) * 0.26);--tv-gesture-icon-size:calc(var(--appletv-dpad-btn-size) * 0.38)}
 .tv-control-wrapper[data-control-type=appletv] .tv-col-1 {
     gap:10px;grid-template-rows:1fr 1fr auto;min-height:0;display:grid}
 .tv-control-wrapper[data-control-type=appletv] .tv-col-apple-right {
@@ -2140,43 +2140,41 @@ body.orchestrated-animation.reveal-home .room-card {
 .tv-control-wrapper[data-control-type=appletv] .tv-btn--power-on.active,
 .tv-control-wrapper[data-control-type=appletv] .tv-btn--power-off.active {
     background:#ffffff1f;border-color:#ffffff40;box-shadow:0 0 14px #ffffff1f}
-.tv-control-wrapper[data-control-type=appletv] .tv-control-mode-toggle {
+.tv-control-wrapper .tv-control-mode-toggle {
     background:#ffffff0f;border:1px solid #ffffff1f;border-radius:14px;gap:6px;margin-bottom:14px;padding:6px;display:grid;grid-template-columns:1fr 1fr;position:relative}
-.tv-control-wrapper[data-control-type=appletv] .tv-control-mode-indicator {
-    background:#ffffff1a;border:1px solid #ffffff33;border-radius:10px;box-shadow:0 6px 14px #0000004d;pointer-events:none;position:absolute;top:6px;bottom:6px;left:6px;width:calc(50% - 6px);transition:transform .25s ease}
-.tv-control-wrapper[data-control-type=appletv] .tv-control-mode-toggle[data-mode=gestures] .tv-control-mode-indicator {
-    transform:translateX(calc(100% + 6px))}
-.tv-control-wrapper[data-control-type=appletv] .tv-control-mode-btn {
+.tv-control-wrapper .tv-control-mode-indicator {
+    background:#ffffff1a;border:1px solid #ffffff33;border-radius:10px;box-shadow:0 6px 14px #0000004d;pointer-events:none;position:absolute;top:6px;bottom:6px;left:6px;width:calc(50% - 6px);transition:left .25s ease,width .25s ease}
+.tv-control-wrapper .tv-control-mode-btn {
     color:#ffffffb3;text-transform:none;background:#0000;border:1px solid #ffffff00;border-radius:10px;flex:1;padding:8px 12px;font-family:Raleway,Arial,sans-serif;font-size:13px;font-weight:600;letter-spacing:.3px;transition:color .2s;position:relative;z-index:1}
-.tv-control-wrapper[data-control-type=appletv] .tv-control-mode-btn.is-active {
+.tv-control-wrapper .tv-control-mode-btn.is-active {
     color:#fff}
-.tv-control-wrapper[data-control-type=appletv] .tv-directional-row {
+.tv-control-wrapper .tv-directional-row {
     position:relative}
-.tv-control-wrapper[data-control-type=appletv] .tv-gesture-surface {
+.tv-control-wrapper .tv-gesture-surface {
     position:absolute;inset:0;border-radius:18px;touch-action:none;z-index:2}
-.tv-control-wrapper[data-control-type=appletv] .tv-gesture-icons {
+.tv-control-wrapper .tv-gesture-icons {
     position:absolute;inset:0;opacity:0;transform:scale(.98);transition:opacity .25s ease,transform .25s ease;pointer-events:none;z-index:1}
-.tv-control-wrapper[data-control-type=appletv] .tv-gesture-icon {
-    position:absolute;width:var(--appletv-gesture-icon-size);height:var(--appletv-gesture-icon-size);opacity:.6}
-.tv-control-wrapper[data-control-type=appletv] .tv-gesture-icon--up {
+.tv-control-wrapper .tv-gesture-icon {
+    position:absolute;width:var(--tv-gesture-icon-size);height:var(--tv-gesture-icon-size);opacity:.6}
+.tv-control-wrapper .tv-gesture-icon--up {
     top:14px;left:50%;transform:translateX(-50%)}
-.tv-control-wrapper[data-control-type=appletv] .tv-gesture-icon--down {
+.tv-control-wrapper .tv-gesture-icon--down {
     bottom:14px;left:50%;transform:translateX(-50%)}
-.tv-control-wrapper[data-control-type=appletv] .tv-gesture-icon--left {
+.tv-control-wrapper .tv-gesture-icon--left {
     left:14px;top:50%;transform:translateY(-50%)}
-.tv-control-wrapper[data-control-type=appletv] .tv-gesture-icon--right {
+.tv-control-wrapper .tv-gesture-icon--right {
     right:14px;top:50%;transform:translateY(-50%)}
-.tv-control-wrapper[data-control-type=appletv] .tv-directional-section {
+.tv-control-wrapper .tv-directional-section {
     transition:opacity .25s ease}
-.tv-control-wrapper[data-control-type=appletv] .tv-control-section--dpad[data-control-mode=cursor] .tv-gesture-surface {
+.tv-control-wrapper .tv-control-section--dpad[data-control-mode=cursor] .tv-gesture-surface {
     pointer-events:none}
-.tv-control-wrapper[data-control-type=appletv] .tv-control-section--dpad[data-control-mode=gestures] .tv-gesture-surface {
+.tv-control-wrapper .tv-control-section--dpad[data-control-mode=gestures] .tv-gesture-surface {
     pointer-events:auto}
-.tv-control-wrapper[data-control-type=appletv] .tv-control-section--dpad[data-control-mode=gestures] .tv-directional-pad {
+.tv-control-wrapper .tv-control-section--dpad[data-control-mode=gestures] .tv-directional-pad {
     pointer-events:none;opacity:0}
-.tv-control-wrapper[data-control-type=appletv] .tv-control-section--dpad[data-control-mode=gestures] .tv-directional-section {
+.tv-control-wrapper .tv-control-section--dpad[data-control-mode=gestures] .tv-directional-section {
     opacity:0;pointer-events:none}
-.tv-control-wrapper[data-control-type=appletv] .tv-control-section--dpad[data-control-mode=gestures] .tv-gesture-icons {
+.tv-control-wrapper .tv-control-section--dpad[data-control-mode=gestures] .tv-gesture-icons {
     opacity:.6;transform:scale(1)}
 @media (orientation:portrait) {
     .tv-control-wrapper[data-control-type=appletv] .tv-control-section--power {
@@ -2350,6 +2348,16 @@ body.orchestrated-animation.reveal-home .room-card {
     .tv-ok-circle {
     width:30px;height:30px}
 }
+.tv-control-wrapper:not([data-control-type=appletv]) .tv-directional-pad,
+.tv-control-wrapper:not([data-control-type=appletv]) .tv-directional-row-line {
+    gap:var(--tv-dpad-gap)}
+.tv-control-wrapper:not([data-control-type=appletv]) .tv-directional-btn {
+    width:var(--tv-dpad-btn-size);height:var(--tv-dpad-btn-size)}
+.tv-control-wrapper:not([data-control-type=appletv]) .tv-directional-btn svg,
+.tv-control-wrapper:not([data-control-type=appletv]) .tv-directional-btn .tv-btn-icon-img {
+    width:var(--tv-dpad-icon-size);height:var(--tv-dpad-icon-size)}
+.tv-control-wrapper:not([data-control-type=appletv]) .tv-ok-circle {
+    width:var(--tv-ok-size);height:var(--tv-ok-size)}
 .tv-volume-channels-inline {
     background:0 0;border:none;flex-direction:column;justify-content:center;align-items:center;gap:16px;padding:0;display:flex}
 .tv-volume-column {
@@ -3103,12 +3111,15 @@ body.app-ready #spa-root {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         align-items: stretch;
-        gap: 24px;
-        --acv2-btn-height: 96px;
+        gap: 20px;
+        height: 100%;
+        min-height: 0;
+        padding: 16px;
+        --acv2-btn-height: clamp(56px, 9vmin, 84px);
     }
 
     .acv2-commands {
-        --acv2-power-row-height: 96px;
+        --acv2-power-row-height: var(--acv2-btn-height);
     }
 
     .acv2-temp {
@@ -3117,8 +3128,23 @@ body.app-ready #spa-root {
         gap: 6px;
     }
 
+    .acv2-card {
+        padding: 16px;
+        gap: 14px;
+        min-height: 0;
+    }
+
+    .acv2-temp-display {
+        font-size: clamp(110px, 24vmin, 200px);
+        padding: 10px 0 4px;
+    }
+
     .acv2-slider-block {
-        gap: 32px;
+        gap: 20px;
+    }
+
+    .acv2-temp-controls {
+        padding-top: 10px;
     }
 
     .acv2-temp-slider {
@@ -3164,7 +3190,7 @@ body.app-ready #spa-root {
     }
 
     .acv2-btn--power {
-        font-size: 24px;
+        font-size: clamp(18px, 2.6vmin, 24px);
     }
 }
 
