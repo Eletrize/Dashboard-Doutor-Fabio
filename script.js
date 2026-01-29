@@ -240,6 +240,22 @@ const ICON_ASSET_PATHS = [
   "images/icons/icon-bluray.svg",
   "images/icons/icon-apple-tv.svg",
   "images/icons/icon-clarotv.svg",
+  "images/icons/icon-numbers.svg",
+  "images/icons/icon-globo.svg",
+  "images/icons/icon-globonews.svg",
+  "images/icons/icon-gnt.svg",
+  "images/icons/icon-canaloff.svg",
+  "images/icons/icon-discovery.svg",
+  "images/icons/icon-espn.svg",
+  "images/icons/icon-sportv.svg",
+  "images/icons/icon-tcaction.svg",
+  "images/icons/icon-hbo.svg",
+  "images/icons/icon-config.svg",
+  "images/icons/icon-setup.svg",
+  "images/icons/icon-stup.svg",
+  "images/icons/icon-sound-high.svg",
+  "images/icons/icon-sound-low.svg",
+  "images/icons/icon-sound-mute.svg",
   "images/icons/icon-roku.svg",
   "images/icons/icon-musica.svg",
   "images/icons/icon-curtain.svg",
@@ -1347,19 +1363,22 @@ let tvPowerState = "off"; // Estado inicial: desligado
 function updateTVPowerState(newState) {
   tvPowerState = newState;
 
-  // Selecionar botÃƒÂµes ON e OFF
+  // Selecionar botões ON e OFF
   const btnOn = document.querySelector(".tv-btn--power-on");
   const btnOff = document.querySelector(".tv-btn--power-off");
 
-  // Selecionar todos os outros controles
+  // Selecionar todos os outros controles (incluindo música e volume)
   const otherControls = document.querySelectorAll(
-    ".tv-volume-canais-wrapper, .tv-commands-grid, .tv-directional-pad, .tv-numpad, .tv-logo-section, .tv-control-mode-toggle"
+    ".tv-volume-canais-wrapper, .tv-commands-grid, .tv-directional-pad, .tv-numpad, .tv-favorites-list, .tv-logo-section, .tv-control-mode-toggle, .tv-control-section--music, .tv-control-section--dpad, .tv-control-section--volume, .tv-control-section--media, .music-now-content, .music-album-container, .music-info, .tv-volume-slider-container, .tv-volume-slider, .tv-volume-value"
   );
   const gestureIcons = document.querySelectorAll(".tv-gesture-icons");
   const gestureSurface = document.querySelectorAll(".tv-gesture-surface");
 
-  // Selecionar tÃƒÂ­tulos das seÃƒÂ§ÃƒÂµes de controle
-  const titles = document.querySelectorAll(".tv-section-title");
+  // Selecionar títulos das seções de controle
+  const titles = document.querySelectorAll(".tv-section-title, .tv-section-line");
+  
+  // Selecionar seção de volume separadamente (coluna 2)
+  const volumeSection = document.querySelectorAll(".tv-col-2 > .tv-control-section");
 
   if (newState === "on") {
     // TV ligada
@@ -1379,38 +1398,46 @@ function updateTVPowerState(newState) {
       control.style.opacity = "";
       control.style.pointerEvents = "";
     });
+    volumeSection.forEach((control) => {
+      control.style.opacity = "1";
+      control.style.pointerEvents = "auto";
+    });
 
-    // Mostrar tÃƒÂ­tulos
+    // Mostrar títulos
     titles.forEach((title) => {
       title.style.opacity = "1";
     });
 
-    console.log("Ã°Å¸â€œÂº TV LIGADA - Controles visÃƒÂ­veis");
+    console.log("📺 TV LIGADA - Controles visíveis");
   } else {
-    // TV desligada
+    // TV desligada - opacidade 40% (0.4)
     btnOff?.classList.add("active");
     btnOn?.classList.remove("active");
 
     // Escurecer e desabilitar outros controles
     otherControls.forEach((control) => {
-      control.style.opacity = "0.15";
+      control.style.opacity = "0.4";
       control.style.pointerEvents = "none";
     });
     gestureIcons.forEach((control) => {
-      control.style.opacity = "0.15";
+      control.style.opacity = "0.4";
       control.style.pointerEvents = "none";
     });
     gestureSurface.forEach((control) => {
-      control.style.opacity = "0.15";
+      control.style.opacity = "0.4";
+      control.style.pointerEvents = "none";
+    });
+    volumeSection.forEach((control) => {
+      control.style.opacity = "0.4";
       control.style.pointerEvents = "none";
     });
 
-    // Apagar tÃƒÂ­tulos
+    // Apagar títulos
     titles.forEach((title) => {
-      title.style.opacity = "0.2";
+      title.style.opacity = "0.4";
     });
 
-    console.log("Ã°Å¸â€œÂº TV DESLIGADA - Controles desabilitados");
+    console.log("📺 TV DESLIGADA - Controles desabilitados");
   }
 }
 
@@ -1458,6 +1485,55 @@ function tvCommand(el, command) {
         error
       );
     });
+}
+
+function toggleClaroTvPanel(trigger, targetView) {
+  const view = targetView === "favorites" ? "favorites" : "numbers";
+  const wrapper = trigger?.closest?.(".tv-control-wrapper");
+  if (!wrapper) return;
+
+  const panel = wrapper.querySelector(
+    ".tv-control-section[data-claro-panel]"
+  );
+  if (!panel) return;
+
+  const currentView = panel.dataset.claroPanel || "numbers";
+  if (currentView === view) return;
+
+  const fade = panel.querySelector("[data-claro-fade]");
+  const title = panel.querySelector("[data-claro-panel-title]");
+  const buttons = wrapper.querySelectorAll("[data-claro-panel-btn]");
+
+  const applyView = () => {
+    panel.dataset.claroPanel = view;
+    if (title) {
+      title.textContent = view === "favorites" ? "Favoritos" : "N\u00fameros";
+    }
+
+    buttons.forEach((btn) => {
+      const isActive = btn.dataset.claroPanelBtn === view;
+      btn.classList.toggle("is-active", isActive);
+      btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+  };
+
+  if (!fade) {
+    applyView();
+    return;
+  }
+
+  if (fade.dataset.fadeBusy === "true") return;
+  fade.dataset.fadeBusy = "true";
+  fade.classList.add("is-fading");
+
+  window.setTimeout(() => {
+    applyView();
+    fade.classList.remove("is-fading");
+  }, 200);
+
+  window.setTimeout(() => {
+    fade.dataset.fadeBusy = "";
+  }, 400);
 }
 
 function positionAppleTvModeIndicator(section) {
@@ -2099,6 +2175,22 @@ async function updateDenonVolumeFromServer() {
     typeof queryActiveMusic === "function"
       ? queryActiveMusic("#music-volume-slider")
       : document.querySelector("#music-volume-slider");
+  const musicDisplay =
+    typeof queryActiveMusic === "function"
+      ? queryActiveMusic("#music-volume-display")
+      : document.querySelector("#music-volume-display");
+  const musicIconHigh =
+    typeof queryActiveMusic === "function"
+      ? queryActiveMusic(".volume-icon-high")
+      : document.querySelector(".volume-icon-high");
+  const musicIconLow =
+    typeof queryActiveMusic === "function"
+      ? queryActiveMusic(".volume-icon-low")
+      : document.querySelector(".volume-icon-low");
+  const musicIconMuted =
+    typeof queryActiveMusic === "function"
+      ? queryActiveMusic(".volume-icon-muted")
+      : document.querySelector(".volume-icon-muted");
 
   try {
     const pollingUrl = isProduction
@@ -2175,6 +2267,23 @@ async function updateDenonVolumeFromServer() {
         );
       }
 
+      if (musicDisplay) {
+        musicDisplay.textContent = volumeValue;
+      }
+
+      if (musicIconHigh && musicIconLow && musicIconMuted) {
+        musicIconHigh.style.display = "none";
+        musicIconLow.style.display = "none";
+        musicIconMuted.style.display = "none";
+        if (volumeValue === 0) {
+          musicIconMuted.style.display = "block";
+        } else if (volumeValue >= 50) {
+          musicIconHigh.style.display = "block";
+        } else {
+          musicIconLow.style.display = "block";
+        }
+      }
+
       console.log("[Denon] Volume atualizado:", volumeValue);
     }
 
@@ -2194,6 +2303,22 @@ function updateDenonVolumeUI(volume) {
     typeof queryActiveMusic === "function"
       ? queryActiveMusic("#music-volume-slider")
       : document.querySelector("#music-volume-slider");
+  const musicDisplay =
+    typeof queryActiveMusic === "function"
+      ? queryActiveMusic("#music-volume-display")
+      : document.querySelector("#music-volume-display");
+  const musicIconHigh =
+    typeof queryActiveMusic === "function"
+      ? queryActiveMusic(".volume-icon-high")
+      : document.querySelector(".volume-icon-high");
+  const musicIconLow =
+    typeof queryActiveMusic === "function"
+      ? queryActiveMusic(".volume-icon-low")
+      : document.querySelector(".volume-icon-low");
+  const musicIconMuted =
+    typeof queryActiveMusic === "function"
+      ? queryActiveMusic(".volume-icon-muted")
+      : document.querySelector(".volume-icon-muted");
 
   debugLog(() => ["updateDenonVolumeUI chamada", { volume }]);
 
@@ -2246,6 +2371,23 @@ function updateDenonVolumeUI(volume) {
       musicSlider.style.setProperty("--volume-percent", percentageMusic + "%");
       if (typeof updateVolumeBar === "function") updateVolumeBar();
       updated = true;
+    }
+  }
+
+  if (musicDisplay) {
+    musicDisplay.textContent = volumeValue;
+  }
+
+  if (musicIconHigh && musicIconLow && musicIconMuted) {
+    musicIconHigh.style.display = "none";
+    musicIconLow.style.display = "none";
+    musicIconMuted.style.display = "none";
+    if (volumeValue === 0) {
+      musicIconMuted.style.display = "block";
+    } else if (volumeValue >= 50) {
+      musicIconHigh.style.display = "block";
+    } else {
+      musicIconLow.style.display = "block";
     }
   }
 
@@ -6411,12 +6553,7 @@ function updateMusicPlayerUI(artist, track, album, albumArt) {
   }
 
   // placeholder de capa depende apenas do config.js; se nÃ£o houver, fica vazio
-  let albumPlaceholder = "";
-  try {
-    if (currentEnvKey && typeof ROOM_IMAGE_DATA !== "undefined" && ROOM_IMAGE_DATA[currentEnvKey]) {
-      albumPlaceholder = ROOM_IMAGE_DATA[currentEnvKey].fallback;
-    }
-  } catch (e) {}
+  const albumPlaceholder = "images/images/music-placeholder.png";
 
   // Atualizar texto se os elementos existirem
   if (artistElement) artistElement.textContent = artist;
@@ -6441,10 +6578,10 @@ function updateMusicPlayerUI(artist, track, album, albumArt) {
       albumImgElement.src = albumArt;
       albumImgElement.onerror = function () {
         // Se a imagem falhar, use placeholder, se existir
-        if (albumPlaceholder) this.src = albumPlaceholder;
+        this.src = albumPlaceholder;
       };
-    } else if (albumPlaceholder) {
-      // Usar placeholder somente se definido no config
+    } else {
+      // Usar placeholder padrão
       albumImgElement.src = albumPlaceholder;
     }
   }
@@ -6577,7 +6714,8 @@ function initMusicPlayerUI() {
   const muteBtn = queryActiveMusic("#music-mute");
   const volumeSlider = queryActiveMusic("#music-volume-slider");
   const volumeSection = queryActiveMusic(".music-volume-section");
-  const volumeIconUnmuted = queryActiveMusic(".volume-icon-unmuted");
+  const volumeIconHigh = queryActiveMusic(".volume-icon-high");
+  const volumeIconLow = queryActiveMusic(".volume-icon-low");
   const volumeIconMuted = queryActiveMusic(".volume-icon-muted");
   const masterOnBtn = queryActiveMusic("#music-master-on");
   const masterOffBtn = queryActiveMusic("#music-master-off");
@@ -6588,6 +6726,58 @@ function initMusicPlayerUI() {
     masterOnBtn,
     masterOffBtn,
   });
+
+  function bindVerticalVolumeSlider(slider) {
+    if (!slider || !slider.classList.contains("music-volume-slider--vertical")) {
+      return;
+    }
+    if (slider.dataset.verticalBound === "true") {
+      return;
+    }
+    slider.dataset.verticalBound = "true";
+
+    let pointerActive = false;
+
+    const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+    const updateFromPointer = (event) => {
+      const rect = slider.getBoundingClientRect();
+      if (!rect.height) return;
+      const min = Number(slider.min || 0);
+      const max = Number(slider.max || 100);
+      const ratio = 1 - (event.clientY - rect.top) / rect.height;
+      const value = Math.round(min + clamp(ratio, 0, 1) * (max - min));
+      slider.value = String(value);
+      slider.dispatchEvent(new Event("input", { bubbles: true }));
+    };
+
+    slider.addEventListener("pointerdown", (event) => {
+      if (event.button !== undefined && event.button !== 0) return;
+      pointerActive = true;
+      if (slider.setPointerCapture) slider.setPointerCapture(event.pointerId);
+      updateFromPointer(event);
+    });
+
+    slider.addEventListener("pointermove", (event) => {
+      if (!pointerActive) return;
+      if (slider.hasPointerCapture && !slider.hasPointerCapture(event.pointerId)) {
+        return;
+      }
+      updateFromPointer(event);
+    });
+
+    const finishPointer = (event) => {
+      if (!pointerActive) return;
+      pointerActive = false;
+      if (slider.releasePointerCapture) {
+        slider.releasePointerCapture(event.pointerId);
+      }
+      slider.dispatchEvent(new Event("change", { bubbles: true }));
+    };
+
+    slider.addEventListener("pointerup", finishPointer);
+    slider.addEventListener("pointercancel", finishPointer);
+  }
 
   window.musicPlayerUI = window.musicPlayerUI || {};
   const initialPowerState =
@@ -6627,33 +6817,54 @@ function initMusicPlayerUI() {
     window.musicPlayerUI.currentPlaying = isPlaying;
   }
 
+  function updateVolumeIcons(volumeValue, muted) {
+    if (volumeIconHigh) volumeIconHigh.style.display = "none";
+    if (volumeIconLow) volumeIconLow.style.display = "none";
+    if (volumeIconMuted) volumeIconMuted.style.display = "none";
+
+    if (muted) {
+      if (volumeIconMuted) volumeIconMuted.style.display = "block";
+      return;
+    }
+
+    const numericVolume = Number.isFinite(volumeValue)
+      ? volumeValue
+      : parseInt(volumeSlider?.value || "0", 10);
+    if (numericVolume >= 50) {
+      if (volumeIconHigh) volumeIconHigh.style.display = "block";
+    } else {
+      if (volumeIconLow) volumeIconLow.style.display = "block";
+    }
+  }
+
   function setMuted(muted) {
     isMuted = muted;
     muteBtn.setAttribute("aria-pressed", muted ? "true" : "false");
     volumeSection.setAttribute("data-muted", muted ? "true" : "false");
 
-    if (volumeIconUnmuted && volumeIconMuted) {
-      volumeIconUnmuted.style.display = muted ? "none" : "block";
-      volumeIconMuted.style.display = muted ? "block" : "none";
-    }
-
     if (muted) {
       volumeBeforeMute = parseInt(volumeSlider.value);
       volumeSlider.value = 0;
+      volumeSlider.setAttribute("disabled", "true");
+      volumeSlider.style.pointerEvents = "none";
       console.log(
         "Ã°Å¸â€â€¡ Volume mutado. Volume anterior:",
         volumeBeforeMute
       );
       // Atualiza a barra visual para 0% quando mutado
       if (typeof updateVolumeBar === "function") updateVolumeBar();
+      updateVolumeIcons(0, true);
     } else {
       volumeSlider.value = volumeBeforeMute;
+      volumeSlider.removeAttribute("disabled");
+      volumeSlider.style.pointerEvents = "auto";
       console.log(
         "Ã°Å¸â€Å  Volume desmutado. Volume restaurado:",
         volumeBeforeMute
       );
       // Atualiza a barra visual para o valor restaurado
       if (typeof updateVolumeBar === "function") updateVolumeBar();
+      updateVolumeIcons(parseInt(volumeSlider.value), false);
     }
   }
 
@@ -6740,6 +6951,8 @@ function initMusicPlayerUI() {
 
   // Controle de volume
   if (muteBtn && volumeSlider) {
+    bindVerticalVolumeSlider(volumeSlider);
+
     muteBtn.addEventListener("click", () => {
       const newMutedState = !isMuted;
       const command = newMutedState ? "mute" : "unmute";
@@ -6762,6 +6975,9 @@ function initMusicPlayerUI() {
       const value = parseInt(volumeSlider.value);
       const percent = (value / 100) * 100;
       volumeSlider.style.setProperty("--volume-percent", percent + "%");
+      const volumeDisplay = queryActiveMusic("#music-volume-display");
+      if (volumeDisplay) volumeDisplay.textContent = value;
+      updateVolumeIcons(value, isMuted);
       console.log(
         "Ã°Å¸â€Å  Volume ajustado para:",
         value,
@@ -6792,6 +7008,9 @@ function initMusicPlayerUI() {
           "--volume-percent",
           (v / 100) * 100 + "%"
         );
+        const volumeDisplay = queryActiveMusic("#music-volume-display");
+        if (volumeDisplay) volumeDisplay.textContent = v;
+        updateVolumeIcons(v, isMuted);
       });
 
       musicSlider.addEventListener("change", (e) => {
@@ -6799,6 +7018,7 @@ function initMusicPlayerUI() {
         console.log(
           `Ã°Å¸â€Å  Music slider changed -> sending setVolume ${value} to Denon (${DENON_CMD_DEVICE_ID})`
         );
+        updateVolumeIcons(parseInt(value, 10), isMuted);
         // Mark recent command to prevent polling overwrite
         recentCommands.set(DENON_CMD_DEVICE_ID, Date.now());
         // Send command
@@ -7415,4 +7635,3 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 console.log("📜 SCRIPT.JS CARREGADO COMPLETAMENTE!");
-

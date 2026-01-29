@@ -62,7 +62,10 @@ const CLIENT_CONFIG = {
     items: {
       lights: { label: "Luzes", icon: "images/icons/icon-small-light-off.svg" },
       curtains: { label: "Cortinas", icon: "images/icons/icon-curtain.svg" },
-      comfort: { label: "Ar Condicionado", icon: "images/icons/ar-condicionado.svg" },
+      comfort: {
+        label: "Ar Condicionado",
+        icon: "images/icons/ar-condicionado.svg",
+      },
       music: { label: "Música", icon: "images/icons/icon-musica.svg" },
       tv: { label: "Televisão", icon: "images/icons/icon-tv.svg" },
       htv: { label: "HTV", icon: "images/icons/icon-htv.svg" },
@@ -73,7 +76,10 @@ const CLIENT_CONFIG = {
       clarotv: { label: "Claro TV", icon: "images/icons/icon-clarotv.svg" },
       roku: { label: "Roku", icon: "images/icons/icon-roku.svg" },
       games: { label: "Games", icon: "images/icons/icon-games.svg" },
-      hidromassagem: { label: "Hidromassagem", icon: "images/icons/icon-hidromassagem.svg" },
+      hidromassagem: {
+        label: "Hidromassagem",
+        icon: "images/icons/icon-hidromassagem.svg",
+      },
     },
 
     // Ícones on/off padronizados por tipo (reutilizáveis em qualquer botão toggle)
@@ -135,21 +141,11 @@ const CLIENT_CONFIG = {
         temperature: { min: 18, max: 25, default: 22 },
       },
       curtains: [],
-      tv: [
-        { id: "111", name: "Televisão" },
-      ],
-      bluray: [
-        { id: "112", name: "Blu-ray" },        
-      ],
-      appletv: [
-        { id: "113", name: "Apple TV" },
-      ],
-      music: [
-        { id: "114", name: "Música" },
-      ],
-      clarotv: [
-        { id: "117", name: "Claro TV" },
-      ],
+      tv: [{ id: "111", name: "Televisão" }],
+      bluray: [{ id: "112", name: "Blu-ray" }],
+      appletv: [{ id: "113", name: "Apple TV" }],
+      music: [{ id: "114", name: "Música" }],
+      clarotv: [{ id: "117", name: "Claro TV" }],
     },
 
     ambiente2: {
@@ -188,9 +184,7 @@ const CLIENT_CONFIG = {
         { id: "307", name: "Churrasqueira" },
         { id: "341", name: "Pendente", type: "dimmer", defaultLevel: 100 },
       ],
-      curtains: [
-        { id: "121", name: "Cortina" }
-      ],
+      curtains: [{ id: "121", name: "Cortina" }],
       airConditioner: {
         deviceId: "348",
         brand: "carrier",
@@ -198,18 +192,10 @@ const CLIENT_CONFIG = {
         controls: { zoneSelector: true, aletas: true, windfree: false },
         temperature: { min: 18, max: 25, default: 22 },
       },
-      roku: [
-        { id: "122", name: "Roku" },
-      ],
-      games: [
-        { id: "123", name: "Games" },
-      ],
-      music: [
-        { id: "124", name: "Música" },
-      ],
-      tv: [
-        { id: "125", name: "Televisão" },
-      ],
+      roku: [{ id: "122", name: "Roku" }],
+      games: [{ id: "123", name: "Games" }],
+      music: [{ id: "124", name: "Música" }],
+      tv: [{ id: "125", name: "Televisão" }],
     },
 
     ambiente4: {
@@ -222,9 +208,7 @@ const CLIENT_CONFIG = {
         { id: "66", name: "Piscina" },
         { id: "59", name: "LED Piscina" },
       ],
-      hidromassagem: [
-        { id: "130", name: "Hidromassagem" },
-      ],
+      hidromassagem: [{ id: "130", name: "Hidromassagem" }],
     },
 
     ambiente5: {
@@ -232,9 +216,7 @@ const CLIENT_CONFIG = {
       photo: "photo-placeholder.webp",
       visible: true,
       order: 5,
-      curtains: [
-        { id: "40", name: "Cortina" }
-      ],
+      curtains: [{ id: "40", name: "Cortina" }],
       airConditioner: {
         zones: [{ id: "escritorio", name: "Escritório", deviceId: "169" }],
         controls: { zoneSelector: true, aletas: true, windfree: true },
@@ -258,11 +240,11 @@ const CLIENT_CONFIG = {
       photo: "photo-placeholder.webp",
       visible: true,
       order: 7,
-      tv: [
-        { id: "50", name: "Televisão" }
-      ],
+      tv: [{ id: "50", name: "Televisão" }],
       airConditioner: {
-        zones: [{ id: "Brinquedoteca", name: "Brinquedoteca", deviceId: "182" }],
+        zones: [
+          { id: "Brinquedoteca", name: "Brinquedoteca", deviceId: "182" },
+        ],
         controls: { zoneSelector: true, aletas: true, windfree: false },
         temperature: { min: 18, max: 25, default: 22 },
       },
@@ -273,30 +255,22 @@ const CLIENT_CONFIG = {
       photo: "photo-placeholder.webp",
       visible: true,
       order: 8,
-      curtains: [
-        { id: "51", name: "Veneziana" }
-      ],
+      curtains: [{ id: "51", name: "Veneziana" }],
       airConditioner: {
         zones: [{ id: "suitemilena", name: "Suíte Milena", deviceId: "188" }],
         controls: { zoneSelector: true, aletas: true, windfree: false },
         temperature: { min: 18, max: 25, default: 22 },
       },
-      tv: [
-        { id: "53", name: "Televisão" }
-      ],
-      music: [
-        { id: "54", name: "Música" }
-      ],
-      clarotv: [
-        { id: "55", name: "Claro TV" }
-      ],
+      tv: [{ id: "53", name: "Televisão" }],
+      music: [{ id: "54", name: "Música" }],
+      clarotv: [{ id: "55", name: "Claro TV" }],
     },
 
     ambiente9: {
       name: "Suíte Fabio",
       photo: "photo-placeholder.webp",
       visible: true,
-       order: 10,
+      order: 10,
       lights: [],
       curtains: [{ id: "52", name: "Veneziana" }],
       airConditioner: {
@@ -395,8 +369,8 @@ const CLIENT_CONFIG = {
       ambiente2: "167",
       ambiente7: "182",
       ambiente8: "188",
-       ambiente9: "180",
-       ambiente10: "180",
+      ambiente9: "180",
+      ambiente10: "180",
     },
 
     // Mantém a lógica existente de "initialize" quando entrar no ambiente1
@@ -429,7 +403,9 @@ function getVisibleEnvironments() {
 }
 
 function getEnvironment(envKey) {
-  return (CLIENT_CONFIG?.environments && CLIENT_CONFIG.environments[envKey]) || null;
+  return (
+    (CLIENT_CONFIG?.environments && CLIENT_CONFIG.environments[envKey]) || null
+  );
 }
 
 function getEnvironmentLightIds(envKey) {
@@ -457,13 +433,17 @@ function getAllLightIds() {
   getVisibleEnvironments().forEach((env) => {
     (env.lights || []).forEach((light) => ids.push(String(light.id)));
   });
-  (CLIENT_CONFIG?.devices?.extraPollingDevices || []).forEach((id) => ids.push(String(id)));
+  (CLIENT_CONFIG?.devices?.extraPollingDevices || []).forEach((id) =>
+    ids.push(String(id)),
+  );
   return Array.from(new Set(ids));
 }
 
 function getAcDeviceIds() {
   const ids =
-    (CLIENT_CONFIG?.devices?.airConditioners && { ...CLIENT_CONFIG.devices.airConditioners }) ||
+    (CLIENT_CONFIG?.devices?.airConditioners && {
+      ...CLIENT_CONFIG.devices.airConditioners,
+    }) ||
     {};
   getVisibleEnvironments().forEach((env) => {
     const acId = env?.airConditioner?.deviceId;
@@ -492,7 +472,12 @@ function getEnvironmentPhotoMap() {
 }
 
 function getIconOverrides() {
-  return (CLIENT_CONFIG?.ui?.iconOverrides && { ...CLIENT_CONFIG.ui.iconOverrides }) || {};
+  return (
+    (CLIENT_CONFIG?.ui?.iconOverrides && {
+      ...CLIENT_CONFIG.ui.iconOverrides,
+    }) ||
+    {}
+  );
 }
 
 function getUiItem(key) {
@@ -553,8 +538,7 @@ function generateLightsControls(envKey) {
     "images/icons/icon-small-light-off.svg";
 
   const DIMMER_ICON_ON =
-    CLIENT_CONFIG?.ui?.toggles?.dimmer?.on ||
-    "images/icons/icon-dimmer-on.svg";
+    CLIENT_CONFIG?.ui?.toggles?.dimmer?.on || "images/icons/icon-dimmer-on.svg";
   const DIMMER_ICON_OFF =
     CLIENT_CONFIG?.ui?.toggles?.dimmer?.off ||
     "images/icons/icon-dimmer-off.svg";
@@ -562,11 +546,11 @@ function generateLightsControls(envKey) {
   return env.lights
     .map((light, index) => {
       const dimmerEnabled = isDimmerLight(light);
-      
+
       // Dimmers usam icon-dimmer; a luz acesa aparece no background quando on.
       const defaultIconOn = dimmerEnabled ? DIMMER_ICON_ON : DEFAULT_ICON_ON;
       const defaultIconOff = dimmerEnabled ? DIMMER_ICON_OFF : DEFAULT_ICON_OFF;
-      
+
       const iconOn = dimmerEnabled
         ? light?.iconOn || light?.icon?.on || light?.icons?.on || defaultIconOn
         : DEFAULT_ICON_ON;
@@ -578,7 +562,7 @@ function generateLightsControls(envKey) {
         : DEFAULT_ICON_OFF;
       const defaultLevel = normalizeDimmerLevel(light?.defaultLevel, 80);
       const deviceId = String(light.id);
-      
+
       // Todas as luzes agora têm ícone de background (light-on com 60% opacity quando ligado)
       const backgroundIcon = DEFAULT_ICON_ON;
 
@@ -598,9 +582,9 @@ function generateLightsControls(envKey) {
       const sliderId = `${envKey}-${deviceId}-dimmer`;
 
       return `
-        <div class="control-card control-card--dimmer" data-state="off" data-device-id="${deviceId}" data-light-name="${light.name}" data-light-index="${index}" data-icon-on="${iconOn}" data-icon-off="${iconOff}" data-icon-bg="${backgroundIcon || ''}" data-control-type="dimmer" data-default-level="${defaultLevel}" onclick="toggleDimmerControl(event, this)" onmousedown="startDimmerLongPress(event, this)" onmouseup="cancelDimmerLongPress(this)" onmouseleave="cancelDimmerLongPress(this)" ontouchstart="startDimmerLongPress(event, this)" ontouchend="cancelDimmerLongPress(this)" ontouchcancel="cancelDimmerLongPress(this)">
+        <div class="control-card control-card--dimmer" data-state="off" data-device-id="${deviceId}" data-light-name="${light.name}" data-light-index="${index}" data-icon-on="${iconOn}" data-icon-off="${iconOff}" data-icon-bg="${backgroundIcon || ""}" data-control-type="dimmer" data-default-level="${defaultLevel}" onclick="toggleDimmerControl(event, this)" onmousedown="startDimmerLongPress(event, this)" onmouseup="cancelDimmerLongPress(this)" onmouseleave="cancelDimmerLongPress(this)" ontouchstart="startDimmerLongPress(event, this)" ontouchend="cancelDimmerLongPress(this)" ontouchcancel="cancelDimmerLongPress(this)">
           <div class="control-icon-wrap">
-            ${backgroundIcon ? `<img class="control-icon control-icon-bg" src="${backgroundIcon}" alt="" style="opacity: 0;">` : ''}
+            ${backgroundIcon ? `<img class="control-icon control-icon-bg" src="${backgroundIcon}" alt="" style="opacity: 0;">` : ""}
             <img class="control-icon control-icon-outline" src="${iconOff}" alt="${light.name}">
             <img class="control-icon control-icon-main" src="${iconOff}" alt="${light.name}">
           </div>
@@ -620,7 +604,8 @@ function generateCurtainsControls(envKey) {
   const ICON_STOP =
     CLIENT_CONFIG?.ui?.actions?.curtainStop || "images/icons/icon-stop.svg";
   const ICON_CLOSE =
-    CLIENT_CONFIG?.ui?.actions?.curtainClose || "images/icons/close-curtain.svg";
+    CLIENT_CONFIG?.ui?.actions?.curtainClose ||
+    "images/icons/close-curtain.svg";
 
   return env.curtains
     .map(
@@ -642,7 +627,7 @@ function generateCurtainsControls(envKey) {
             </button>
           </div>
         </article>
-      `
+      `,
     )
     .join("");
 }
@@ -666,4 +651,4 @@ window.buildCurtainSectionsFromConfig = buildCurtainSectionsFromConfig;
 window.generateLightsControls = generateLightsControls;
 window.generateCurtainsControls = generateCurtainsControls;
 
-console.log('✅ CLIENT_CONFIG carregado:', CLIENT_CONFIG.clientInfo.name);
+console.log("✅ CLIENT_CONFIG carregado:", CLIENT_CONFIG.clientInfo.name);
