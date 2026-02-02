@@ -7346,6 +7346,7 @@ console.log("Script carregado, configurando DOMContentLoaded...");
 // Tentativa de manter a tela ativa (Wake Lock) - útil em dispositivos como Echo Show
 let screenWakeLock = null;
 let lastHiddenAt = 0;
+let keepAliveVideoStarted = false;
 
 async function requestScreenWakeLock() {
   if (!("wakeLock" in navigator)) {
@@ -7388,14 +7389,87 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted || (lastHiddenAt && Date.now() - lastHiddenAt > 10000)) {
+    console.log("🔁 pageshow detectado, recarregando...");
+    window.location.reload();
+  }
+});
+
+window.addEventListener("focus", () => {
+  if (lastHiddenAt && Date.now() - lastHiddenAt > 10000) {
+    console.log("🔁 Foco após descanso, recarregando...");
+    window.location.reload();
+  }
+});
+
+// Vídeo leve em loop via canvas para manter atividade de mídia (fallback adicional)
+function startKeepAliveVideo() {
+  if (keepAliveVideoStarted) return;
+  if (typeof HTMLCanvasElement === "undefined") return;
+  if (typeof document.createElement !== "function") return;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 2;
+  canvas.height = 2;
+  canvas.style.position = "fixed";
+  canvas.style.left = "-9999px";
+  canvas.style.top = "-9999px";
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx || typeof canvas.captureStream !== "function") {
+    return;
+  }
+
+  const stream = canvas.captureStream(1);
+  const video = document.createElement("video");
+  video.muted = true;
+  video.autoplay = true;
+  video.loop = true;
+  video.playsInline = true;
+  video.style.position = "fixed";
+  video.style.width = "1px";
+  video.style.height = "1px";
+  video.style.opacity = "0.01";
+  video.style.left = "-9999px";
+  video.style.top = "-9999px";
+  video.srcObject = stream;
+
+  document.body.appendChild(canvas);
+  document.body.appendChild(video);
+
+  let t = 0;
+  const draw = () => {
+    t += 1;
+    const v = t % 255;
+    ctx.fillStyle = `rgb(${v},${v},${v})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    requestAnimationFrame(draw);
+  };
+  draw();
+
+  video.play().catch(() => {
+    // Requer gesto do usuário; será tentado novamente no primeiro clique
+  });
+
+  keepAliveVideoStarted = true;
+  console.log("🎞️ Keep-alive de vídeo iniciado");
+}
+
 // Algumas plataformas exigem gesto do usuário para ativar Wake Lock
 document.addEventListener(
   "click",
   () => {
     requestScreenWakeLock();
+    startKeepAliveVideo();
   },
   { once: true }
 );
+
+document.addEventListener("DOMContentLoaded", () => {
+  requestScreenWakeLock();
+  startKeepAliveVideo();
+});
 
 // Função de inicialização unificada (mobile e desktop idênticos)
 // Função de inicialização unificada (mobile e desktop idênticos)
