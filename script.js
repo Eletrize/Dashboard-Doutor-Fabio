@@ -7343,6 +7343,60 @@ window.addEventListener("unhandledrejection", function (event) {
 
 console.log("Script carregado, configurando DOMContentLoaded...");
 
+// Tentativa de manter a tela ativa (Wake Lock) - útil em dispositivos como Echo Show
+let screenWakeLock = null;
+let lastHiddenAt = 0;
+
+async function requestScreenWakeLock() {
+  if (!("wakeLock" in navigator)) {
+    return;
+  }
+
+  try {
+    if (screenWakeLock) {
+      return;
+    }
+
+    screenWakeLock = await navigator.wakeLock.request("screen");
+    console.log("🔒 Wake Lock ativo");
+
+    screenWakeLock.addEventListener("release", () => {
+      console.log("🔓 Wake Lock liberado");
+      screenWakeLock = null;
+    });
+  } catch (error) {
+    console.warn("⚠️ Falha ao solicitar Wake Lock:", error);
+    screenWakeLock = null;
+  }
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") {
+    lastHiddenAt = Date.now();
+    return;
+  }
+
+  if (document.visibilityState === "visible") {
+    requestScreenWakeLock();
+
+    if (lastHiddenAt && Date.now() - lastHiddenAt > 10000) {
+      setTimeout(() => {
+        console.log("🔁 Retomou do descanso, recarregando...");
+        window.location.reload();
+      }, 800);
+    }
+  }
+});
+
+// Algumas plataformas exigem gesto do usuário para ativar Wake Lock
+document.addEventListener(
+  "click",
+  () => {
+    requestScreenWakeLock();
+  },
+  { once: true }
+);
+
 // Função de inicialização unificada (mobile e desktop idênticos)
 // Função de inicialização unificada (mobile e desktop idênticos)
 function initializeApp() {
