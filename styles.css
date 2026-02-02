@@ -38,8 +38,9 @@ textarea {
 }
 
 /* ========================================
-   ROOM CARDS
-======================================== */
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
 
 @media (orientation: portrait) {
   .room-card {
@@ -783,6 +784,10 @@ div {
   opacity: 1;
   transition: opacity 0.5s ease-out;
 }
+.page-leaving {
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+}
 .curtains-page-container {
   width: 100%;
   max-width: 100%;
@@ -1454,12 +1459,52 @@ div {
 .music-track-marquee--active .music-track-marquee__text--clone {
   display: inline-flex;
 }
+.music-artist-marquee {
+  --music-artist-marquee-duration: 18s;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+.music-artist-marquee__inner {
+  align-items: center;
+  gap: 0;
+  min-width: 100%;
+  display: flex;
+  transform: translate(0, 0);
+}
+.music-artist-marquee__text {
+  color: #bdbdbd;
+  white-space: nowrap;
+  align-items: center;
+  padding-right: clamp(18px, 5vw, 32px);
+  font-size: clamp(1.2rem, 2.5vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1.1;
+  display: inline-flex;
+}
+.music-artist-marquee__text--clone {
+  display: none;
+}
+.music-artist-marquee--active .music-artist-marquee__inner {
+  animation: music-track-marquee-scroll var(--music-artist-marquee-duration)
+    linear infinite;
+}
+.music-artist-marquee--active .music-artist-marquee__text--clone {
+  display: inline-flex;
+}
+.tv-control-section--music .music-track-marquee__text {
+  font-size: clamp(1.9rem, 3vw, 3rem);
+}
+.tv-control-section--music .music-artist-marquee__text {
+  font-size: clamp(1.2rem, 2.2vw, 1.9rem);
+  color: #d8d8d8;
+}
 @keyframes music-track-marquee-scroll {
   0% {
     transform: translate(0);
   }
-  to {
-    transform: translate(-50%);
+  100% {
+    transform: translate(-100%);
   }
 }
 .music-player-card .music-artist {
@@ -6007,18 +6052,20 @@ body.orchestrated-animation.reveal-home .room-card {
 .tv-commands-grid--music {
   display: grid !important;
   grid-template-columns: repeat(2, 1fr) !important;
-  grid-template-rows: repeat(2, 48px) !important;
+  grid-template-rows: repeat(2, minmax(56px, 1fr)) !important;
   grid-auto-flow: row !important;
   gap: 8px !important;
   padding: 0 !important;
-  height: auto !important;
-  align-content: start !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+  align-content: stretch !important;
 }
 .tv-commands-grid--music .tv-btn--icon-only {
   width: 100% !important;
-  height: 48px !important;
-  min-height: unset !important;
-  max-height: 48px !important;
+  height: 100% !important;
+  min-height: 56px !important;
+  max-height: none !important;
   aspect-ratio: unset !important;
   padding: 8px !important;
   box-sizing: border-box !important;
@@ -6026,6 +6073,12 @@ body.orchestrated-animation.reveal-home .room-card {
 .tv-commands-grid--music .tv-btn--icon-only img {
   width: 20px !important;
   height: 20px !important;
+}
+
+.page-container[class*="-musica-page"] .tv-control-section--volume .tv-control-group {
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+  gap: 8px !important;
 }
 
 /* Music page: make Commands and Media sections same size */
@@ -6097,9 +6150,9 @@ body.orchestrated-animation.reveal-home .room-card {
 }
 .tv-control-section--music .music-album-container {
   width: 100%;
-  max-width: 280px;
+  max-width: 320px;
   aspect-ratio: 1;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
   flex-shrink: 0;
   align-self: center;
@@ -6513,70 +6566,48 @@ body.orchestrated-animation.reveal-home .room-card {
 .tv-volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
   cursor: pointer;
-  background: radial-gradient(circle at 30% 30%, #fff, #c8dcffcc);
-  border: 2px solid #fffc;
+  background: #e6ecf8;
+  border: 2px solid #d8e0f0;
   border-radius: 50%;
   width: 20px;
   height: 20px;
   transition: all 0.2s;
-  box-shadow:
-    0 4px 12px #6496ff66,
-    0 0 8px #fff9,
-    inset -1px -1px 3px #0003;
+  box-shadow: none;
 }
 .tv-volume-slider::-moz-range-thumb {
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
   cursor: pointer;
-  background: radial-gradient(circle at 30% 30%, #fff, #c8dcffcc);
-  border: 2px solid #fffc;
+  background: #e6ecf8;
+  border: 2px solid #d8e0f0;
   border-radius: 50%;
   width: 20px;
   height: 20px;
   transition: all 0.2s;
-  box-shadow:
-    0 4px 12px #6496ff66,
-    0 0 8px #fff9,
-    inset -1px -1px 3px #0003;
+  box-shadow: none;
 }
 .tv-volume-slider::-webkit-slider-thumb:hover {
-  background: radial-gradient(circle at 30% 30%, #fff, #dcebffe6);
-  border-color: #fff;
-  transform: scale(1.15);
-  box-shadow:
-    0 6px 16px #6496ff80,
-    0 0 12px #fffc,
-    inset -1px -1px 3px #0003;
+  background: #e6ecf8;
+  border-color: #d8e0f0;
+  transform: none;
+  box-shadow: none;
 }
 .tv-volume-slider::-moz-range-thumb:hover {
-  background: radial-gradient(circle at 30% 30%, #fff, #dcebffe6);
-  border-color: #fff;
-  transform: scale(1.15);
-  box-shadow:
-    0 6px 16px #6496ff80,
-    0 0 12px #fffc,
-    inset -1px -1px 3px #0003;
+  background: #e6ecf8;
+  border-color: #d8e0f0;
+  transform: none;
+  box-shadow: none;
 }
 .tv-volume-slider:active::-webkit-slider-thumb {
-  background: radial-gradient(circle at 30% 30%, #fff, #c8dcffcc);
-  border-color: #fff;
-  transform: scale(1.15);
-  box-shadow:
-    0 6px 16px #6496ff80,
-    0 0 12px #fffc,
-    inset -1px -1px 3px #0003;
+  background: #e6ecf8;
+  border-color: #d8e0f0;
+  transform: none;
+  box-shadow: none;
 }
 .tv-volume-slider:active::-moz-range-thumb {
-  background: radial-gradient(circle at 30% 30%, #fff, #c8dcffcc);
-  border-color: #fff;
-  transform: scale(1.15);
-  box-shadow:
-    0 6px 16px #6496ff80,
-    0 0 12px #fffc,
-    inset -1px -1px 3px #0003;
+  background: #e6ecf8;
+  border-color: #d8e0f0;
+  transform: none;
+  box-shadow: none;
 }
 @media (width>=900px) {
   .tv-volume-slider {

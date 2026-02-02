@@ -1446,6 +1446,14 @@ function tvCommand(el, command) {
   const deviceId = el.dataset.deviceId;
   if (!command || !deviceId) return;
 
+  // Alguns controles precisam disparar comando duplo (ex.: Claro TV: returnButton + voltar)
+  const commandsToSend = [command];
+  const wrapper = el.closest?.(".tv-control-wrapper");
+  const isClaroTv = wrapper?.dataset?.controlType === "clarotv";
+  if (isClaroTv && command === "returnButton") {
+    commandsToSend.push("voltar");
+  }
+
   // Controlar estado de poder
   if (command === "on") {
     updateTVPowerState("on");
@@ -1470,21 +1478,23 @@ function tvCommand(el, command) {
   // Marcar comando recente
   recentCommands.set(deviceId, Date.now());
 
-  console.log(`📺 Enviando comando ${command} para dispositivo ${deviceId}`);
+  commandsToSend.forEach((cmd) => {
+    console.log(`📺 Enviando comando ${cmd} para dispositivo ${deviceId}`);
 
-  // Enviar para Hubitat
-  sendHubitatCommand(deviceId, command)
-    .then(() => {
-      console.log(
-        `✅ Comando TV ${command} enviado com sucesso para dispositivo ${deviceId}`
-      );
-    })
-    .catch((error) => {
-      console.error(
-        `❌ Erro ao enviar comando TV para dispositivo ${deviceId}:`,
-        error
-      );
-    });
+    // Enviar para Hubitat
+    sendHubitatCommand(deviceId, cmd)
+      .then(() => {
+        console.log(
+          `✅ Comando TV ${cmd} enviado com sucesso para dispositivo ${deviceId}`
+        );
+      })
+      .catch((error) => {
+        console.error(
+          `❌ Erro ao enviar comando TV para dispositivo ${deviceId}:`,
+          error
+        );
+      });
+  });
 }
 
 function toggleClaroTvPanel(trigger, targetView) {

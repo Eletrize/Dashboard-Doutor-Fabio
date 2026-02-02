@@ -959,17 +959,17 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         const powerOffLabel = isClaroTv ? "Off" : "OFF";
         const commandsMarkup = isMusicPage
           ? `
-              <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'info')" data-device-id="${deviceId}" aria-label="Info">
-                <img src="images/icons/icon-info.svg" alt="Info">
+              <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'streaming')" data-device-id="${deviceId}" aria-label="Streaming">
+                <img src="images/icons/icon-streaming.svg" alt="Streaming">
               </button>
-              <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'options')" data-device-id="${deviceId}" aria-label="Op\u00e7\u00f5es">
-                <img src="images/icons/icon-config.svg" alt="Op\u00e7\u00f5es">
+              <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'bluetooth')" data-device-id="${deviceId}" aria-label="Bluetooth">
+                <img src="images/icons/icon-bluetooth.svg" alt="Bluetooth">
               </button>
-              <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'music')" data-device-id="${deviceId}" aria-label="M\u00fasica">
-                <img src="images/icons/icon-musica.svg" alt="M\u00fasica">
+              <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'radio')" data-device-id="${deviceId}" aria-label="R\u00e1dio">
+                <img src="images/icons/icon-radio.svg" alt="R\u00e1dio">
               </button>
-              <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'movie')" data-device-id="${deviceId}" aria-label="Filme">
-                <img src="images/icons/icon-scenes.svg" alt="Filme">
+              <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'usb')" data-device-id="${deviceId}" aria-label="USB">
+                <img src="images/icons/icon-usb.svg" alt="USB">
               </button>
             `
           : isClaroTv
@@ -1242,8 +1242,22 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 <img class="music-album-img" src="images/images/music-placeholder.png" alt="Capa do &aacute;lbum" loading="lazy" decoding="async">
               </div>
               <div class="music-info">
-                <span class="music-track">Nome da M&uacute;sica</span>
-                <span class="music-artist">Nome do Artista</span>
+                <div class="music-track">
+                  <div class="music-track-marquee music-track-marquee--active">
+                    <div class="music-track-marquee__inner">
+                      <span class="music-track-marquee__text">T&iacute;tulo de M&uacute;sica Muito Grande de Teste para Ver a Rolagem Funcionar</span>
+                      <span class="music-track-marquee__text music-track-marquee__text--clone" aria-hidden="true">T&iacute;tulo de M&uacute;sica Muito Grande de Teste para Ver a Rolagem Funcionar</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="music-artist">
+                  <div class="music-artist-marquee music-artist-marquee--active">
+                    <div class="music-artist-marquee__inner">
+                      <span class="music-artist-marquee__text">Artista de Refer&ecirc;ncia com Nome Extenso para Testes de Rolagem</span>
+                      <span class="music-artist-marquee__text music-artist-marquee__text--clone" aria-hidden="true">Artista de Refer&ecirc;ncia com Nome Extenso para Testes de Rolagem</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -5568,10 +5582,10 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           return;
         }
 
-        // Fade-out da página atual (evita flash ao voltar/entrar)
+        // Fade-out da página atual sem esconder instantaneamente
         const activePage = document.querySelector(".page.active");
         if (activePage) {
-          activePage.classList.remove("page-ready");
+          activePage.classList.add("page-leaving");
         }
 
         // Trocar o hash após um pequeno atraso para a animação aparecer
@@ -5728,6 +5742,12 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         while (spaRoot.firstChild) {
           spaRoot.removeChild(spaRoot.firstChild);
         }
+
+        // Clean any lingering leaving states on cached fragments
+        fragmentToRender.querySelectorAll?.(".page-leaving").forEach((el) =>
+          el.classList.remove("page-leaving")
+        );
+
         spaRoot.appendChild(fragmentToRender);
         spaRoot.dataset.currentPage = page;
 
@@ -6131,7 +6151,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
 
         const activePage = document.querySelector(".page.active");
         if (activePage) {
-          activePage.classList.remove("page-ready");
+          activePage.classList.add("page-leaving");
         }
 
         SPA_HASHCHANGE_TIMER = setTimeout(() => {
