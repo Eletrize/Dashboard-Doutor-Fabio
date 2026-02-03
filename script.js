@@ -794,6 +794,40 @@ function getEnvironmentRouteFromHash(hash) {
   return /^ambiente\\d+$/.test(route) ? route : null;
 }
 
+function getRemoteDeviceIdForEnv(envKey, controlType) {
+  if (!envKey || !controlType || typeof getEnvironment !== "function") {
+    return null;
+  }
+  const env = getEnvironment(envKey);
+  if (!env) return null;
+  const list = Array.isArray(env[controlType]) ? env[controlType] : [];
+  const first = list[0];
+  if (!first || !first.id) return null;
+  return String(first.id);
+}
+
+function syncRemoteControlDeviceIds() {
+  const route = (window.location.hash || "").replace("#", "");
+  const envKey = route.split("-")[0];
+  if (!/^ambiente\\d+$/.test(envKey)) return;
+
+  const wrapper = document.querySelector(
+    ".page.active .tv-control-wrapper[data-control-type]",
+  );
+  if (!wrapper) return;
+  const controlType = String(wrapper.dataset.controlType || "").toLowerCase();
+  if (!controlType || controlType === "music") return;
+
+  const targetId = getRemoteDeviceIdForEnv(envKey, controlType);
+  if (!targetId) return;
+
+  wrapper.querySelectorAll("[data-device-id]").forEach((el) => {
+    if (el.tagName === "INPUT" && el.type === "range") return;
+    if (el.closest(".tv-control-section--volume")) return;
+    el.dataset.deviceId = targetId;
+  });
+}
+
 // Configurações de timeout e retry
 const NETWORK_CONFIG = {
   HEALTH_CHECK_TIMEOUT: 5000, // 5s para health check
@@ -2499,6 +2533,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initVolumeSlider();
   initAppleTvGestureControls();
   ensureTopBarVisible();
+  syncRemoteControlDeviceIds();
 
   // Re-inicializar quando a página mudar (para SPAs)
   window.addEventListener("hashchange", () => {
@@ -2506,6 +2541,7 @@ document.addEventListener("DOMContentLoaded", () => {
       initVolumeSlider();
       initAppleTvGestureControls();
       ensureTopBarVisible();
+      syncRemoteControlDeviceIds();
     }, 100);
   });
 

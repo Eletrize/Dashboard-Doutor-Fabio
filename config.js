@@ -213,7 +213,7 @@ const CLIENT_CONFIG = {
         temperature: { min: 18, max: 25, default: 22 },
       },
       curtains: [],
-      tv: [{ id: "111", name: "Televisão" }],
+      tv: [{ id: "362", name: "Televisão" }],
       bluray: [{ id: "357", name: "Blu-ray" }],
       appletv: [{ id: "356", name: "Apple TV" }],
       music: [{ id: "114", name: "Música" }],
