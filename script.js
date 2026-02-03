@@ -739,67 +739,59 @@ function getACDeviceIdForCurrentRoute() {
 }
 
 // ========================================
-// INICIALIZAÇÃO DE DISPOSITIVOS VARANDA (ambiente1)
+// INICIALIZAÇÃO DE DISPOSITIVOS POR AMBIENTE
 // ========================================
 
-// IDs dos dispositivos da Varanda que possuem o comando "initialize"
-const VARANDA_INITIALIZE_DEVICE_IDS =
+// Mapa de dispositivos por ambiente com comando "initialize"
+const ENV_INITIALIZE_DEVICE_MAP =
   (typeof CLIENT_CONFIG !== "undefined" &&
-    CLIENT_CONFIG?.devices?.initializeDevices) ||
-  [
-    "354", // Varanda Denon (Denon AVR)
-    "29", // Varanda Denon (Denon HEOS Speaker)
-    "109", // Varanda Cortinas Gourmet
-    "110", // Varanda AC
-    "111", // Varanda TV
-    "114", // Varanda HTV
-    "115", // Varanda Cortina Esquerda
-    "116", // Varanda Cortina Direita
-  ];
+    CLIENT_CONFIG?.devices?.initializeDevicesByEnv) ||
+  {};
 
-// Flag para evitar inicialização duplicada
-let varandaInitialized = false;
-let lastVarandaInitTime = 0;
-const VARANDA_INIT_COOLDOWN = 30000; // 30 segundos entre inicializações
+const INIT_COOLDOWN_MS = 30000; // 30 segundos entre inicializações por ambiente
+const lastInitByEnv = new Map();
 
-// Função para enviar comando initialize para todos os dispositivos da Varanda
-async function initializeVarandaDevices() {
+async function initializeEnvironmentDevices(envKey) {
+  if (!envKey) return;
+  const ids = ENV_INITIALIZE_DEVICE_MAP?.[envKey];
+  if (!Array.isArray(ids) || ids.length === 0) return;
+
   const now = Date.now();
-  
-  // Verificar cooldown para evitar spam de comandos
-  if (now - lastVarandaInitTime < VARANDA_INIT_COOLDOWN) {
-    console.log("⏳ [initializeVarandaDevices] Cooldown ativo, ignorando inicialização");
+  const last = lastInitByEnv.get(envKey) || 0;
+  if (now - last < INIT_COOLDOWN_MS) {
+    console.log(`⏳ [initializeEnvironmentDevices] Cooldown ativo (${envKey}), ignorando.`);
     return;
   }
-  
-  console.log("🚀 [initializeVarandaDevices] Iniciando dispositivos da Varanda...");
-  lastVarandaInitTime = now;
-  
+
+  console.log(`🚀 [initializeEnvironmentDevices] Iniciando dispositivos de ${envKey}...`);
+  lastInitByEnv.set(envKey, now);
+
   const results = await Promise.allSettled(
-    VARANDA_INITIALIZE_DEVICE_IDS.map(async (deviceId) => {
+    ids.map(async (deviceId) => {
       try {
-        console.log(`🔧 [initializeVarandaDevices] Enviando initialize para dispositivo ${deviceId}`);
+        console.log(`🔧 [initializeEnvironmentDevices] Enviando initialize para ${deviceId}`);
         await sendHubitatCommand(deviceId, "initialize");
-        console.log(`✅ [initializeVarandaDevices] Dispositivo ${deviceId} inicializado com sucesso`);
+        console.log(`✅ [initializeEnvironmentDevices] ${deviceId} inicializado`);
         return { deviceId, success: true };
       } catch (error) {
-        console.error(`❌ [initializeVarandaDevices] Erro ao inicializar dispositivo ${deviceId}:`, error);
+        console.error(`❌ [initializeEnvironmentDevices] Erro em ${deviceId}:`, error);
         return { deviceId, success: false, error };
       }
-    })
+    }),
   );
-  
-  const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+
+  const successful = results.filter(
+    (r) => r.status === "fulfilled" && r.value.success,
+  ).length;
   const failed = results.length - successful;
-  
-  console.log(`🏁 [initializeVarandaDevices] Inicialização concluída: ${successful} sucesso, ${failed} falhas`);
+  console.log(
+    `🏁 [initializeEnvironmentDevices] ${envKey}: ${successful} sucesso, ${failed} falhas`,
+  );
 }
 
-// Função para verificar se estamos entrando no ambiente1 (Varanda)
-function isEnteringVaranda(hash) {
+function getEnvironmentRouteFromHash(hash) {
   const route = (hash || "").replace("#", "");
-  // Verifica se é a página principal do ambiente1 (não subpáginas)
-  return route === "ambiente1";
+  return /^ambiente\\d+$/.test(route) ? route : null;
 }
 
 // Configurações de timeout e retry
@@ -2515,18 +2507,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 100);
   });
 
-  // Listener para inicialização de dispositivos da Varanda (ambiente1)
+  // Listener para inicialização de dispositivos por ambiente
   window.addEventListener("hashchange", () => {
     const newHash = window.location.hash;
-    console.log("🏠 [hashchange] Verificando se é ambiente1:", newHash);
-    
-    if (isEnteringVaranda(newHash)) {
-      console.log("🏠 [hashchange] Entrando na Varanda - iniciando dispositivos...");
-      // Pequeno delay para garantir que a página carregou
-      setTimeout(() => {
-        initializeVarandaDevices();
-      }, 500);
-    }
+    const envKey = getEnvironmentRouteFromHash(newHash);
+    if (!envKey) return;
+    console.log("🏠 [hashchange] Entrando no ambiente:", envKey);
+    // Pequeno delay para garantir que a página carregou
+    setTimeout(() => {
+      initializeEnvironmentDevices(envKey);
+    }, 500);
   });
 
   // Listener específico para página de música

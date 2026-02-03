@@ -447,17 +447,10 @@ const CLIENT_CONFIG = {
       ambiente10: "180",
     },
 
-    // Mantém a lógica existente de "initialize" quando entrar no ambiente1
-    initializeDevices: [
-      "354", // Denon AVR
-      "29", // Denon HEOS Speaker
-      "109", // Cortinas Gourmet
-      "110", // AC Varanda
-      "111", // TV Varanda
-      "114", // HTV Varanda
-      "115", // Cortina Esquerda
-      "116", // Cortina Direita
-    ],
+    // Inicializa????o por ambiente (dispositivos com comando "initialize")
+    initializeDevicesByEnv: {
+      ambiente1: ["357", "347", "354", "355", "356", "362"],
+    },
 
     // O polling atual usa ALL_LIGHT_IDS também para volume do Denon
     extraPollingDevices: ["354"],
