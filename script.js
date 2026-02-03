@@ -2200,7 +2200,7 @@ function initVolumeSlider() {
     );
 
     // Enviar comando setVolume para o Denon AVR
-    sendHubitatCommand(DENON_DEVICE_ID, "setvolume", value)
+    sendHubitatCommand(DENON_DEVICE_ID, "setVolume", value)
       .then(() => {
         console.log(`Ã¢Å“â€¦ Volume do Denon definido para ${value}`);
       })
@@ -7091,7 +7091,7 @@ function initMusicPlayerUI() {
         // Mark recent command to prevent polling overwrite
         recentCommands.set(DENON_CMD_DEVICE_ID, Date.now());
         // Send command
-        sendHubitatCommand(DENON_CMD_DEVICE_ID, "setvolume", value)
+        sendHubitatCommand(DENON_CMD_DEVICE_ID, "setVolume", value)
           .then(() =>
             console.log("Ã¢Å“â€¦ setVolume sent to Denon via music slider")
           )
