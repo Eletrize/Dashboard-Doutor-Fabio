@@ -2498,12 +2498,24 @@ document.addEventListener("DOMContentLoaded", () => {
   updateTVPowerState("off");
   initVolumeSlider();
   initAppleTvGestureControls();
+  ensureTopBarVisible();
 
   // Re-inicializar quando a página mudar (para SPAs)
   window.addEventListener("hashchange", () => {
     setTimeout(() => {
       initVolumeSlider();
       initAppleTvGestureControls();
+      ensureTopBarVisible();
+    }, 100);
+  });
+
+  window.addEventListener("resize", () => {
+    ensureTopBarVisible();
+  });
+
+  window.addEventListener("orientationchange", () => {
+    setTimeout(() => {
+      ensureTopBarVisible();
     }, 100);
   });
 
@@ -5226,6 +5238,17 @@ function executeOrchestratedAnimation(loader) {
   }, 3500);
 }
 
+function ensureTopBarVisible() {
+  const topBar =
+    document.getElementById("spa-static-topbar") ||
+    document.querySelector(".top-bar-custom.spa-static-chrome");
+  if (!topBar) return;
+  topBar.style.display = "block";
+  topBar.style.visibility = "visible";
+  topBar.style.opacity = "1";
+  topBar.style.transform = "scaleX(1)";
+}
+
 
 
 function updateProgress(percentage, text) {
@@ -7509,13 +7532,6 @@ function initializeApp() {
             setTimeout(function () {
               // Esconder loader
               hideLoader();
-
-              // Tentar entrar em tela cheia após o loading
-              setTimeout(() => {
-                if (window.fullscreenManager?.enterFullscreen) {
-                  window.fullscreenManager.enterFullscreen();
-                }
-              }, 200);
 
               // Configurar observador DOM
               setupDomObserver();
