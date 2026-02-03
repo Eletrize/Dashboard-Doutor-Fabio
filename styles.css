@@ -5430,8 +5430,8 @@ body.orchestrated-animation.reveal-home .room-card {
 .tv-btn--power-on {
   color: #fff;
   letter-spacing: 1px;
-  background: #22c55e33;
-  border: 1px solid #22c55e4d;
+  background: #ffffff14;
+  border: 1px solid #ffffff26;
   border-radius: 12px;
   flex: 1;
   height: 52px;
@@ -5441,15 +5441,15 @@ body.orchestrated-animation.reveal-home .room-card {
   transition: all 0.3s;
 }
 .tv-btn--power-on.active {
-  background: #22c55e80;
-  border-color: #22c55eb3;
-  box-shadow: 0 0 20px #22c55e66;
+  background: #ffffff22;
+  border-color: #ffffff40;
+  box-shadow: 0 0 20px #ffffff26;
 }
 .tv-btn--power-off {
   color: #fff;
   letter-spacing: 1px;
-  background: #ef444433;
-  border: 1px solid #ef44444d;
+  background: #ffffff14;
+  border: 1px solid #ffffff26;
   border-radius: 12px;
   flex: 1;
   height: 52px;
@@ -5459,9 +5459,9 @@ body.orchestrated-animation.reveal-home .room-card {
   transition: all 0.3s;
 }
 .tv-btn--power-off.active {
-  background: #ef444480;
-  border-color: #ef4444b3;
-  box-shadow: 0 0 20px #ef444466;
+  background: #ffffff22;
+  border-color: #ffffff40;
+  box-shadow: 0 0 20px #ffffff26;
 }
 .tv-btn--secondary,
 .tv-btn--tertiary {
@@ -5490,6 +5490,15 @@ body.orchestrated-animation.reveal-home .room-card {
   color: #fff;
   stroke: #fff;
   filter: brightness(0) invert();
+  width: 32px;
+  height: 32px;
+}
+.tv-btn-icon-img--pause {
+  width: 28px;
+  height: 28px;
+}
+.tv-btn--voltar img,
+.tv-btn--voltar svg {
   width: 28px;
   height: 28px;
 }
@@ -5511,6 +5520,17 @@ body.orchestrated-animation.reveal-home .room-card {
   flex: none;
   width: 100%;
   height: 56px;
+}
+.tv-commands-grid--tv {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  align-items: stretch;
+  height: 100%;
+  flex: 1;
+}
+.tv-commands-grid--tv .tv-btn--icon-only {
+  height: 100%;
 }
 
 /* Music page: moved to after clarotv styles for proper specificity */
@@ -5899,6 +5919,23 @@ body.orchestrated-animation.reveal-home .room-card {
     height: 100%;
     min-height: 70px;
   }
+  .tv-commands-grid--tv {
+    flex: 1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    min-height: 0;
+    height: 100%;
+  }
+  .tv-commands-grid--tv .tv-btn--icon-only {
+    min-height: 0;
+    height: 100%;
+  }
+  .tv-commands-grid--tv .tv-btn--icon-only img,
+  .tv-commands-grid--tv .tv-btn--icon-only svg {
+    width: 38px;
+    height: 38px;
+  }
   .tv-control-wrapper[data-control-type="appletv"] {
     grid-template-columns: 3fr 7fr;
     --appletv-dpad-size: 320px;
@@ -6062,6 +6099,11 @@ body.orchestrated-animation.reveal-home .room-card {
     grid-template-columns: repeat(7, minmax(0, 1fr));
     grid-auto-flow: column;
     grid-auto-columns: minmax(0, 1fr);
+  }
+  .tv-control-section--media .tv-media-grid {
+    grid-auto-flow: column;
+    grid-template-rows: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   }
 }
 
@@ -6304,6 +6346,27 @@ body.orchestrated-animation.reveal-home .room-card {
   background: #ffffff22;
   border-color: #ffffff40;
   box-shadow: none;
+}
+.tv-control-wrapper[data-control-type="bluray"] {
+  grid-template-rows: 1fr auto;
+}
+.tv-control-wrapper[data-control-type="bluray"] .tv-media-section--full {
+  grid-column: 1 / -1;
+}
+.tv-control-wrapper[data-control-type="bluray"] .tv-media-grid {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-auto-flow: column;
+}
+.tv-media-grid {
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+  flex: 1;
+  display: grid;
+}
+.tv-media-grid .tv-btn-square {
+  height: 100%;
 }
 .tv-control-wrapper[data-control-type="clarotv"] .tv-media-grid {
   grid-template-columns: repeat(2, 1fr);

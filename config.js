@@ -214,10 +214,10 @@ const CLIENT_CONFIG = {
       },
       curtains: [],
       tv: [{ id: "111", name: "Televisão" }],
-      bluray: [{ id: "112", name: "Blu-ray" }],
+      bluray: [{ id: "357", name: "Blu-ray" }],
       appletv: [{ id: "356", name: "Apple TV" }],
       music: [{ id: "114", name: "Música" }],
-      clarotv: [{ id: "117", name: "Claro TV" }],
+      clarotv: [{ id: "355", name: "Claro TV" }],
     },
 
     ambiente2: {
@@ -449,7 +449,7 @@ const CLIENT_CONFIG = {
 
     // Mantém a lógica existente de "initialize" quando entrar no ambiente1
     initializeDevices: [
-      "15", // Denon AVR
+      "354", // Denon AVR
       "29", // Denon HEOS Speaker
       "109", // Cortinas Gourmet
       "110", // AC Varanda
@@ -460,7 +460,7 @@ const CLIENT_CONFIG = {
     ],
 
     // O polling atual usa ALL_LIGHT_IDS também para volume do Denon
-    extraPollingDevices: ["15"],
+    extraPollingDevices: ["354"],
   },
 };
 

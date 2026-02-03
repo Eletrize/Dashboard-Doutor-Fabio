@@ -747,7 +747,7 @@ const VARANDA_INITIALIZE_DEVICE_IDS =
   (typeof CLIENT_CONFIG !== "undefined" &&
     CLIENT_CONFIG?.devices?.initializeDevices) ||
   [
-    "15", // Varanda Denon (Denon AVR)
+    "354", // Varanda Denon (Denon AVR)
     "29", // Varanda Denon (Denon HEOS Speaker)
     "109", // Varanda Cortinas Gourmet
     "110", // Varanda AC
@@ -1446,6 +1446,16 @@ function tvCommand(el, command) {
   const deviceId = el.dataset.deviceId;
   if (!command || !deviceId) return;
 
+  if (command === "mute") {
+    const slider = document.getElementById("tv-volume-slider");
+    if (slider) {
+      slider.value = "0";
+      slider.dispatchEvent(new Event("input", { bubbles: true }));
+      slider.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    return;
+  }
+
   // Alguns controles precisam disparar comando duplo (ex.: Claro TV: returnButton + voltar)
   const commandsToSend = [command];
   const wrapper = el.closest?.(".tv-control-wrapper");
@@ -1455,9 +1465,9 @@ function tvCommand(el, command) {
   }
 
   // Controlar estado de poder
-  if (command === "on") {
+  if (command === "on" || command === "powerOn") {
     updateTVPowerState("on");
-  } else if (command === "off") {
+  } else if (command === "off" || command === "powerOff") {
     updateTVPowerState("off");
   }
 
@@ -1707,7 +1717,7 @@ document.addEventListener("click", (e) => {
 // Macro para ligar TV e Receiver e setar input SAT/CBL
 function htvMacroOn() {
   const TV_ID = "111";
-  const RECEIVER_ID = "15";
+  const RECEIVER_ID = "354";
 
   console.log("🎬 Macro HTV: Inicializando, ligando TV, setando HDMI 2 e input SAT/CBL...");
 
@@ -1749,7 +1759,7 @@ function htvMacroOn() {
 // Versão anterior da função (mantida para referência)
 function htvMacroOn_old() {
   const TV_ID = "111";
-  const RECEIVER_ID = "15";
+  const RECEIVER_ID = "354";
 
   console.log("🎬 Macro HTV: Ligando TV, setando HDMI 2 e input SAT/CBL...");
 
@@ -1806,7 +1816,7 @@ function telaoMacroOn() {
 // Macro para desligar TV e Receiver
 function htvMacroOff() {
   const TV_ID = "111";
-  const RECEIVER_ID = "15";
+  const RECEIVER_ID = "354";
 
   console.log("🎬 Macro HTV: Desligando TV e Receiver...");
 
@@ -2048,7 +2058,7 @@ function suite2TvOff() {
 // Macro para ligar TV e Receiver e setar input TV
 function tvMacroOn() {
   const TV_ID = "111";
-  const RECEIVER_ID = "15";
+  const RECEIVER_ID = "354";
 
   console.log("🎬 Macro TV: Ligando TV, depois setando input TV...");
 
@@ -2075,7 +2085,7 @@ function tvMacroOn() {
 // Macro para desligar TV e Receiver
 function tvMacroOff() {
   const TV_ID = "111";
-  const RECEIVER_ID = "15";
+  const RECEIVER_ID = "354";
 
   console.log("🎬 Macro TV: Desligando TV e Receiver...");
 
@@ -2094,7 +2104,7 @@ function tvMacroOff() {
 // Macro para ativar Fire TV (HDMI 2 + BD no Receiver)
 function fireTVMacro() {
   const TV_ID = "111";
-  const RECEIVER_ID = "15";
+  const RECEIVER_ID = "354";
 
   console.log("🎬 Macro Fire TV: Selecionando HDMI 2 e setando Receiver para BD...");
 
@@ -2117,7 +2127,7 @@ function fireTVMacro() {
 function initVolumeSlider() {
   const slider = document.getElementById("tv-volume-slider");
   const display = document.getElementById("tv-volume-display");
-  const DENON_DEVICE_ID = "15"; // ID do Denon AVR no Hubitat
+  const DENON_DEVICE_ID = "354"; // ID do Denon AVR no Hubitat
 
   if (!slider || !display) {
     console.log("Ã¢Å¡Â Ã¯Â¸Â Slider ou display não encontrado");
@@ -2164,7 +2174,7 @@ function initVolumeSlider() {
     );
 
     // Enviar comando setVolume para o Denon AVR
-    sendHubitatCommand(DENON_DEVICE_ID, "setVolume", value)
+    sendHubitatCommand(DENON_DEVICE_ID, "setvolume", value)
       .then(() => {
         console.log(`Ã¢Å“â€¦ Volume do Denon definido para ${value}`);
       })
@@ -2178,7 +2188,7 @@ function initVolumeSlider() {
 
 // Função para atualizar o volume do Denon a partir do servidor
 async function updateDenonVolumeFromServer() {
-  const DENON_DEVICE_ID = "15";
+  const DENON_DEVICE_ID = "354";
   const tvSlider = document.getElementById("tv-volume-slider");
   const tvDisplay = document.getElementById("tv-volume-display");
   const musicSlider =
@@ -2348,7 +2358,7 @@ function updateDenonVolumeUI(volume) {
     },
   ]);
 
-  const lastCmd = recentCommands.get("15");
+  const lastCmd = recentCommands.get("354");
   if (lastCmd && Date.now() - lastCmd < COMMAND_PROTECTION_MS) {
     debugLog(
       () => "updateDenonVolumeUI: comando manual recente, ignorando polling"
@@ -2462,7 +2472,7 @@ function applyDenonPowerState(rawState) {
   if (!normalized) return;
 
   if (typeof recentCommands !== "undefined") {
-    const lastCmd = recentCommands.get("15");
+    const lastCmd = recentCommands.get("354");
     if (lastCmd && Date.now() - lastCmd < COMMAND_PROTECTION_MS) {
       console.log(
         "[Denon] Ignorando sincronizacao de power por comando recente"
@@ -4390,7 +4400,7 @@ async function updateDeviceStatesFromServer(options = {}) {
           level: nextLevel,
         });
 
-        if (String(deviceId) === "15" && deviceData.volume !== undefined) {
+        if (String(deviceId) === "354" && deviceData.volume !== undefined) {
           updateDenonVolumeUI(deviceData.volume);
         }
       } else {
@@ -4529,7 +4539,7 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
   });
 
   // Atualizar botÃƒÂµes master da home apÃƒÂ³s qualquer mudanÃƒÂ§a de dispositivo
-  if (String(deviceId) === "15") {
+  if (String(deviceId) === "354") {
     applyDenonPowerState(state);
   }
 
@@ -6879,7 +6889,7 @@ function initMusicPlayerUI() {
   }
 
   // Device IDs (default) Ã¢â‚¬â€ podem ser sobrescritos por data-* no HTML da página ativa
-  let DENON_CMD_DEVICE_ID = "15"; // Denon AVR - comandos (volume/mute/power)
+  let DENON_CMD_DEVICE_ID = "354"; // Denon AVR - comandos (volume/mute/power)
   let DENON_MUSIC_DEVICE_ID = "29"; // Denon HEOS - metadados/transport (play/pause/next/prev)
 
   // Tentar detectar overrides a partir dos atributos data-*
@@ -7032,7 +7042,7 @@ function initMusicPlayerUI() {
         // Mark recent command to prevent polling overwrite
         recentCommands.set(DENON_CMD_DEVICE_ID, Date.now());
         // Send command
-        sendHubitatCommand(DENON_CMD_DEVICE_ID, "setVolume", value)
+        sendHubitatCommand(DENON_CMD_DEVICE_ID, "setvolume", value)
           .then(() =>
             console.log("Ã¢Å“â€¦ setVolume sent to Denon via music slider")
           )

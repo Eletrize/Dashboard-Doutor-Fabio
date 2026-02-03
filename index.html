@@ -954,9 +954,83 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
 
         const deviceId = device.id;
         const isClaroTv = typeKey === "clarotv";
+        const isBluray = typeKey === "bluray";
         const isMusicPage = /m\u00fasica/i.test(String(headingLabel || ""));
         const powerOnLabel = isClaroTv ? "On" : "ON";
         const powerOffLabel = isClaroTv ? "Off" : "OFF";
+        const isTvControl = typeKey === "tv";
+        const powerOnCommand = isClaroTv
+          ? "on"
+          : isTvControl
+          ? "powerOn"
+          : "on";
+        const powerOffCommand = isClaroTv
+          ? "off"
+          : isTvControl
+          ? "powerOff"
+          : "off";
+        const tvCommandsMarkup = `
+                    <button class="tv-btn tv-btn--icon-only tv-btn--voltar" onclick="tvCommand(this, 'voltar')" data-device-id="${deviceId}" aria-label="Voltar">
+                        <img src="images/icons/arrow-left.svg" alt="Voltar">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'sair')" data-device-id="${deviceId}" aria-label="Sair">
+                        <img src="images/icons/icon-exit.svg" alt="Sair">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'smart')" data-device-id="${deviceId}" aria-label="Smart">
+                        <img src="images/icons/icon-home.svg" alt="Smart">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'info')" data-device-id="${deviceId}" aria-label="Info">
+                        <img src="images/icons/icon-info.svg" alt="Info">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'hdmi3')" data-device-id="${deviceId}" aria-label="HDMI 3">
+                        <img src="images/icons/icon-hdmi.svg" alt="HDMI 3">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'mute')" data-device-id="${deviceId}" aria-label="Mudo">
+                        <img src="images/icons/icon-mute.svg" alt="Mudo">
+                    </button>
+                `;
+        const defaultCommandsMarkup = `
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'returnButton')" data-device-id="${deviceId}" aria-label="Voltar">
+                        <img src="images/icons/back-button.svg" alt="Voltar">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'hdmi2')" data-device-id="${deviceId}" aria-label="Menu">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'mute')" data-device-id="${deviceId}" aria-label="Mudo">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <line x1="23" y1="9" x2="17" y2="15"></line>
+                            <line x1="17" y1="9" x2="23" y2="15"></line>
+                        </svg>
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'home')" data-device-id="${deviceId}" aria-label="Home">
+                        <img src="images/icons/icon-home.svg" alt="Home">
+                    </button>
+                `;
+        const blurayCommandsMarkup = `
+                    <button class="tv-btn tv-btn--icon-only tv-btn--voltar" onclick="tvCommand(this, 'voltar')" data-device-id="${deviceId}" aria-label="Voltar">
+                        <img src="images/icons/arrow-left.svg" alt="Voltar">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'audio')" data-device-id="${deviceId}" aria-label="Audio">
+                        <img src="images/icons/icon-musica.svg" alt="Audio">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'discMenu')" data-device-id="${deviceId}" aria-label="Menu">
+                        <img src="images/icons/icon-menu.svg" alt="Menu">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'home')" data-device-id="${deviceId}" aria-label="Home">
+                        <img src="images/icons/icon-home.svg" alt="Home">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'option')" data-device-id="${deviceId}" aria-label="Options">
+                        <img src="images/icons/icon-settings.svg" alt="Options">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'popMenu')" data-device-id="${deviceId}" aria-label="Popmenu">
+                        <img src="images/icons/icon-popmenu.svg" alt="Popmenu">
+                    </button>
+                `;
         const commandsMarkup = isMusicPage
           ? `
               <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'streaming')" data-device-id="${deviceId}" aria-label="Streaming">
@@ -996,28 +1070,11 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                         <img src="images/icons/icon-music.svg" alt="Musica">
                     </button>
                 `
-          : `
-                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'returnButton')" data-device-id="${deviceId}" aria-label="Voltar">
-                        <img src="images/icons/back-button.svg" alt="Voltar">
-                    </button>
-                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'hdmi2')" data-device-id="${deviceId}" aria-label="Menu">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="3" y1="12" x2="21" y2="12"></line>
-                            <line x1="3" y1="6" x2="21" y2="6"></line>
-                            <line x1="3" y1="18" x2="21" y2="18"></line>
-                        </svg>
-                    </button>
-                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'mute')" data-device-id="${deviceId}" aria-label="Mudo">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                            <line x1="23" y1="9" x2="17" y2="15"></line>
-                            <line x1="17" y1="9" x2="23" y2="15"></line>
-                        </svg>
-                    </button>
-                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'home')" data-device-id="${deviceId}" aria-label="Home">
-                        <img src="images/icons/icon-home.svg" alt="Home">
-                    </button>
-                `;
+          : isBluray
+          ? blurayCommandsMarkup
+          : isTvControl
+          ? tvCommandsMarkup
+          : defaultCommandsMarkup;
         const numpadFooterMarkup = isClaroTv
           ? `
                         <button class="tv-numpad-btn tv-numpad-btn--icon" onclick="tvCommand(this, 'returnButton')" data-device-id="${deviceId}" aria-label="Voltar">
@@ -1061,8 +1118,13 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                   <h3 class="tv-section-title">Comandos</h3>
                   <div class="tv-section-line"></div>
                 </header>
-                <div class="tv-control-group tv-commands-grid${isMusicPage ? ' tv-commands-grid--music' : ''}">
+                <div class="tv-control-group tv-commands-grid${isMusicPage ? ' tv-commands-grid--music' : ''}${!isMusicPage && !isClaroTv && (isTvControl || isBluray) ? ' tv-commands-grid--tv' : ''}">
                   ${commandsMarkup}
+                </div>
+            `;
+            const commandsSectionMarkup = `
+                <div class="tv-control-section tv-control-section--commands">
+                  ${commandsControlMarkup}
                 </div>
             `;
         const mediaMarkup = isClaroTv
@@ -1080,7 +1142,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                             <img src="images/icons/icon-next-track.svg" alt="Forward" class="tv-btn-icon-img">
                         </button>
                         <button class="tv-btn-square" onclick="tvCommand(this, 'pause')" data-device-id="${deviceId}" aria-label="Pause">
-                            <img src="images/icons/icon-pause.svg" alt="Pause" class="tv-btn-icon-img">
+                            <img src="images/icons/icon-pause.svg" alt="Pause" class="tv-btn-icon-img tv-btn-icon-img--pause">
                         </button>
                         <button class="tv-btn-square" onclick="tvCommand(this, 'play')" data-device-id="${deviceId}" aria-label="Play">
                             <img src="images/icons/icon-play.svg" alt="Play" class="tv-btn-icon-img">
@@ -1088,29 +1150,63 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                     </div>
                 </div>
                 `
+          : isBluray
+          ? ""
           : `
-                <div class="tv-control-section">
+                <div class="tv-control-section tv-control-section--media">
                     <header class="tv-section-header">
-                        <h3 class="tv-section-title">Canais</h3>
+                        <h3 class="tv-section-title">M&iacute;dia</h3>
                         <div class="tv-section-line"></div>
                     </header>
-                    <div class="tv-control-group tv-volume-channels-inline">
-                        
-                        <!-- Coluna Canais -->
-                        <div class="tv-channels-column">
-                            <div class="tv-channels-buttons">
-                <button class="tv-btn-square" onclick="tvCommand(this, 'channelDown')" data-device-id="${deviceId}" aria-label="Canal +">
-                                    <img src="images/icons/arrow-up.svg" alt="Canal +" class="tv-btn-icon-img">
-                                </button>
-                <button class="tv-btn-square" onclick="tvCommand(this, 'channelUp')" data-device-id="${deviceId}" aria-label="Canal -">
-                                    <img src="images/icons/arrow-down.svg" alt="Canal -" class="tv-btn-icon-img">
-                                </button>
-                            </div>
-                        </div>
-
+                    <div class="tv-control-group tv-media-grid">
+                        <button class="tv-btn-square" onclick="tvCommand(this, 'rewind')" data-device-id="${deviceId}" aria-label="Rewind">
+                            <img src="images/icons/icon-previous-track.svg" alt="Rewind" class="tv-btn-icon-img">
+                        </button>
+                        <button class="tv-btn-square" onclick="tvCommand(this, 'play')" data-device-id="${deviceId}" aria-label="Play">
+                            <img src="images/icons/icon-play.svg" alt="Play" class="tv-btn-icon-img">
+                        </button>
+                        <button class="tv-btn-square" onclick="tvCommand(this, 'pause')" data-device-id="${deviceId}" aria-label="Pause">
+                            <img src="images/icons/icon-pause.svg" alt="Pause" class="tv-btn-icon-img tv-btn-icon-img--pause">
+                        </button>
+                        <button class="tv-btn-square" onclick="tvCommand(this, 'forward')" data-device-id="${deviceId}" aria-label="Forward">
+                            <img src="images/icons/icon-next-track.svg" alt="Forward" class="tv-btn-icon-img">
+                        </button>
                     </div>
                 </div>
                 `;
+        const blurayMediaMarkup = isBluray
+          ? `
+            <div class="tv-control-section tv-control-section--media tv-media-section--full">
+              <header class="tv-section-header">
+                <h3 class="tv-section-title">M&iacute;dia</h3>
+                <div class="tv-section-line"></div>
+              </header>
+              <div class="tv-control-group tv-media-grid">
+                <button class="tv-btn-square" onclick="tvCommand(this, 'chapterPrevious')" data-device-id="${deviceId}" aria-label="Chapter Previous">
+                  <img src="images/icons/icon-previous-track.svg" alt="Chapter Previous" class="tv-btn-icon-img">
+                </button>
+                <button class="tv-btn-square" onclick="tvCommand(this, 'rewind')" data-device-id="${deviceId}" aria-label="Rewind">
+                  <img src="images/icons/icon-rewind.svg" alt="Rewind" class="tv-btn-icon-img">
+                </button>
+                <button class="tv-btn-square" onclick="tvCommand(this, 'pause')" data-device-id="${deviceId}" aria-label="Pause">
+                  <img src="images/icons/icon-pause.svg" alt="Pause" class="tv-btn-icon-img tv-btn-icon-img--pause">
+                </button>
+                <button class="tv-btn-square" onclick="tvCommand(this, 'play')" data-device-id="${deviceId}" aria-label="Play">
+                  <img src="images/icons/icon-play.svg" alt="Play" class="tv-btn-icon-img">
+                </button>
+                <button class="tv-btn-square" onclick="tvCommand(this, 'stop')" data-device-id="${deviceId}" aria-label="Stop">
+                  <img src="images/icons/icon-stop.svg" alt="Stop" class="tv-btn-icon-img">
+                </button>
+                <button class="tv-btn-square" onclick="tvCommand(this, 'foward')" data-device-id="${deviceId}" aria-label="Foward">
+                  <img src="images/icons/icon-foward.svg" alt="Foward" class="tv-btn-icon-img">
+                </button>
+                <button class="tv-btn-square" onclick="tvCommand(this, 'chapterNext')" data-device-id="${deviceId}" aria-label="Chapter Next">
+                  <img src="images/icons/icon-next-track.svg" alt="Chapter Next" class="tv-btn-icon-img">
+                </button>
+              </div>
+            </div>
+          `
+          : "";
         const numbersSectionMarkup = isMusicPage
           ? `
           <div class="tv-control-section tv-control-section--dpad" data-device-id="${deviceId}" data-control-mode="cursor">
@@ -1209,28 +1305,16 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 </div>
             </div>
           `
-          : `
-            <div class="tv-control-section">
-                <header class="tv-section-header">
-                    <h3 class="tv-section-title">N&uacute;meros</h3>
-                    <div class="tv-section-line"></div>
-                </header>
-                <div class="tv-control-group">
-                    <div class="tv-numpad">
-                        <button class="tv-numpad-btn" onclick="tvCommand(this, 'num1')" data-device-id="${deviceId}" aria-label="1">1</button>
-                        <button class="tv-numpad-btn" onclick="tvCommand(this, 'num2')" data-device-id="${deviceId}" aria-label="2">2</button>
-                        <button class="tv-numpad-btn" onclick="tvCommand(this, 'num3')" data-device-id="${deviceId}" aria-label="3">3</button>
-                        <button class="tv-numpad-btn" onclick="tvCommand(this, 'num4')" data-device-id="${deviceId}" aria-label="4">4</button>
-                        <button class="tv-numpad-btn" onclick="tvCommand(this, 'num5')" data-device-id="${deviceId}" aria-label="5">5</button>
-                        <button class="tv-numpad-btn" onclick="tvCommand(this, 'num6')" data-device-id="${deviceId}" aria-label="6">6</button>
-                        <button class="tv-numpad-btn" onclick="tvCommand(this, 'num7')" data-device-id="${deviceId}" aria-label="7">7</button>
-                        <button class="tv-numpad-btn" onclick="tvCommand(this, 'num8')" data-device-id="${deviceId}" aria-label="8">8</button>
-                        <button class="tv-numpad-btn" onclick="tvCommand(this, 'num9')" data-device-id="${deviceId}" aria-label="9">9</button>
-                        ${numpadFooterMarkup}
-                    </div>
-                </div>
+          : commandsSectionMarkup;
+        const middleColumnTopMarkup = isMusicPage
+          ? `
+            <div class="tv-control-section tv-control-section--volume">
+              ${volumeControlMarkup}
             </div>
-          `;
+          `
+          : isClaroTv
+          ? commandsSectionMarkup
+          : "";
         const musicInfoMarkup = `
           <div class="tv-control-section tv-control-section--music">
             <header class="tv-section-header">
@@ -1294,10 +1378,10 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                     <div class="tv-section-line"></div>
                 </header>
                 <div class="tv-control-group tv-power-group">
-                  <button class="tv-btn tv-btn--power-on" onclick="tvCommand(this, 'on')" data-device-id="${deviceId}" aria-label="Ligar">
+                  <button class="tv-btn tv-btn--power-on" onclick="tvCommand(this, '${powerOnCommand}')" data-device-id="${deviceId}" aria-label="Ligar">
                     ${powerOnLabel}
                   </button>
-                  <button class="tv-btn tv-btn--power-off" onclick="tvCommand(this, 'off')" data-device-id="${deviceId}" aria-label="Desligar">
+                  <button class="tv-btn tv-btn--power-off" onclick="tvCommand(this, '${powerOffCommand}')" data-device-id="${deviceId}" aria-label="Desligar">
                     ${powerOffLabel}
                   </button>
                 </div>
@@ -1319,10 +1403,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
 
         <!-- COLUNA 2 -->
         <div class="tv-controls-col tv-col-2">
-            <!-- BLOCO 3: COMANDOS (Back, Menu, Home, Mute) -->
-            <div class="tv-control-section">
-              ${isMusicPage ? volumeControlMarkup : commandsControlMarkup}
-            </div>
+            ${middleColumnTopMarkup}
 
             <!-- BLOCO 2: CONTROLE / MÚSICA -->
             ${isMusicPage ? musicInfoMarkup : `
@@ -1375,13 +1456,15 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             <!-- BLOCO 6: NÚMEROS -->
             ${numbersSectionMarkup}
 
-            ${isMusicPage ? "" : `
+            ${isMusicPage || isBluray ? "" : `
             <!-- BLOCO 7: LOGO -->
             <div class="tv-control-section tv-logo-section">
               <img src="images/icons/eletrize.svg" alt="Eletrize" class="tv-eletrize-logo">
             </div>
             `}
         </div>
+
+        ${blurayMediaMarkup}
 
     </div>
 
@@ -6245,7 +6328,3 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
     </script>
   </body>
 </html>
-
-
-
-
