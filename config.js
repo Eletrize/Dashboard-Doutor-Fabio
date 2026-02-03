@@ -200,7 +200,7 @@ const CLIENT_CONFIG = {
   environments: {
     ambiente1: {
       name: "Home Theater",
-      photo: "photo-placeholder.webp",
+      photo: "photo-hometeather.webp",
       visible: true,
       order: 1,
       lights: [
@@ -215,7 +215,7 @@ const CLIENT_CONFIG = {
       curtains: [],
       tv: [{ id: "111", name: "Televisão" }],
       bluray: [{ id: "112", name: "Blu-ray" }],
-      appletv: [{ id: "113", name: "Apple TV" }],
+      appletv: [{ id: "356", name: "Apple TV" }],
       music: [{ id: "114", name: "Música" }],
       clarotv: [{ id: "117", name: "Claro TV" }],
     },
@@ -287,7 +287,7 @@ const CLIENT_CONFIG = {
 
     ambiente5: {
       name: "Escritório",
-      photo: "photo-placeholder.webp",
+      photo: "photo-escritorio.webp",
       visible: true,
       order: 5,
       curtains: [{ id: "40", name: "Cortina" }],
@@ -300,7 +300,7 @@ const CLIENT_CONFIG = {
 
     ambiente6: {
       name: "Escada",
-      photo: "photo-placeholder.webp",
+      photo: "photo-escada.webp",
       visible: true,
       order: 6,
       lights: [
@@ -311,7 +311,7 @@ const CLIENT_CONFIG = {
 
     ambiente7: {
       name: "Brinquedoteca",
-      photo: "photo-placeholder.webp",
+      photo: "photo-brinquedoteca.webp",
       visible: true,
       order: 7,
       tv: [{ id: "50", name: "Televisão" }],
@@ -326,7 +326,7 @@ const CLIENT_CONFIG = {
 
     ambiente8: {
       name: "Suíte Milena",
-      photo: "photo-placeholder.webp",
+      photo: "photo-suitemilena.webp",
       visible: true,
       order: 8,
       curtains: [{ id: "51", name: "Veneziana" }],
@@ -342,7 +342,7 @@ const CLIENT_CONFIG = {
 
     ambiente9: {
       name: "Suíte Fabio",
-      photo: "photo-placeholder.webp",
+      photo: "photo-suitefabio.webp",
       visible: true,
       order: 10,
       lights: [],
@@ -356,7 +356,7 @@ const CLIENT_CONFIG = {
 
     ambiente10: {
       name: "Suíte Laura",
-      photo: "photo-placeholder.webp",
+      photo: "photo-suitelaura.webp",
       visible: true,
       order: 10,
       lights: [],

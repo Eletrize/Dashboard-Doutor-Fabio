@@ -7510,6 +7510,13 @@ function initializeApp() {
               // Esconder loader
               hideLoader();
 
+              // Tentar entrar em tela cheia após o loading
+              setTimeout(() => {
+                if (window.fullscreenManager?.enterFullscreen) {
+                  window.fullscreenManager.enterFullscreen();
+                }
+              }, 200);
+
               // Configurar observador DOM
               setupDomObserver();
 
