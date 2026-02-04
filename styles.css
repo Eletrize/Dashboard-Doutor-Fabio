@@ -38,13 +38,11 @@ textarea {
 }
 
 /* ========================================
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: none;
-
+   HOME / ROOMS
+======================================== */
 @media (orientation: portrait) {
   .room-card {
-    min-height: 240px;
+    height: 260px;
   }
 }
 
