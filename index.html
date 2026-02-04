@@ -5939,8 +5939,12 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             list.innerHTML = visible
               .map((r) => {
                 const hasPhoto = Boolean(ROOM_IMAGE_DATA[r.route]);
-                const quickActions = Array.isArray(env?.quickActions)
-                  ? env.quickActions
+                const envConfig =
+                  typeof getEnvironment === "function"
+                    ? getEnvironment(r.route)
+                    : null;
+                const quickActions = Array.isArray(envConfig?.quickActions)
+                  ? envConfig.quickActions
                   : [];
                 const lightAction = quickActions.find(
                   (action) =>
