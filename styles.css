@@ -1,4 +1,4 @@
-/* ========================================
+﻿/* ========================================
    GLOBAL STYLES
 ======================================== */
 
@@ -289,7 +289,6 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
 /* ========================================
    MASTER BUTTONS
 ======================================== */
-.room-master-btn,
 .room-curtain-master-btn {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
@@ -316,15 +315,10 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
   align-items: center !important;
   display: flex !important;
 }
-.room-master-btn {
-  left: 10px;
-}
 .room-curtain-master-btn {
   left: 102px;
 }
-.room-master-btn:before,
 .room-curtain-master-btn:before,
-.room-master-btn:after,
 .room-curtain-master-btn:after {
   content: "";
   border-radius: inherit;
@@ -333,23 +327,19 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
   position: absolute;
   inset: 0;
 }
-.room-master-btn:before,
 .room-curtain-master-btn:before {
   opacity: 0.5;
   background: linear-gradient(135deg, #ffffff52, #fff0);
 }
-.room-master-btn:after,
 .room-curtain-master-btn:after {
   mix-blend-mode: screen;
   opacity: 0.45;
   background: radial-gradient(circle at 30% 30%, #ffffff59, #0000 60%);
 }
-.room-master-btn:hover:not(.loading),
 .room-curtain-master-btn:hover:not(.loading) {
   opacity: 0.8;
   transform: scale(1.1);
 }
-.room-master-btn:active:not(.loading),
 .room-curtain-master-btn:active:not(.loading) {
   opacity: 1;
   transform: scale(0.95);
@@ -357,7 +347,6 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
     inset 0 4px 12px #00000047,
     0 6px 14px #00000029;
 }
-.room-master-btn img,
 .room-curtain-master-btn img {
   filter: brightness(0) invert();
   object-fit: contain;
@@ -371,22 +360,6 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
   position: static !important;
   inset: auto !important;
   transform: none !important;
-}
-.room-master-btn.loading {
-  pointer-events: none;
-  opacity: 0.6 !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-  backdrop-filter: blur(10px) !important;
-  background: #ffffff14 !important;
-  border-color: #ffffff26 !important;
-  transition: all 0.2s !important;
-  position: absolute !important;
-  bottom: 16px !important;
-  left: 10px !important;
-  transform: scale(0.95) !important;
-  box-shadow:
-    inset 0 2px 4px #0000004d,
-    0 4px 16px #0000001a !important;
 }
 .room-curtain-master-btn.loading {
   pointer-events: none;
@@ -404,7 +377,6 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
     inset 0 2px 4px #0000004d,
     0 4px 16px #0000001a !important;
 }
-.room-master-btn.loading img,
 .room-curtain-master-btn.loading img {
   object-fit: contain;
   margin: 0;
@@ -413,78 +385,6 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
   opacity: 0.4 !important;
   filter: brightness(0) invert() brightness(0.7) !important;
   transform: none !important;
-}
-
-/* Rework do botÃ£o de luz no card do ambiente */
-.room-master-btn {
-  top: auto;
-  right: auto;
-  left: 18px;
-  bottom: 18px;
-  width: 48px;
-  height: 48px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  box-shadow: none;
-  padding: 0;
-  opacity: 1;
-  outline: none;
-  transform: none !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.room-master-btn::before {
-  display: none !important;
-}
-.room-master-btn::after {
-  content: "";
-  position: absolute;
-  inset: 6px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.35);
-  filter: blur(12px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  z-index: 0;
-}
-.room-master-btn[data-state="on"]::after {
-  opacity: 1;
-}
-.room-master-btn .room-master-icon {
-  width: 28px !important;
-  height: 28px !important;
-  filter: none;
-  opacity: 1;
-  transition: opacity 0.18s ease;
-  position: relative;
-  z-index: 1;
-}
-.room-master-btn .room-master-icon.is-fading {
-  opacity: 0;
-}
-.room-master-btn:hover:not(.loading) {
-  opacity: 1;
-  transform: none !important;
-}
-.room-master-btn:active:not(.loading) {
-  opacity: 1;
-  box-shadow: none;
-  transform: none !important;
-}
-.room-master-btn:focus,
-.room-master-btn:focus-visible {
-  outline: none !important;
-  box-shadow: none !important;
-  transform: none !important;
-}
-.room-master-btn.loading {
-  background: transparent !important;
-  border-color: transparent !important;
-  opacity: 0.5 !important;
-  box-shadow: none !important;
 }
 
 @keyframes spin {
@@ -496,18 +396,6 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
   }
 }
 
-.room-master-btn.loading {
-  backface-visibility: hidden;
-  will-change: auto !important;
-  contain: layout style paint !important;
-}
-.room-master-btn.loading:hover,
-.room-master-btn.loading:active {
-  opacity: 0.5 !important;
-  background: transparent !important;
-  border-color: transparent !important;
-  transform: none !important;
-}
 .room-curtain-master-btn.loading:hover,
 .room-curtain-master-btn.loading:active {
   opacity: 0.6 !important;
@@ -540,19 +428,15 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
 ======================================== */
 
 /* Estado "pressed" consistente para toque/click (complementa :active em mobile) */
-button.is-pressed:not(.room-master-btn):not(.room-curtain-master-btn):not(
-    .app-logo-trigger
-  ) {
+button.is-pressed:not(.room-curtain-master-btn):not(.app-logo-trigger) {
   transform: translateY(1px) scale(0.98);
 }
 
-/* Estado de loading consistente para botões que usam class/dataset */
-button.loading:not(.room-master-btn):not(.room-curtain-master-btn):not(
+/* Estado de loading consistente para botÃµes que usam class/dataset */
+button.loading:not(.room-curtain-master-btn):not(.app-logo-trigger),
+button[data-loading="true"]:not(.room-curtain-master-btn):not(
     .app-logo-trigger
-  ),
-button[data-loading="true"]:not(.room-master-btn):not(
-    .room-curtain-master-btn
-  ):not(.app-logo-trigger) {
+  ) {
   pointer-events: none;
   cursor: progress;
   opacity: 0.75;
@@ -609,7 +493,7 @@ button[data-loading="true"]:not(.room-master-btn):not(
   margin: 0;
 }
 
-/* Elementos fixos do topo (logo + linha) fora do fade das páginas */
+/* Elementos fixos do topo (logo + linha) fora do fade das pÃ¡ginas */
 .spa-static-chrome.is-hidden {
   opacity: 0 !important;
   pointer-events: none !important;
@@ -671,14 +555,14 @@ body {
   overflow: hidden;
 }
 
-/* Tipografia mais “premium” (apenas renderização) */
+/* Tipografia mais â€œpremiumâ€ (apenas renderizaÃ§Ã£o) */
 html,
 body {
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
 }
 
-/* Foco visível consistente (sem cores novas: usa tokens existentes) */
+/* Foco visÃ­vel consistente (sem cores novas: usa tokens existentes) */
 :where(
   button,
   a,
@@ -4078,10 +3962,10 @@ body.app-info-open {
 }
 
 /* ========================================
-   ANIMAÇÃO ORQUESTRADA - MODO ESPECIAL
-   Quando body.orchestrated-animation está ativo,
-   desativa todas as transições automáticas para
-   permitir animação manual via JavaScript
+   ANIMAÃ‡ÃƒO ORQUESTRADA - MODO ESPECIAL
+   Quando body.orchestrated-animation estÃ¡ ativo,
+   desativa todas as transiÃ§Ãµes automÃ¡ticas para
+   permitir animaÃ§Ã£o manual via JavaScript
 ======================================== */
 
 body.orchestrated-animation #spa-root,
@@ -4092,7 +3976,7 @@ body.orchestrated-animation .page.active.page-ready {
   opacity: 1 !important;
 }
 
-/* Durante animação orquestrada, permitir overflow para cards deslizarem */
+/* Durante animaÃ§Ã£o orquestrada, permitir overflow para cards deslizarem */
 body.orchestrated-animation .rooms-frame,
 body.orchestrated-animation .rooms-list {
   overflow: visible !important;
@@ -4108,7 +3992,7 @@ body.orchestrated-animation .page-title {
 }
 
 /* ========================================
-   LOADER & TRANSIÇÃO ORQUESTRADA
+   LOADER & TRANSIÃ‡ÃƒO ORQUESTRADA
 ======================================== */
 
 .global-loader {
@@ -4152,7 +4036,7 @@ body.orchestrated-animation .page-title {
   animation: 2s infinite pulse;
 }
 
-/* Botão do logo no loader */
+/* BotÃ£o do logo no loader */
 .loader-logo-btn {
   cursor: default;
   background: transparent !important;
@@ -4257,7 +4141,7 @@ body.orchestrated-animation .page-title {
   font-weight: 500;
 }
 
-/* Estado de transição - elementos de loading desaparecem */
+/* Estado de transiÃ§Ã£o - elementos de loading desaparecem */
 .global-loader.transitioning .loader-spinner,
 .global-loader.transitioning .loader-text,
 .global-loader.transitioning .loader-progress {
@@ -4265,7 +4149,7 @@ body.orchestrated-animation .page-title {
   transform: translateY(20px);
 }
 
-/* Logo em transição - para de pulsar e se prepara para mover */
+/* Logo em transiÃ§Ã£o - para de pulsar e se prepara para mover */
 .loader-logo.transitioning {
   animation: none !important;
   position: fixed;
@@ -4280,7 +4164,7 @@ body.orchestrated-animation .page-title {
 }
 
 /* ========================================
-   ANIMAÇÕES DA HOME (FADE CONTROLADO)
+   ANIMAÃ‡Ã•ES DA HOME (FADE CONTROLADO)
 ======================================== */
 
 /* Durante a intro orquestrada, cards/navbar ficam escondidos */
@@ -4291,20 +4175,20 @@ body.orchestrated-animation .room-card {
   animation: none !important;
 }
 
-/* Quando liberar a home, apenas fade rápido */
+/* Quando liberar a home, apenas fade rÃ¡pido */
 body.orchestrated-animation.reveal-home #spa-navbar,
 body.orchestrated-animation.reveal-home .room-card {
   opacity: 1 !important;
   transition: opacity 0.15s linear !important;
 }
 
-/* Top bar - estado inicial (invisível) */
+/* Top bar - estado inicial (invisÃ­vel) */
 .top-bar-custom.animate-entry {
   opacity: 0;
   transform: scaleX(0);
 }
 
-/* Top bar animando (já está no loader-line, então apenas mostra) */
+/* Top bar animando (jÃ¡ estÃ¡ no loader-line, entÃ£o apenas mostra) */
 .top-bar-custom.animate-in {
   animation: fadeIn 0.3s ease forwards;
 }
@@ -4314,7 +4198,7 @@ body.orchestrated-animation.reveal-home .room-card {
   opacity: 0;
 }
 
-/* Page title visível após logo pousar */
+/* Page title visÃ­vel apÃ³s logo pousar */
 .page-title.fixed-header.animate-in {
   opacity: 1;
 }
@@ -7074,7 +6958,7 @@ body:not(.tv-controls-on)
   display: block;
 }
 
-/* AC Mode Button Label - Para botão com texto */
+/* AC Mode Button Label - Para botÃ£o com texto */
 .ac-mode-btn__label {
   color: #fff;
   text-transform: uppercase;
@@ -7088,9 +6972,9 @@ body:not(.tv-controls-on)
   grid-template-columns: 1fr !important;
 }
 
-/* AC Controls - Telas grandes: botões com mesma altura, ocupando tela completa */
+/* AC Controls - Telas grandes: botÃµes com mesma altura, ocupando tela completa */
 @media (width >= 1000px) {
-  /* Container principal do AC - ajustado para não exceder a tela */
+  /* Container principal do AC - ajustado para nÃ£o exceder a tela */
   .ac-page-wrapper {
     align-items: stretch !important;
     padding: 10px !important;
@@ -7115,7 +6999,7 @@ body:not(.tv-controls-on)
     height: 100% !important;
   }
 
-  /* Cada seção ocupa 1/3 do espaço vertical com gap maior */
+  /* Cada seÃ§Ã£o ocupa 1/3 do espaÃ§o vertical com gap maior */
   .ac-modes,
   .ac-aleta-section,
   .ac-commands-section {
@@ -7134,7 +7018,7 @@ body:not(.tv-controls-on)
     margin: 0 0 16px 0 !important;
   }
 
-  /* Grids ocupam todo espaço restante */
+  /* Grids ocupam todo espaÃ§o restante */
   .ac-modes-grid,
   .ac-aleta-grid,
   .ac-commands-grid {
@@ -7149,7 +7033,7 @@ body:not(.tv-controls-on)
     grid-template-columns: 1fr !important;
   }
 
-  /* Botões preenchem 100% da altura do grid */
+  /* BotÃµes preenchem 100% da altura do grid */
   .ac-mode-btn,
   .ac-aleta-btn,
   .ac-command-btn {
@@ -7171,17 +7055,17 @@ body:not(.tv-controls-on)
   }
 }
 
-/* AC Living - Grid com 3 botões de seleção */
+/* AC Living - Grid com 3 botÃµes de seleÃ§Ã£o */
 .ac-modes-grid--triple {
   grid-template-columns: repeat(3, 1fr) !important;
 }
 
-/* AC Living - Grid de aletas com 2 botões (sem WindFree) */
+/* AC Living - Grid de aletas com 2 botÃµes (sem WindFree) */
 .ac-aleta-grid--dual {
   grid-template-columns: repeat(2, 1fr) !important;
 }
 
-/* AC Living - Botão power desabilitado */
+/* AC Living - BotÃ£o power desabilitado */
 .ac-command-btn--disabled {
   opacity: 0.4 !important;
   cursor: not-allowed !important;
@@ -7192,7 +7076,7 @@ body:not(.tv-controls-on)
   opacity: 0.5 !important;
 }
 
-/* AC Living - Botão de seleção ativo */
+/* AC Living - BotÃ£o de seleÃ§Ã£o ativo */
 [data-ac-living] .ac-mode-btn[aria-pressed="true"] {
   background: linear-gradient(135deg, #b4b4b440, #87878726) !important;
   border-color: #b4b4b480 !important;
@@ -7201,7 +7085,7 @@ body:not(.tv-controls-on)
     inset 0 1px #ffffff1a !important;
 }
 
-/* AC Living - Manter botões de seleção clicáveis mesmo com power off */
+/* AC Living - Manter botÃµes de seleÃ§Ã£o clicÃ¡veis mesmo com power off */
 [data-component="ac-control"][data-power-off]
   [data-ac-living]
   .ac-mode-btn--selection,
@@ -7212,7 +7096,7 @@ body:not(.tv-controls-on)
   cursor: pointer !important;
 }
 
-/* AC Mobile - Alinhar todos os botões com borda inferior do container */
+/* AC Mobile - Alinhar todos os botÃµes com borda inferior do container */
 @media (width <= 999px) {
   .ac-container {
     display: flex !important;
@@ -7287,7 +7171,7 @@ body:not(.tv-controls-on)
   transform-origin: center;
 }
 
-/* spa-root começa invisível até loader desaparecer */
+/* spa-root comeÃ§a invisÃ­vel atÃ© loader desaparecer */
 #spa-root {
   opacity: 0;
   transition: opacity 0.2s ease;

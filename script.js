@@ -198,9 +198,7 @@ if (typeof window !== "undefined") {
 
 const CONTROL_SELECTOR =
   ".room-control[data-device-id], .control-card[data-device-id]";
-const MASTER_BUTTON_SELECTOR = ".room-master-btn";
 const deviceControlCache = new Map();
-const masterButtonCache = new Set();
 const deviceStateMemory = new Map();
 const DEVICE_STATE_STORAGE_PREFIX = "deviceState:";
 const DEVICE_STATE_MAX_QUOTA_ERRORS = 1;
@@ -2849,18 +2847,6 @@ function unregisterControlElement(el) {
   return removed;
 }
 
-function registerMasterButton(btn) {
-  if (!btn) return false;
-  if (masterButtonCache.has(btn)) return false;
-  masterButtonCache.add(btn);
-  return true;
-}
-
-function unregisterMasterButton(btn) {
-  if (!btn) return false;
-  return masterButtonCache.delete(btn);
-}
-
 function collectControlsFromNode(node) {
   if (!node || node.nodeType !== Node.ELEMENT_NODE) return false;
   let changed = false;
@@ -2869,17 +2855,9 @@ function collectControlsFromNode(node) {
     changed = registerControlElement(node) || changed;
   }
 
-  if (node.matches && node.matches(MASTER_BUTTON_SELECTOR)) {
-    changed = registerMasterButton(node) || changed;
-  }
-
   if (typeof node.querySelectorAll === "function") {
     node.querySelectorAll(CONTROL_SELECTOR).forEach(function (el) {
       changed = registerControlElement(el) || changed;
-    });
-
-    node.querySelectorAll(MASTER_BUTTON_SELECTOR).forEach(function (btn) {
-      changed = registerMasterButton(btn) || changed;
     });
   }
 
@@ -2894,17 +2872,9 @@ function removeControlsFromNode(node) {
     changed = unregisterControlElement(node) || changed;
   }
 
-  if (node.matches && node.matches(MASTER_BUTTON_SELECTOR)) {
-    changed = unregisterMasterButton(node) || changed;
-  }
-
   if (typeof node.querySelectorAll === "function") {
     node.querySelectorAll(CONTROL_SELECTOR).forEach(function (el) {
       changed = unregisterControlElement(el) || changed;
-    });
-
-    node.querySelectorAll(MASTER_BUTTON_SELECTOR).forEach(function (btn) {
-      changed = unregisterMasterButton(btn) || changed;
     });
   }
 
@@ -2927,10 +2897,6 @@ function primeControlCaches(options) {
     registerControlElement(el);
   });
 
-  root.querySelectorAll(MASTER_BUTTON_SELECTOR).forEach(function (btn) {
-    registerMasterButton(btn);
-  });
-
   controlCachePrimed = true;
 }
 
@@ -2947,11 +2913,6 @@ function pruneStaleEntries() {
     }
   });
 
-  masterButtonCache.forEach(function (btn) {
-    if (!btn.isConnected) {
-      masterButtonCache.delete(btn);
-    }
-  });
 }
 
 function scheduleControlSync(forceMasterUpdate) {
@@ -3036,16 +2997,6 @@ function initRoomPage() {
     debugLog(() => ["initRoomPage rename fallback", error]);
   }
 
-  // Garantir atualizacao de botoes master apos o layout estabilizar
-  const masterUpdate = function () {
-    updateAllMasterButtons(true);
-  };
-
-  if (typeof window.requestIdleCallback === "function") {
-    window.requestIdleCallback(masterUpdate, { timeout: 200 });
-  } else {
-    setTimeout(masterUpdate, 50);
-  }
 }
 
 // === CONTROLADOR DE AR CONDICIONADO ===
@@ -4185,26 +4136,6 @@ let pollingAbortController = null;
 const recentCommands = new Map(); // deviceId -> timestamp do ÃƒÂºltimo comando
 const COMMAND_PROTECTION_MS = 8000; // 8 segundos de proteÃƒÂ§ÃƒÂ£o apÃƒÂ³s comando manual
 
-// Sistema de loading para botÃƒÂµes master
-function setMasterButtonLoading(button, isLoading) {
-  console.log(
-    "Ã°Å¸â€â€ž setMasterButtonLoading chamada:",
-    button,
-    "loading:",
-    isLoading
-  );
-
-  if (isLoading) {
-    button.classList.add("loading");
-    button.dataset.loading = "true";
-    console.log("Ã¢Å“â€¦ Loading ativado - classes:", button.className);
-  } else {
-    button.classList.remove("loading");
-    button.dataset.loading = "false";
-    console.log("⚠️Loading desativado - classes:", button.className);
-  }
-}
-
 function cleanupExpiredCommands() {
   const now = Date.now();
   for (const [deviceId, timestamp] of recentCommands.entries()) {
@@ -4421,7 +4352,6 @@ async function updateDeviceStatesFromServer(options = {}) {
       }
     });
 
-    updateAllMasterButtons();
     if (typeof updateMasterLightToggleState === "function") {
       updateMasterLightToggleState();
     }
@@ -4563,99 +4493,6 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
     applyDenonPowerState(state);
   }
 
-  updateAllMasterButtons();
-}
-
-function updateAllMasterButtons(forceUpdate = false) {
-  pruneStaleEntries();
-
-  masterButtonCache.forEach(function (btn) {
-    if (!btn.isConnected) {
-      masterButtonCache.delete(btn);
-      return;
-    }
-
-    const ids = getRoomLightIdsForButton(btn);
-
-    if (ids.length === 0) {
-      return;
-    }
-
-    const masterState = anyOn(ids) ? "on" : "off";
-    setMasterIcon(btn, masterState, forceUpdate);
-  });
-}
-
-// FunÃƒÂ§ÃƒÂµes auxiliares para botÃƒÂµes master (movidas do HTML)
-function anyOn(deviceIds) {
-  return (deviceIds || []).some((id) => (getStoredState(id) || "off") === "on");
-}
-
-function getRoomLightsForButton(button) {
-  const envKey = button?.dataset?.route || null;
-  if (envKey && typeof getEnvironment === "function") {
-    const env = getEnvironment(envKey);
-    if (env && Array.isArray(env.lights) && env.lights.length) {
-      return env.lights.map((light) => ({
-        id: String(light.id),
-        type: (light?.type || light?.class || "").toString().toLowerCase(),
-        defaultLevel: clampDimmerValue(light?.defaultLevel, 80),
-      }));
-    }
-  }
-
-  const ids = (button?.dataset?.deviceIds || "").split(",").filter(Boolean);
-  return ids.map((id) => ({
-    id: String(id),
-    type: "",
-    defaultLevel: 80,
-  }));
-}
-
-function getRoomLightIdsForButton(button) {
-  return getRoomLightsForButton(button).map((light) => light.id);
-}
-
-function isRoomLightDimmer(light) {
-  return String(light?.type || "").toLowerCase() === "dimmer";
-}
-
-// Função para inicializar e sincronizar estados dos botÃƒÂµes master na home
-function initHomeMasters() {
-  console.log("🏠 Inicializando botões master da home...");
-  
-  // Aguardar um pouco para garantir que o DOM está pronto
-  setTimeout(() => {
-    const masterButtons = document.querySelectorAll(".room-master-btn");
-    
-    if (masterButtons.length === 0) {
-      console.log("⚠️ Nenhum botão master encontrado");
-      return;
-    }
-    
-    console.log(`✅ Encontrados ${masterButtons.length} botões master`);
-    
-    masterButtons.forEach((btn) => {
-      // Limpar estado de pending
-      btn.dataset.pending = "false";
-      
-      // Obter IDs dos dispositivos
-      const ids = getRoomLightIdsForButton(btn);
-      
-      if (ids.length === 0) return;
-      
-      // Calcular estado baseado nos dispositivos
-      const state = anyOn(ids) ? "on" : "off";
-      
-      // Atualizar ícone do botão
-      setMasterIcon(btn, state, true);
-      
-      const route = btn.dataset.route || "unknown";
-      console.log(`  ${route}: ${ids.length} luzes, estado = ${state}`);
-    });
-    
-    console.log("✅ Botões master sincronizados!");
-  }, 100);
 }
 
 // Função auxiliar para verificar se alguma cortina está aberta
@@ -4694,39 +4531,6 @@ function getCurtainState(curtainId) {
     console.error("⚠️Erro ao obter estado da cortina:", error);
     return "closed";
   }
-}
-
-function setMasterIcon(btn, state, forceUpdate = false) {
-  if (!forceUpdate && btn.dataset.pending === "true") {
-    debugLog(() => ["masterButtonPending", getRoomLightIdsForButton(btn)]);
-    return;
-  }
-
-  const iconOn =
-    btn.dataset.iconOn ||
-    (typeof getUiToggleIcon === "function" && getUiToggleIcon("light", "on")) ||
-    "images/icons/icon-small-light-on.svg";
-  const iconOff =
-    btn.dataset.iconOff ||
-    (typeof getUiToggleIcon === "function" &&
-      getUiToggleIcon("light", "off")) ||
-    "images/icons/icon-small-light-off.svg";
-
-  const img = btn.querySelector(".room-master-icon");
-  if (!img) return;
-
-  const nextIcon = state === "on" ? iconOn : iconOff;
-  btn.dataset.state = state;
-
-  if (img.getAttribute("src") !== nextIcon) {
-    img.classList.add("is-fading");
-    setTimeout(() => {
-      img.setAttribute("src", nextIcon);
-      img.classList.remove("is-fading");
-    }, 120);
-  }
-
-  debugLog(() => ["masterIconUpdated", state, getRoomLightIdsForButton(btn)]);
 }
 
 function setCurtainMasterIcon(btn, state, forceUpdate = false) {
@@ -4775,77 +4579,6 @@ function updateIndividualCurtainButtons(curtainIds, command) {
           : "images/icons/curtain-closed.svg";
       icon.alt = command === "open" ? "Cortina Aberta" : "Cortina Fechada";
     }
-  });
-}
-
-// Função chamada pelo onclick dos botÃƒÂµes master na home
-function onHomeMasterClick(event, button) {
-  console.log("Ã°Å¸â€“Â±Ã¯Â¸Â onHomeMasterClick chamada!", button);
-  event.preventDefault();
-  event.stopPropagation();
-
-  // Verificar se jÃƒÂ¡ está carregando
-  if (button.dataset.loading === "true") {
-    console.log(
-      "Ã¢ÂÂ¸Ã¯Â¸Â BotÃƒÂ£o jÃƒÂ¡ está carregando, ignorando clique"
-    );
-    return;
-  }
-
-  const lights = getRoomLightsForButton(button);
-  const deviceIds = lights.map((light) => light.id);
-  console.log("Ã°Å¸â€Â Device IDs encontrados:", deviceIds);
-
-  if (deviceIds.length === 0) {
-    console.log("⚠️Nenhum device ID encontrado");
-    return;
-  }
-
-  // Determinar comando baseado no estado atual
-  const currentState = anyOn(deviceIds) ? "on" : "off";
-  const newCommand = currentState === "on" ? "off" : "on";
-  console.log(
-    "Ã°Å¸Å½Â¯ Comando determinado:",
-    currentState,
-    "Ã¢â€ â€™",
-    newCommand
-  );
-
-  // Ativar loading visual
-  console.log("Ã°Å¸â€â€ž Ativando loading visual...");
-  setMasterButtonLoading(button, true);
-
-  // Atualizar UI imediatamente
-  setMasterIcon(button, newCommand);
-
-  // Enviar comandos para todos os dispositivos (master dos ambientes mantém comportamento original)
-  const promises = lights.map((light) => {
-    const deviceId = light.id;
-    const isDimmer = isRoomLightDimmer(light);
-
-    // Marcar comando recente
-    recentCommands.set(deviceId, Date.now());
-
-    if (newCommand === "off") {
-      setStoredState(deviceId, "off");
-      return sendHubitatCommand(deviceId, "off");
-    }
-
-    setStoredState(deviceId, "on");
-    if (isDimmer) {
-      const levelToSet = clampDimmerValue(light.defaultLevel, 80);
-      return sendHubitatCommand(deviceId, "setLevel", String(levelToSet));
-    }
-
-    return sendHubitatCommand(deviceId, "on");
-  });
-
-  // Aguardar conclusão de todos os comandos
-  Promise.allSettled(promises).finally(() => {
-    // Remover loading apÃƒÂ³s comandos
-    setTimeout(() => {
-      setMasterButtonLoading(button, false);
-    }, 1000); // 1 segundo de delay para feedback visual
   });
 }
 
@@ -4915,31 +4648,6 @@ function onHomeCurtainMasterClick(event, button) {
       setCurtainMasterButtonLoading(button, false);
     }, 1000); // 1 segundo de delay para feedback visual
   });
-}
-
-// Função especial para atualizar estados apÃƒÂ³s comandos master
-function updateStatesAfterMasterCommand(deviceIds, command) {
-  console.log(
-    `Ã°Å¸Å½Â¯ Atualizando estados apÃƒÂ³s master ${command} para:`,
-    deviceIds
-  );
-
-  // Atualizar todos os dispositivos affected
-  deviceIds.forEach((deviceId) => {
-    updateDeviceUI(deviceId, command, true);
-  });
-
-  // ForÃƒÂ§ar atualizaÃƒÂ§ÃƒÂ£o de todos os masters
-  setTimeout(() => {
-    const masterButtons = document.querySelectorAll(".room-master-btn");
-    masterButtons.forEach((btn) => {
-      const ids = getRoomLightIdsForButton(btn);
-      if (ids.some((id) => deviceIds.includes(id))) {
-        const masterState = anyOn(ids) ? "on" : "off";
-        setMasterIcon(btn, masterState, true); // forÃƒÂ§ar atualizaÃƒÂ§ÃƒÂ£o
-      }
-    });
-  }, 100);
 }
 
 // === SISTEMA DE CARREGAMENTO GLOBAL ===
@@ -5602,14 +5310,6 @@ async function loadAllDeviceStatesGlobally() {
 
           updateProgress(100, "Carregamento via API direta Concluído!");
 
-          // ForÃƒÂ§ar atualizaÃƒÂ§ÃƒÂ£o dos botÃƒÂµes master
-          setTimeout(() => {
-            updateAllMasterButtons();
-            console.log(
-              "Ã°Å¸â€â€ž BotÃƒÂµes master atualizados apÃƒÂ³s fallback"
-            );
-          }, 100);
-
           console.log(
             "Ã¢Å“â€¦ Fallback automÃƒÂ¡tico Concluído com sucesso"
           );
@@ -5797,14 +5497,6 @@ async function loadAllDeviceStatesGlobally() {
     }
 
     updateProgress(95, "Finalizando sincronizaÃƒÂ§ÃƒÂ£o...");
-
-    // ForÃƒÂ§ar atualizaÃƒÂ§ÃƒÂ£o de todos os botÃƒÂµes master apÃƒÂ³s carregamento
-    setTimeout(() => {
-      updateAllMasterButtons();
-      console.log(
-        "Ã°Å¸â€â€ž BotÃƒÂµes master atualizados apÃƒÂ³s carregamento global"
-      );
-    }, 100);
 
     updateProgress(100, "Estados carregados com sucesso!");
     console.log("Ã¢Å“â€¦ Carregamento global Concluído com sucesso");
@@ -6108,22 +5800,6 @@ function syncAllVisibleControls(forceMasterUpdate = false) {
     }
   });
 
-  masterButtonCache.forEach(function (btn) {
-    if (!btn.isConnected) {
-      masterButtonCache.delete(btn);
-      return;
-    }
-
-    const ids = getRoomLightIdsForButton(btn);
-
-    if (ids.length === 0) {
-      return;
-    }
-
-    const masterState = anyOn(ids) ? "on" : "off";
-    setMasterIcon(btn, masterState, forceMasterUpdate);
-  });
-
   debugLog(() => ["syncAllVisibleControls:updated", updatedControls]);
 }
 
@@ -6177,62 +5853,6 @@ window.debugEletrize = {
         `  ${status} ${deviceId}: ${Math.ceil(remaining / 1000)}s restantes`
       );
     });
-  },
-  testMasterLoading: () => {
-    console.log("Ã°Å¸â€â€ž Testando loading nos botÃƒÂµes master...");
-    const masters = document.querySelectorAll(".room-master-btn");
-    const scenes = document.querySelectorAll(".scene-control-card");
-
-    console.log("BotÃƒÂµes master encontrados:", masters.length);
-    console.log("BotÃƒÂµes de cenÃƒÂ¡rio encontrados:", scenes.length);
-
-    // Testar botÃƒÂµes master da home
-    masters.forEach((btn, index) => {
-      console.log(`Testando botÃƒÂ£o master ${index + 1}:`, btn);
-      setTimeout(() => {
-        setMasterButtonLoading(btn, true);
-        setTimeout(() => {
-          setMasterButtonLoading(btn, false);
-        }, 3000);
-      }, index * 200);
-    });
-
-    // Testar botÃƒÂ£o de cenÃƒÂ¡rios também
-    scenes.forEach((btn, index) => {
-      setTimeout(() => {
-        setMasterButtonLoading(btn, true);
-        setTimeout(() => {
-          setMasterButtonLoading(btn, false);
-        }, 3000);
-      }, (masters.length + index) * 200);
-    });
-  },
-  checkMasterButtons: () => {
-    console.log("Ã°Å¸ÂÂ  Status dos botÃƒÂµes master:");
-    document.querySelectorAll(".room-master-btn").forEach((btn, index) => {
-      const ids = getRoomLightIdsForButton(btn);
-      const route = btn.dataset.route || "unknown";
-      const pending = btn.dataset.pending === "true";
-      const currentState = btn.dataset.state || "unknown";
-      const calculatedState = anyOn(ids) ? "on" : "off";
-      const consistent = currentState === calculatedState;
-
-      console.log(
-        `  ${index + 1}. ${route}: ${currentState} (calc: ${calculatedState}) ${
-          consistent ? "Ã¢Å“â€¦" : "Ã¢ÂÅ’"
-        } ${pending ? "Ã¢ÂÂ³" : "Ã°Å¸â€â€œ"}`
-      );
-    });
-  },
-  fixMasterButtons: () => {
-    console.log("Ã°Å¸â€Â§ Corrigindo todos os botÃƒÂµes master...");
-    document.querySelectorAll(".room-master-btn").forEach((btn) => {
-      btn.dataset.pending = "false";
-      const ids = getRoomLightIdsForButton(btn);
-      const state = anyOn(ids) ? "on" : "off";
-      setMasterIcon(btn, state, true);
-    });
-    console.log("Ã¢Å“â€¦ BotÃƒÂµes master corrigidos!");
   },
   mobileInfo: () => {
     console.log("Ã°Å¸â€œÂ± InformaÃƒÂ§ÃƒÂµes do dispositivo mÃƒÂ³vel:");
@@ -7277,13 +6897,8 @@ function initUltraBasicMode() {
 
     // Verificar elementos bÃƒÂ¡sicos
     var controls = document.querySelectorAll(".room-control");
-    var masters = document.querySelectorAll(".room-master-btn");
     showMobileDebug(
-      "Ã°Å¸â€Â Encontrados " +
-        controls.length +
-        " controles e " +
-        masters.length +
-        " masters",
+      "Ã°Å¸â€Â Encontrados " + controls.length + " controles",
       "info"
     );
 
@@ -7818,7 +7433,6 @@ function setupPremiumPressFeedback() {
 
         // Evitar conflito com botões que já têm animações próprias
         if (
-          target.classList.contains("room-master-btn") ||
           target.classList.contains("room-curtain-master-btn") ||
           target.classList.contains("app-logo-trigger")
         ) {
