@@ -4240,6 +4240,7 @@ let pollingTimerHandle = null;
 let pollingActive = false;
 let pollingFailureCount = 0;
 let pollingPausedForVisibility = false;
+let pollingAbortController = null;
 
 // Sistema para evitar conflitos entre comandos manuais e polling
 const recentCommands = new Map(); // deviceId -> timestamp do ÃƒÂºltimo comando
@@ -4362,7 +4363,15 @@ async function updateDeviceStatesFromServer(options = {}) {
       { interval: currentPollingInterval, url: pollingUrl },
     ]);
 
-    const response = await fetch(pollingUrl, { cache: "no-store" });
+    if (pollingAbortController) {
+      pollingAbortController.abort();
+    }
+    pollingAbortController = new AbortController();
+
+    const response = await fetch(pollingUrl, {
+      cache: "no-store",
+      signal: pollingAbortController.signal,
+    });
     const rawText = await response.text();
 
     if (!response.ok) {
@@ -4478,6 +4487,13 @@ async function updateDeviceStatesFromServer(options = {}) {
       updateMasterLightToggleState();
     }
   } catch (error) {
+    if (
+      error?.name === "AbortError" ||
+      pollingAbortController?.signal?.aborted ||
+      /aborted|NetworkError/i.test(String(error?.message || ""))
+    ) {
+      return;
+    }
     encounteredError = true;
     console.error("Erro no polling:", error);
 
