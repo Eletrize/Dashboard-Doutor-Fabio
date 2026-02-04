@@ -4718,7 +4718,11 @@ function setMasterIcon(btn, state, forceUpdate = false) {
   const currentSrc = img.src || "";
 
   if (!currentSrc.includes(nextIcon.split("/").pop())) {
-    img.src = nextIcon;
+    img.style.opacity = "0";
+    setTimeout(() => {
+      img.src = nextIcon;
+      img.style.opacity = "1";
+    }, 120);
     btn.dataset.state = state;
     debugLog(() => ["masterIconUpdated", state, getRoomLightIdsForButton(btn)]);
   }

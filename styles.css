@@ -429,8 +429,8 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
   box-shadow: none;
   opacity: 0.85;
   transition:
-    transform 0.15s ease,
     opacity 0.2s ease;
+  outline: none;
 }
 .room-master-btn::after {
   content: "";
@@ -454,13 +454,14 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
   height: 32px !important;
   filter: none;
   opacity: 0.95;
+  transition: opacity 0.2s ease;
 }
 .room-master-btn:hover:not(.loading) {
-  transform: scale(1.05);
   opacity: 1;
 }
 .room-master-btn:active:not(.loading) {
-  transform: scale(0.98);
+  opacity: 1;
+  box-shadow: none;
 }
 .room-master-btn.loading {
   background: transparent !important;
