@@ -5939,6 +5939,10 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             list.innerHTML = visible
               .map((r) => {
                 const hasPhoto = Boolean(ROOM_IMAGE_DATA[r.route]);
+                const ids =
+                  Array.isArray(r.deviceIds) && r.deviceIds.length > 0
+                    ? r.deviceIds
+                    : [];
                 return `
 
                     <div class="room-card ${hasPhoto ? "has-photo" : ""}">
@@ -5953,6 +5957,28 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
 
                         <span>${r.name}</span>
 
+                        ${
+                          ids.length > 0
+                            ? `<button class="room-master-btn" data-route="${
+                                r.route
+                              }" data-icon-on="${uiToggleIcon(
+                                "light",
+                                "on",
+                                "images/icons/icon-small-light-on.svg",
+                              )}" data-icon-off="${uiToggleIcon(
+                                "light",
+                                "off",
+                                "images/icons/icon-small-light-off.svg",
+                              )}" onclick="onHomeMasterClick(event,this)" aria-label="Luzes">
+                                <img class="room-master-icon" src="${uiToggleIcon(
+                                  "light",
+                                  "off",
+                                  "images/icons/icon-small-light-off.svg",
+                                )}" alt="Luzes">
+                              </button>`
+                            : ""
+                        }
+
                         <button class="room-card-link" onclick="spaNavigate('${
                           r.route
                         }')"></button>
@@ -5962,6 +5988,10 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
               .join("");
 
             list.dataset.rendered = "true";
+          }
+
+          if (typeof syncHomeLightButtons === "function") {
+            syncHomeLightButtons();
           }
 
         }

@@ -4493,6 +4493,103 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
     applyDenonPowerState(state);
   }
 
+  if (typeof syncHomeLightButtons === "function") {
+    syncHomeLightButtons();
+  }
+}
+
+// === BotÃ£o de luz (home card) ===
+function getRoomLightsForRoute(route) {
+  if (!route || typeof getEnvironment !== "function") return [];
+  const env = getEnvironment(route);
+  if (!env || !Array.isArray(env.lights)) return [];
+
+  return env.lights.map((light) => ({
+    id: String(light.id),
+    type: (light?.type || light?.class || "").toString().toLowerCase(),
+    defaultLevel: clampDimmerValue(light?.defaultLevel, 80),
+  }));
+}
+
+function isHomeLightDimmer(light) {
+  return String(light?.type || "").toLowerCase() === "dimmer";
+}
+
+function anyLightOn(lights) {
+  return (lights || []).some(
+    (light) => (getStoredState(light.id) || "off") === "on"
+  );
+}
+
+function setHomeLightButtonIcon(button, state) {
+  const iconOn =
+    button.dataset.iconOn ||
+    (typeof getUiToggleIcon === "function" &&
+      getUiToggleIcon("light", "on")) ||
+    "images/icons/icon-small-light-on.svg";
+  const iconOff =
+    button.dataset.iconOff ||
+    (typeof getUiToggleIcon === "function" &&
+      getUiToggleIcon("light", "off")) ||
+    "images/icons/icon-small-light-off.svg";
+
+  const img = button.querySelector(".room-master-icon");
+  if (!img) return;
+
+  const nextIcon = state === "on" ? iconOn : iconOff;
+  button.dataset.state = state;
+
+  if (img.getAttribute("src") !== nextIcon) {
+    img.classList.add("is-fading");
+    setTimeout(() => {
+      img.setAttribute("src", nextIcon);
+      img.classList.remove("is-fading");
+    }, 120);
+  }
+}
+
+function syncHomeLightButtons() {
+  document.querySelectorAll(".room-master-btn").forEach((btn) => {
+    const route = btn.dataset.route || "";
+    const lights = getRoomLightsForRoute(route);
+    if (!lights.length) return;
+    const state = anyLightOn(lights) ? "on" : "off";
+    setHomeLightButtonIcon(btn, state);
+  });
+}
+
+function onHomeMasterClick(event, button) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const route = button?.dataset?.route || "";
+  const lights = getRoomLightsForRoute(route);
+  if (!lights.length) return;
+
+  const currentState = anyLightOn(lights) ? "on" : "off";
+  const nextState = currentState === "on" ? "off" : "on";
+
+  setHomeLightButtonIcon(button, nextState);
+
+  lights.forEach((light) => {
+    const deviceId = light.id;
+    recentCommands.set(deviceId, Date.now());
+
+    if (nextState === "off") {
+      setStoredState(deviceId, "off");
+      sendHubitatCommand(deviceId, "off");
+      return;
+    }
+
+    setStoredState(deviceId, "on");
+    if (isHomeLightDimmer(light)) {
+      const levelToSet = clampDimmerValue(light.defaultLevel, 80);
+      sendHubitatCommand(deviceId, "setLevel", String(levelToSet));
+      return;
+    }
+
+    sendHubitatCommand(deviceId, "on");
+  });
 }
 
 // Função auxiliar para verificar se alguma cortina está aberta
@@ -7433,6 +7530,7 @@ function setupPremiumPressFeedback() {
 
         // Evitar conflito com botões que já têm animações próprias
         if (
+          target.classList.contains("room-master-btn") ||
           target.classList.contains("room-curtain-master-btn") ||
           target.classList.contains("app-logo-trigger")
         ) {
