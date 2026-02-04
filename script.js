@@ -4499,25 +4499,40 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
 }
 
 // === BotÃ£o de luz (home card) ===
-function getRoomLightsForRoute(route) {
-  if (!route || typeof getEnvironment !== "function") return [];
+function getHomeQuickAction(route, type) {
+  if (!route || typeof getEnvironment !== "function") return null;
   const env = getEnvironment(route);
-  if (!env || !Array.isArray(env.lights)) return [];
+  const actions = Array.isArray(env?.quickActions) ? env.quickActions : [];
+  if (!actions.length) return null;
+  if (!type) return actions[0] || null;
+  return (
+    actions.find(
+      (action) =>
+        String(action?.type || "").toLowerCase() === String(type).toLowerCase()
+    ) || null
+  );
+}
 
-  return env.lights.map((light) => ({
-    id: String(light.id),
-    type: (light?.type || light?.class || "").toString().toLowerCase(),
-    defaultLevel: clampDimmerValue(light?.defaultLevel, 80),
+function normalizeQuickActionDevices(action) {
+  const devices = Array.isArray(action?.devices) ? action.devices : [];
+  return devices.map((device) => ({
+    id: String(device.id),
+    commandOn: device.commandOn || device.on || "on",
+    commandOff: device.commandOff || device.off || "off",
+    valueOn:
+      device.valueOn !== undefined
+        ? device.valueOn
+        : device.level !== undefined
+        ? device.level
+        : device.defaultLevel !== undefined
+        ? device.defaultLevel
+        : null,
   }));
 }
 
-function isHomeLightDimmer(light) {
-  return String(light?.type || "").toLowerCase() === "dimmer";
-}
-
-function anyLightOn(lights) {
-  return (lights || []).some(
-    (light) => (getStoredState(light.id) || "off") === "on"
+function anyQuickActionOn(devices) {
+  return (devices || []).some(
+    (device) => (getStoredState(device.id) || "off") === "on"
   );
 }
 
@@ -4551,9 +4566,12 @@ function setHomeLightButtonIcon(button, state) {
 function syncHomeLightButtons() {
   document.querySelectorAll(".room-master-btn").forEach((btn) => {
     const route = btn.dataset.route || "";
-    const lights = getRoomLightsForRoute(route);
-    if (!lights.length) return;
-    const state = anyLightOn(lights) ? "on" : "off";
+    const actionType = btn.dataset.action || "lights";
+    const action = getHomeQuickAction(route, actionType);
+    if (!action) return;
+    const devices = normalizeQuickActionDevices(action);
+    if (!devices.length) return;
+    const state = anyQuickActionOn(devices) ? "on" : "off";
     setHomeLightButtonIcon(btn, state);
   });
 }
@@ -4563,32 +4581,36 @@ function onHomeMasterClick(event, button) {
   event.stopPropagation();
 
   const route = button?.dataset?.route || "";
-  const lights = getRoomLightsForRoute(route);
-  if (!lights.length) return;
+  const actionType = button?.dataset?.action || "lights";
+  const action = getHomeQuickAction(route, actionType);
+  if (!action) return;
 
-  const currentState = anyLightOn(lights) ? "on" : "off";
+  const devices = normalizeQuickActionDevices(action);
+  if (!devices.length) return;
+
+  const currentState = anyQuickActionOn(devices) ? "on" : "off";
   const nextState = currentState === "on" ? "off" : "on";
 
   setHomeLightButtonIcon(button, nextState);
 
-  lights.forEach((light) => {
-    const deviceId = light.id;
+  devices.forEach((device) => {
+    const deviceId = device.id;
     recentCommands.set(deviceId, Date.now());
 
     if (nextState === "off") {
       setStoredState(deviceId, "off");
-      sendHubitatCommand(deviceId, "off");
+      sendHubitatCommand(deviceId, device.commandOff);
       return;
     }
 
     setStoredState(deviceId, "on");
-    if (isHomeLightDimmer(light)) {
-      const levelToSet = clampDimmerValue(light.defaultLevel, 80);
+    if (device.commandOn === "setLevel") {
+      const levelToSet = clampDimmerValue(device.valueOn, 80);
       sendHubitatCommand(deviceId, "setLevel", String(levelToSet));
       return;
     }
 
-    sendHubitatCommand(deviceId, "on");
+    sendHubitatCommand(deviceId, device.commandOn);
   });
 }
 

@@ -207,6 +207,20 @@ const CLIENT_CONFIG = {
         { id: "301", name: "Painel" },
         { id: "340", name: "Spots", type: "dimmer", defaultLevel: 100 },
       ],
+      quickActions: [
+        {
+          type: "lights",
+          devices: [
+            { id: "301", commandOn: "on", commandOff: "off" },
+            {
+              id: "340",
+              commandOn: "setLevel",
+              commandOff: "off",
+              valueOn: 100,
+            },
+          ],
+        },
+      ],
       airConditioner: {
         zones: [{ id: "Home", name: "home", deviceId: "347" }],
         controls: { zoneSelector: false, aletas: true, windfree: true },
@@ -233,6 +247,29 @@ const CLIENT_CONFIG = {
         { id: "344", name: "Lustre", type: "dimmer", defaultLevel: 60 },
         { id: "342", name: "Spots Dimmer", type: "dimmer", defaultLevel: 100 },
       ],
+      quickActions: [
+        {
+          type: "lights",
+          devices: [
+            { id: "302", commandOn: "on", commandOff: "off" },
+            { id: "303", commandOn: "on", commandOff: "off" },
+            { id: "304", commandOn: "on", commandOff: "off" },
+            { id: "305", commandOn: "on", commandOff: "off" },
+            {
+              id: "344",
+              commandOn: "setLevel",
+              commandOff: "off",
+              valueOn: 60,
+            },
+            {
+              id: "342",
+              commandOn: "setLevel",
+              commandOff: "off",
+              valueOn: 100,
+            },
+          ],
+        },
+      ],
       curtains: [
         { id: "359", name: "Corredor" },
         { id: "361", name: "Varanda" },
@@ -255,6 +292,21 @@ const CLIENT_CONFIG = {
         { id: "306", name: "Spots" },
         { id: "307", name: "Churrasqueira" },
         { id: "341", name: "Pendente", type: "dimmer", defaultLevel: 100 },
+      ],
+      quickActions: [
+        {
+          type: "lights",
+          devices: [
+            { id: "306", commandOn: "on", commandOff: "off" },
+            { id: "307", commandOn: "on", commandOff: "off" },
+            {
+              id: "341",
+              commandOn: "setLevel",
+              commandOff: "off",
+              valueOn: 100,
+            },
+          ],
+        },
       ],
       curtains: [{ id: "121", name: "Cortina" }],
       airConditioner: {
@@ -282,6 +334,16 @@ const CLIENT_CONFIG = {
         { id: "66", name: "Piscina" },
         { id: "59", name: "LED Piscina" },
       ],
+      quickActions: [
+        {
+          type: "lights",
+          devices: [
+            { id: "70", commandOn: "on", commandOff: "off" },
+            { id: "66", commandOn: "on", commandOff: "off" },
+            { id: "59", commandOn: "on", commandOff: "off" },
+          ],
+        },
+      ],
       hidromassagem: [{ id: "130", name: "Hidromassagem" }],
     },
 
@@ -306,6 +368,15 @@ const CLIENT_CONFIG = {
       lights: [
         { id: "81", name: "Luz" },
         { id: "82", name: "Luz 2" },
+      ],
+      quickActions: [
+        {
+          type: "lights",
+          devices: [
+            { id: "81", commandOn: "on", commandOff: "off" },
+            { id: "82", commandOn: "on", commandOff: "off" },
+          ],
+        },
       ],
     },
 
