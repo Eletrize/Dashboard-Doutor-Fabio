@@ -5463,6 +5463,32 @@ body.orchestrated-animation.reveal-home .room-card {
   border-color: #ffffff40;
   box-shadow: 0 0 20px #ffffff26;
 }
+body:not(.tv-controls-on) .tv-control-wrapper .tv-volume-canais-wrapper,
+body:not(.tv-controls-on) .tv-control-wrapper .tv-commands-grid,
+body:not(.tv-controls-on) .tv-control-wrapper .tv-directional-pad,
+body:not(.tv-controls-on) .tv-control-wrapper .tv-numpad,
+body:not(.tv-controls-on) .tv-control-wrapper .tv-favorites-list,
+body:not(.tv-controls-on) .tv-control-wrapper .tv-logo-section,
+body:not(.tv-controls-on) .tv-control-wrapper .tv-control-mode-toggle,
+body:not(.tv-controls-on) .tv-control-wrapper .tv-control-section--music,
+body:not(.tv-controls-on) .tv-control-wrapper .tv-control-section--dpad,
+body:not(.tv-controls-on) .tv-control-wrapper .tv-control-section--volume,
+body:not(.tv-controls-on) .tv-control-wrapper .tv-control-section--media,
+body:not(.tv-controls-on) .tv-control-wrapper .music-now-content,
+body:not(.tv-controls-on) .tv-control-wrapper .music-album-container,
+body:not(.tv-controls-on) .tv-control-wrapper .music-info,
+body:not(.tv-controls-on) .tv-control-wrapper .tv-volume-slider-container,
+body:not(.tv-controls-on) .tv-control-wrapper .tv-volume-slider,
+body:not(.tv-controls-on) .tv-control-wrapper .tv-volume-value,
+body:not(.tv-controls-on) .tv-control-wrapper .tv-gesture-icons,
+body:not(.tv-controls-on) .tv-control-wrapper .tv-gesture-surface {
+  opacity: 0.4;
+  pointer-events: none;
+}
+body:not(.tv-controls-on) .tv-control-wrapper .tv-section-title,
+body:not(.tv-controls-on) .tv-control-wrapper .tv-section-line {
+  opacity: 0.4;
+}
 .tv-btn--secondary,
 .tv-btn--tertiary {
   flex: 1;

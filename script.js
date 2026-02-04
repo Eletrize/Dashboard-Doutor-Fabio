@@ -1388,6 +1388,8 @@ let tvPowerState = "off"; // Estado inicial: desligado
 
 function updateTVPowerState(newState) {
   tvPowerState = newState;
+  document.body.classList.toggle("tv-controls-on", newState === "on");
+  document.body.classList.toggle("tv-controls-off", newState !== "on");
 
   // Selecionar botões ON e OFF
   const btnOn = document.querySelector(".tv-btn--power-on");
