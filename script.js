@@ -234,6 +234,13 @@ const ROOM_IMAGE_BASES = buildRoomImageBases();
 
 const CRITICAL_IMAGE_BASES = ROOM_IMAGE_BASES.slice(0, 3);
 
+function resolveRoomImageUrl(base) {
+  if (!base) return "";
+  const raw = String(base).trim();
+  const hasExtension = /\.[a-z0-9]+$/i.test(raw);
+  return hasExtension ? `images/Images/${raw}` : `images/Images/${raw}.jpg`;
+}
+
 const ICON_ASSET_PATHS = [
   "images/icons/icon-tv.svg",
   "images/icons/icon-htv.svg",
@@ -309,7 +316,7 @@ const ICON_ASSET_PATHS = [
 function buildRoomAssetList() {
   const assets = [];
   ROOM_IMAGE_BASES.forEach((base) => {
-    assets.push(`images/Images/${base}.jpg`);
+    assets.push(resolveRoomImageUrl(base));
   });
   return assets;
 }
@@ -372,7 +379,7 @@ const AssetPreloader = (() => {
 })();
 
 ROOM_IMAGE_BASES.forEach((base) => {
-  AssetPreloader.add(`images/Images/${base}.jpg`, { priority: "background" });
+  AssetPreloader.add(resolveRoomImageUrl(base), { priority: "background" });
 });
 
 AssetPreloader.add("images/pwa/app-icon-420.webp", { priority: "critical" });
