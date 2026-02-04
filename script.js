@@ -4702,30 +4702,27 @@ function setMasterIcon(btn, state, forceUpdate = false) {
     return;
   }
 
-  const img = btn.querySelector("img");
-  if (!img) return;
+  const iconOn =
+    btn.dataset.iconOn ||
+    (typeof getUiToggleIcon === "function" && getUiToggleIcon("light", "on")) ||
+    "images/icons/icon-small-light-on.svg";
+  const iconOff =
+    btn.dataset.iconOff ||
+    (typeof getUiToggleIcon === "function" &&
+      getUiToggleIcon("light", "off")) ||
+    "images/icons/icon-small-light-off.svg";
 
-  const nextIcon =
-    state === "on"
-      ? btn.dataset.iconOn ||
-        (typeof getUiToggleIcon === "function" &&
-          getUiToggleIcon("light", "on")) ||
-        "images/icons/icon-small-light-on.svg"
-      : btn.dataset.iconOff ||
-        (typeof getUiToggleIcon === "function" &&
-          getUiToggleIcon("light", "off")) ||
-        "images/icons/icon-small-light-off.svg";
-  const currentSrc = img.src || "";
-
-  if (!currentSrc.includes(nextIcon.split("/").pop())) {
-    img.style.opacity = "0";
-    setTimeout(() => {
-      img.src = nextIcon;
-      img.style.opacity = "1";
-    }, 120);
-    btn.dataset.state = state;
-    debugLog(() => ["masterIconUpdated", state, getRoomLightIdsForButton(btn)]);
+  const onImg = btn.querySelector(".room-master-icon--on");
+  const offImg = btn.querySelector(".room-master-icon--off");
+  if (onImg && onImg.getAttribute("src") !== iconOn) {
+    onImg.setAttribute("src", iconOn);
   }
+  if (offImg && offImg.getAttribute("src") !== iconOff) {
+    offImg.setAttribute("src", iconOff);
+  }
+
+  btn.dataset.state = state;
+  debugLog(() => ["masterIconUpdated", state, getRoomLightIdsForButton(btn)]);
 }
 
 function setCurtainMasterIcon(btn, state, forceUpdate = false) {

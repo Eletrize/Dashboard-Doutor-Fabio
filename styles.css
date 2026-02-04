@@ -431,6 +431,10 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
   transition:
     opacity 0.2s ease;
   outline: none;
+  transform: none !important;
+}
+.room-master-btn::before {
+  display: none !important;
 }
 .room-master-btn::after {
   content: "";
@@ -442,6 +446,7 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
     rgba(255, 235, 120, 0.6),
     rgba(255, 235, 120, 0)
   );
+  display: block;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
@@ -449,12 +454,25 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
 .room-master-btn[data-state="on"]::after {
   opacity: 1;
 }
-.room-master-btn img {
+.room-master-btn .room-master-icon {
   width: 32px !important;
   height: 32px !important;
   filter: none;
-  opacity: 0.95;
+  opacity: 0;
   transition: opacity 0.2s ease;
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  z-index: 1;
+}
+.room-master-btn .room-master-icon--off {
+  opacity: 1;
+}
+.room-master-btn[data-state="on"] .room-master-icon--off {
+  opacity: 0;
+}
+.room-master-btn[data-state="on"] .room-master-icon--on {
+  opacity: 1;
 }
 .room-master-btn:hover:not(.loading) {
   opacity: 1;
@@ -462,6 +480,13 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
 .room-master-btn:active:not(.loading) {
   opacity: 1;
   box-shadow: none;
+  transform: none !important;
+}
+.room-master-btn:focus,
+.room-master-btn:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 .room-master-btn.loading {
   background: transparent !important;
@@ -491,7 +516,7 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
   opacity: 0.6 !important;
   background: #ffffff14 !important;
   border-color: #ffffff26 !important;
-  transform: translateY(2px) scale(0.95) !important;
+  transform: none !important;
 }
 .scene-control-card.loading {
   pointer-events: none;
