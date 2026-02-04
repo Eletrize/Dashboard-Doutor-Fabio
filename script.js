@@ -4712,16 +4712,20 @@ function setMasterIcon(btn, state, forceUpdate = false) {
       getUiToggleIcon("light", "off")) ||
     "images/icons/icon-small-light-off.svg";
 
-  const onImg = btn.querySelector(".room-master-icon--on");
-  const offImg = btn.querySelector(".room-master-icon--off");
-  if (onImg && onImg.getAttribute("src") !== iconOn) {
-    onImg.setAttribute("src", iconOn);
-  }
-  if (offImg && offImg.getAttribute("src") !== iconOff) {
-    offImg.setAttribute("src", iconOff);
+  const img = btn.querySelector(".room-master-icon");
+  if (!img) return;
+
+  const nextIcon = state === "on" ? iconOn : iconOff;
+  btn.dataset.state = state;
+
+  if (img.getAttribute("src") !== nextIcon) {
+    img.classList.add("is-fading");
+    setTimeout(() => {
+      img.setAttribute("src", nextIcon);
+      img.classList.remove("is-fading");
+    }, 120);
   }
 
-  btn.dataset.state = state;
   debugLog(() => ["masterIconUpdated", state, getRoomLightIdsForButton(btn)]);
 }
 
