@@ -1499,6 +1499,30 @@ function tvCommand(el, command) {
     updateTVPowerState("off");
   }
 
+  // Home Theater: ao ligar, chavear receiver e HDMI conforme controle
+  if (command === "on" || command === "powerOn") {
+    const route = (window.location.hash || "").replace("#", "");
+    const envKey = route.split("-")[0] || "";
+    const controlType = String(wrapper?.dataset?.controlType || "").toLowerCase();
+    if (envKey === "ambiente1" && controlType) {
+      const receiverId = "354";
+      const tvId = "362";
+      const inputByType = {
+        clarotv: "DVD",
+        appletv: "GAME",
+        bluray: "BD",
+        tv: "TV",
+      };
+      const input = inputByType[controlType];
+      if (input) {
+        sendHubitatCommand(receiverId, "setInputSource", input).catch(() => {});
+        if (controlType !== "tv") {
+          sendHubitatCommand(tvId, "hdmi3").catch(() => {});
+        }
+      }
+    }
+  }
+
   // Feedback visual (preserva transform base quando existir)
   const computedTransform = window.getComputedStyle(el).transform;
   const baseTransform = computedTransform !== "none" ? computedTransform : "";
