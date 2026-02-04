@@ -42,7 +42,8 @@ textarea {
 ======================================== */
 @media (orientation: portrait) {
   .room-card {
-    height: 260px;
+    height: 300px;
+    min-height: 300px;
   }
 }
 
@@ -210,6 +211,8 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
   background: #222;
   width: 100%;
   height: 240px;
+  flex: 0 0 auto;
+  flex-shrink: 0;
   position: relative;
   overflow: hidden;
 }
