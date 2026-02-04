@@ -78,6 +78,17 @@ textarea {
   display: none !important;
 }
 
+body.app-ready #spa-static-topbar {
+  display: block !important;
+  opacity: 1 !important;
+  transform: scaleX(1) !important;
+}
+
+body.app-ready.orchestrated-animation #spa-static-topbar {
+  opacity: 0 !important;
+  transform: scaleX(0) !important;
+}
+
 @keyframes top-bar-breathe {
   0%,
   100% {
