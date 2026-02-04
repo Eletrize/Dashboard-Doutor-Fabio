@@ -598,7 +598,6 @@ body {
 html,
 body {
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   text-rendering: geometricPrecision;
 }
 
@@ -1875,39 +1874,6 @@ div {
   transform: scale(1.05);
   box-shadow: 0 1px 6px #0009;
 }
-.music-volume-slider::-ms-track {
-  width: 100%;
-  height: var(--music-slider-track-height);
-  background: linear-gradient(
-    to right,
-    #fff 0%,
-    #fff var(--volume-percent, 50%),
-    #ffffff40 var(--volume-percent, 50%),
-    #ffffff40 100%
-  );
-  color: #0000;
-  cursor: pointer;
-  border-color: #0000;
-  border-radius: 3px;
-}
-.music-volume-slider::-ms-fill-lower {
-  background: #fff;
-  border-radius: 3px;
-}
-.music-volume-slider::-ms-fill-upper {
-  background: #ffffff40;
-  border-radius: 3px;
-}
-.music-volume-slider::-ms-thumb {
-  width: var(--music-slider-thumb-size);
-  height: var(--music-slider-thumb-size);
-  cursor: pointer;
-  background: #fff;
-  border: none;
-  border-radius: 50%;
-  margin-top: 0;
-  box-shadow: 0 2px 8px #0006;
-}
 .music-volume-slider-container:hover {
   background: #ffffff1f;
   border-color: #ffffff40;
@@ -2253,9 +2219,9 @@ div {
 .music-control-wrapper .music-volume-slider--vertical {
   --music-track-width: 16px;
   --music-thumb-size: 30px;
-  -webkit-appearance: slider-vertical;
-  appearance: slider-vertical;
-  writing-mode: bt-lr;
+  -webkit-appearance: none;
+  appearance: none;
+  writing-mode: vertical-rl;
   width: var(--music-track-width);
   height: 100%;
   cursor: pointer;
