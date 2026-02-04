@@ -417,14 +417,14 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
 
 /* Rework do botÃ£o de luz no card do ambiente */
 .room-master-btn {
-  top: 14px;
-  right: 14px;
-  left: auto;
-  bottom: auto;
-  width: 44px;
-  height: 44px;
+  top: auto;
+  right: auto;
+  left: 18px;
+  bottom: 18px;
+  width: 56px;
+  height: 56px;
   border: 0;
-  border-radius: 12px;
+  border-radius: 16px;
   background: transparent;
   box-shadow: none;
   opacity: 0.85;
@@ -435,8 +435,8 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
 .room-master-btn::after {
   content: "";
   position: absolute;
-  inset: -8px;
-  border-radius: 16px;
+  inset: -10px;
+  border-radius: 20px;
   background: radial-gradient(
     circle at 50% 50%,
     rgba(255, 235, 120, 0.6),
@@ -450,8 +450,8 @@ body.app-ready.orchestrated-animation #spa-static-topbar {
   opacity: 1;
 }
 .room-master-btn img {
-  width: 26px !important;
-  height: 26px !important;
+  width: 32px !important;
+  height: 32px !important;
   filter: none;
   opacity: 0.95;
 }
