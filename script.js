@@ -2538,6 +2538,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Re-inicializar quando a página mudar (para SPAs)
   window.addEventListener("hashchange", () => {
     setTimeout(() => {
+      updateTVPowerState("off");
       initVolumeSlider();
       initAppleTvGestureControls();
       ensureTopBarVisible();
