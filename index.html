@@ -5963,7 +5963,19 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                                 r.route
                               }" data-device-ids="${ids.join(
                                 ",",
-                              )}" onclick="onHomeMasterClick(event,this)" aria-label="Master"><img class="room-master-icon" src="images/icons/icon-small-light-off.svg" alt="Master"></button>`
+                              )}" data-icon-on="${uiToggleIcon(
+                                "light",
+                                "on",
+                                "images/icons/icon-small-light-on.svg",
+                              )}" data-icon-off="${uiToggleIcon(
+                                "light",
+                                "off",
+                                "images/icons/icon-small-light-off.svg",
+                              )}" onclick="onHomeMasterClick(event,this)" aria-label="Luzes"><img class="room-master-icon" src="${uiToggleIcon(
+                                "light",
+                                "off",
+                                "images/icons/icon-small-light-off.svg",
+                              )}" alt="Luzes"></button>`
                             : ""
                         }
 

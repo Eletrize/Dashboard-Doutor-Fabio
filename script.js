@@ -198,7 +198,7 @@ if (typeof window !== "undefined") {
 
 const CONTROL_SELECTOR =
   ".room-control[data-device-id], .control-card[data-device-id]";
-const MASTER_BUTTON_SELECTOR = ".room-master-btn[data-device-ids]";
+const MASTER_BUTTON_SELECTOR = ".room-master-btn";
 const deviceControlCache = new Map();
 const masterButtonCache = new Set();
 const deviceStateMemory = new Map();
@@ -4575,12 +4575,7 @@ function updateAllMasterButtons(forceUpdate = false) {
       return;
     }
 
-    const ids = (btn.dataset.deviceIds || "")
-      .split(",")
-      .map(function (id) {
-        return id.trim();
-      })
-      .filter(Boolean);
+    const ids = getRoomLightIdsForButton(btn);
 
     if (ids.length === 0) {
       return;
@@ -4594,6 +4589,35 @@ function updateAllMasterButtons(forceUpdate = false) {
 // FunÃƒÂ§ÃƒÂµes auxiliares para botÃƒÂµes master (movidas do HTML)
 function anyOn(deviceIds) {
   return (deviceIds || []).some((id) => (getStoredState(id) || "off") === "on");
+}
+
+function getRoomLightsForButton(button) {
+  const envKey = button?.dataset?.route || null;
+  if (envKey && typeof getEnvironment === "function") {
+    const env = getEnvironment(envKey);
+    if (env && Array.isArray(env.lights) && env.lights.length) {
+      return env.lights.map((light) => ({
+        id: String(light.id),
+        type: (light?.type || light?.class || "").toString().toLowerCase(),
+        defaultLevel: clampDimmerValue(light?.defaultLevel, 80),
+      }));
+    }
+  }
+
+  const ids = (button?.dataset?.deviceIds || "").split(",").filter(Boolean);
+  return ids.map((id) => ({
+    id: String(id),
+    type: "",
+    defaultLevel: 80,
+  }));
+}
+
+function getRoomLightIdsForButton(button) {
+  return getRoomLightsForButton(button).map((light) => light.id);
+}
+
+function isRoomLightDimmer(light) {
+  return String(light?.type || "").toLowerCase() === "dimmer";
 }
 
 // Função para inicializar e sincronizar estados dos botÃƒÂµes master na home
@@ -4616,7 +4640,7 @@ function initHomeMasters() {
       btn.dataset.pending = "false";
       
       // Obter IDs dos dispositivos
-      const ids = (btn.dataset.deviceIds || "").split(",").filter(Boolean);
+      const ids = getRoomLightIdsForButton(btn);
       
       if (ids.length === 0) return;
       
@@ -4674,7 +4698,7 @@ function getCurtainState(curtainId) {
 
 function setMasterIcon(btn, state, forceUpdate = false) {
   if (!forceUpdate && btn.dataset.pending === "true") {
-    debugLog(() => ["masterButtonPending", btn.dataset.deviceIds]);
+    debugLog(() => ["masterButtonPending", getRoomLightIdsForButton(btn)]);
     return;
   }
 
@@ -4683,14 +4707,20 @@ function setMasterIcon(btn, state, forceUpdate = false) {
 
   const nextIcon =
     state === "on"
-      ? "images/icons/icon-small-light-on.svg"
-      : "images/icons/icon-small-light-off.svg";
+      ? btn.dataset.iconOn ||
+        (typeof getUiToggleIcon === "function" &&
+          getUiToggleIcon("light", "on")) ||
+        "images/icons/icon-small-light-on.svg"
+      : btn.dataset.iconOff ||
+        (typeof getUiToggleIcon === "function" &&
+          getUiToggleIcon("light", "off")) ||
+        "images/icons/icon-small-light-off.svg";
   const currentSrc = img.src || "";
 
   if (!currentSrc.includes(nextIcon.split("/").pop())) {
     img.src = nextIcon;
     btn.dataset.state = state;
-    debugLog(() => ["masterIconUpdated", state, btn.dataset.deviceIds]);
+    debugLog(() => ["masterIconUpdated", state, getRoomLightIdsForButton(btn)]);
   }
 }
 
@@ -4757,11 +4787,8 @@ function onHomeMasterClick(event, button) {
     return;
   }
 
-  const envKey = button?.dataset?.route || null;
-  const deviceIds =
-    envKey && typeof getEnvironmentLightIds === "function"
-      ? getEnvironmentLightIds(envKey)
-      : (button.dataset.deviceIds || "").split(",").filter(Boolean);
+  const lights = getRoomLightsForButton(button);
+  const deviceIds = lights.map((light) => light.id);
   console.log("Ã°Å¸â€Â Device IDs encontrados:", deviceIds);
 
   if (deviceIds.length === 0) {
@@ -4787,11 +4814,25 @@ function onHomeMasterClick(event, button) {
   setMasterIcon(button, newCommand);
 
   // Enviar comandos para todos os dispositivos (master dos ambientes mantém comportamento original)
-  const promises = deviceIds.map((deviceId) => {
+  const promises = lights.map((light) => {
+    const deviceId = light.id;
+    const isDimmer = isRoomLightDimmer(light);
+
     // Marcar comando recente
     recentCommands.set(deviceId, Date.now());
-    setStoredState(deviceId, newCommand);
-    return sendHubitatCommand(deviceId, newCommand);
+
+    if (newCommand === "off") {
+      setStoredState(deviceId, "off");
+      return sendHubitatCommand(deviceId, "off");
+    }
+
+    setStoredState(deviceId, "on");
+    if (isDimmer) {
+      const levelToSet = clampDimmerValue(light.defaultLevel, 80);
+      return sendHubitatCommand(deviceId, "setLevel", String(levelToSet));
+    }
+
+    return sendHubitatCommand(deviceId, "on");
   });
 
   // Aguardar conclusão de todos os comandos
@@ -4887,7 +4928,7 @@ function updateStatesAfterMasterCommand(deviceIds, command) {
   setTimeout(() => {
     const masterButtons = document.querySelectorAll(".room-master-btn");
     masterButtons.forEach((btn) => {
-      const ids = (btn.dataset.deviceIds || "").split(",").filter(Boolean);
+      const ids = getRoomLightIdsForButton(btn);
       if (ids.some((id) => deviceIds.includes(id))) {
         const masterState = anyOn(ids) ? "on" : "off";
         setMasterIcon(btn, masterState, true); // forÃƒÂ§ar atualizaÃƒÂ§ÃƒÂ£o
@@ -6068,12 +6109,7 @@ function syncAllVisibleControls(forceMasterUpdate = false) {
       return;
     }
 
-    const ids = (btn.dataset.deviceIds || "")
-      .split(",")
-      .map(function (id) {
-        return id.trim();
-      })
-      .filter(Boolean);
+    const ids = getRoomLightIdsForButton(btn);
 
     if (ids.length === 0) {
       return;
@@ -6169,7 +6205,7 @@ window.debugEletrize = {
   checkMasterButtons: () => {
     console.log("Ã°Å¸ÂÂ  Status dos botÃƒÂµes master:");
     document.querySelectorAll(".room-master-btn").forEach((btn, index) => {
-      const ids = (btn.dataset.deviceIds || "").split(",").filter(Boolean);
+      const ids = getRoomLightIdsForButton(btn);
       const route = btn.dataset.route || "unknown";
       const pending = btn.dataset.pending === "true";
       const currentState = btn.dataset.state || "unknown";
@@ -6187,7 +6223,7 @@ window.debugEletrize = {
     console.log("Ã°Å¸â€Â§ Corrigindo todos os botÃƒÂµes master...");
     document.querySelectorAll(".room-master-btn").forEach((btn) => {
       btn.dataset.pending = "false";
-      const ids = (btn.dataset.deviceIds || "").split(",").filter(Boolean);
+      const ids = getRoomLightIdsForButton(btn);
       const state = anyOn(ids) ? "on" : "off";
       setMasterIcon(btn, state, true);
     });
