@@ -1830,11 +1830,11 @@ div {
   position: relative;
   box-shadow: 0 2px 8px #0006;
 }
-.music-volume-slider::-webkit-slider-thumb:hover {
+.music-volume-slider:hover::-webkit-slider-thumb {
   transform: scale(1.15);
   box-shadow: 0 3px 10px #00000080;
 }
-.music-volume-slider::-webkit-slider-thumb:active {
+.music-volume-slider:active::-webkit-slider-thumb {
   cursor: grabbing;
   transform: scale(1.05);
   box-shadow: 0 1px 6px #0009;
@@ -1865,11 +1865,11 @@ div {
     box-shadow 0.15s;
   box-shadow: 0 2px 8px #0006;
 }
-.music-volume-slider::-moz-range-thumb:hover {
+.music-volume-slider:hover::-moz-range-thumb {
   transform: scale(1.15);
   box-shadow: 0 3px 10px #00000080;
 }
-.music-volume-slider::-moz-range-thumb:active {
+.music-volume-slider:active::-moz-range-thumb {
   cursor: grabbing;
   transform: scale(1.05);
   box-shadow: 0 1px 6px #0009;
@@ -5838,15 +5838,15 @@ body:not(.tv-controls-on)
     inset -1px -1px 3px #0003;
 }
 .tv-control-wrapper[data-control-type="appletv"]
-  .tv-volume-slider::-webkit-slider-thumb:hover,
+  .tv-volume-slider:hover::-webkit-slider-thumb,
 .tv-control-wrapper[data-control-type="appletv"]
-  .tv-volume-slider::-webkit-slider-thumb:active {
+  .tv-volume-slider:active::-webkit-slider-thumb {
   transform: scale(1.08);
 }
 .tv-control-wrapper[data-control-type="appletv"]
-  .tv-volume-slider::-moz-range-thumb:hover,
+  .tv-volume-slider:hover::-moz-range-thumb,
 .tv-control-wrapper[data-control-type="appletv"]
-  .tv-volume-slider::-moz-range-thumb:active {
+  .tv-volume-slider:active::-moz-range-thumb {
   transform: scale(1.08);
 }
 .tv-control-wrapper[data-control-type="appletv"] .tv-directional-pad--diamond {
@@ -6660,13 +6660,13 @@ body:not(.tv-controls-on)
   transition: all 0.2s;
   box-shadow: none;
 }
-.tv-volume-slider::-webkit-slider-thumb:hover {
+.tv-volume-slider:hover::-webkit-slider-thumb {
   background: #e6ecf8;
   border-color: #d8e0f0;
   transform: none;
   box-shadow: none;
 }
-.tv-volume-slider::-moz-range-thumb:hover {
+.tv-volume-slider:hover::-moz-range-thumb {
   background: #e6ecf8;
   border-color: #d8e0f0;
   transform: none;
