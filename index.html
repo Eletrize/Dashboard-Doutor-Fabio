@@ -1370,6 +1370,8 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
               </button>
             </div>
           `
+            : isBluray
+            ? ""
             : `
             <div class="tv-portrait-top-actions">
               <button class="tv-btn tv-btn--power-on" onclick="tvCommand(this, '${powerOnCommand}')" data-device-id="${deviceId}" aria-label="Ligar">
@@ -1387,6 +1389,14 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             <div class="tv-portrait-tabs" role="tablist" aria-label="Seções">
               <button class="tv-portrait-tab is-active" type="button" data-target="control" onclick="setTvPortraitPanel(this, 'control')" aria-pressed="true">Controle</button>
               <button class="tv-portrait-tab" type="button" data-target="numbers" onclick="setTvPortraitPanel(this, 'numbers')" aria-pressed="false">N&uacute;meros</button>
+              <button class="tv-portrait-tab" type="button" data-target="commands" onclick="setTvPortraitPanel(this, 'commands')" aria-pressed="false">Comandos</button>
+              <button class="tv-portrait-tab" type="button" data-target="media" onclick="setTvPortraitPanel(this, 'media')" aria-pressed="false">M&iacute;dia</button>
+            </div>
+          `
+            : isBluray
+            ? `
+            <div class="tv-portrait-tabs" role="tablist" aria-label="Seções">
+              <button class="tv-portrait-tab is-active" type="button" data-target="control" onclick="setTvPortraitPanel(this, 'control')" aria-pressed="true">Controle</button>
               <button class="tv-portrait-tab" type="button" data-target="commands" onclick="setTvPortraitPanel(this, 'commands')" aria-pressed="false">Comandos</button>
               <button class="tv-portrait-tab" type="button" data-target="media" onclick="setTvPortraitPanel(this, 'media')" aria-pressed="false">M&iacute;dia</button>
             </div>
@@ -6446,5 +6456,6 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
     </script>
   </body>
 </html>
+
 
 
