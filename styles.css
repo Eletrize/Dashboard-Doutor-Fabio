@@ -6397,15 +6397,20 @@ body:not(.tv-controls-on)
 .tv-control-wrapper[data-control-type="clarotv"] .tv-media-grid .tv-btn-square {
   height: 100%;
 }
+.tv-control-wrapper[data-control-type="clarotv"] .tv-control-section--favorites {
+  display: none;
+}
 .tv-portrait-tabs {
+  display: none;
+}
+.tv-portrait-top-actions {
   display: none;
 }
 
 @media (max-width: 999px) {
   .tv-control-wrapper[data-control-type="clarotv"] {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
     overflow: hidden;
   }
@@ -6418,11 +6423,41 @@ body:not(.tv-controls-on)
     display: contents;
   }
 
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-portrait-top-actions {
+    display: flex;
+    gap: 8px;
+    order: 0;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-portrait-top-actions
+    .tv-btn--power-on,
+  .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-portrait-top-actions
+    .tv-btn--power-off {
+    flex: 1;
+    height: 46px;
+    font-size: 14px;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-portrait-favorite {
+    width: 46px;
+    height: 46px;
+    padding: 0;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-portrait-favorite.is-active {
+    background: #ffffff1f;
+    border-color: #ffffff40;
+  }
+
   .tv-control-wrapper[data-control-type="clarotv"] .tv-portrait-tabs {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
     margin-bottom: 4px;
+    order: 2;
   }
 
   .tv-control-wrapper[data-control-type="clarotv"] .tv-portrait-tab {
@@ -6442,13 +6477,24 @@ body:not(.tv-controls-on)
     border-color: #ffffff40;
   }
 
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-control-section--power {
+    display: none;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-control-section--volume {
+    order: 1;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-control-section {
+    padding: 14px;
+  }
+
   .tv-control-wrapper[data-control-type="clarotv"] [data-portrait-section] {
     display: none;
     min-height: 0;
+    order: 3;
   }
 
-  .tv-control-wrapper[data-control-type="clarotv"][data-portrait-panel="power"]
-    [data-portrait-section="power"],
   .tv-control-wrapper[data-control-type="clarotv"][data-portrait-panel="control"]
     [data-portrait-section="control"],
   .tv-control-wrapper[data-control-type="clarotv"][data-portrait-panel="commands"]
@@ -6457,8 +6503,8 @@ body:not(.tv-controls-on)
     [data-portrait-section="numbers"],
   .tv-control-wrapper[data-control-type="clarotv"][data-portrait-panel="media"]
     [data-portrait-section="media"],
-  .tv-control-wrapper[data-control-type="clarotv"][data-portrait-panel="volume"]
-    [data-portrait-section="volume"] {
+  .tv-control-wrapper[data-control-type="clarotv"][data-portrait-panel="favorites"]
+    [data-portrait-section="favorites"] {
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
@@ -6476,6 +6522,22 @@ body:not(.tv-controls-on)
     .tv-favorites-list {
     flex: 1 1 auto;
     min-height: 0;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-favorites-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-favorite-btn {
+    height: 64px;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-favorite-btn img {
+    width: 70%;
+    height: 70%;
   }
 
   .tv-control-wrapper[data-control-type="clarotv"] .tv-commands-grid {

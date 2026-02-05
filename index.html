@@ -1127,6 +1127,37 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                   ${commandsControlMarkup}
                 </div>
             `;
+        const claroFavoritesListMarkup = isClaroTv
+          ? `
+            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'globo')" data-device-id="${deviceId}" aria-label="Globo" type="button">
+              <img src="images/icons/icon-globo.svg" alt="">
+            </button>
+            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'globonews')" data-device-id="${deviceId}" aria-label="GloboNews" type="button">
+              <img src="images/icons/icon-globonews.svg" alt="">
+            </button>
+            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'gnt')" data-device-id="${deviceId}" aria-label="GNT" type="button">
+              <img src="images/icons/icon-gnt.svg" alt="">
+            </button>
+            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'canaloff')" data-device-id="${deviceId}" aria-label="Canal Off" type="button">
+              <img src="images/icons/icon-canaloff.svg" alt="">
+            </button>
+            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'discovery')" data-device-id="${deviceId}" aria-label="Discovery Channel" type="button">
+              <img src="images/icons/icon-discovery.svg" alt="">
+            </button>
+            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'espn')" data-device-id="${deviceId}" aria-label="ESPN" type="button">
+              <img src="images/icons/icon-espn.svg" alt="">
+            </button>
+            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'sportv')" data-device-id="${deviceId}" aria-label="Sportv" type="button">
+              <img src="images/icons/icon-sportv.svg" alt="">
+            </button>
+            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'tcaction')" data-device-id="${deviceId}" aria-label="Telecine Action" type="button">
+              <img src="images/icons/icon-tcaction.svg" alt="">
+            </button>
+            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'hbo')" data-device-id="${deviceId}" aria-label="HBO" type="button">
+              <img src="images/icons/icon-hbo.svg" alt="">
+            </button>
+          `
+          : "";
         const mediaMarkup = isClaroTv
           ? `
                 <div class="tv-control-section tv-control-section--media" data-portrait-section="media">
@@ -1273,39 +1304,26 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                             ${numpadFooterMarkup}
                         </div>
                         <div class="tv-favorites-list" data-claro-panel-content="favorites">
-                            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'globo')" data-device-id="${deviceId}" aria-label="Globo" type="button">
-                                <img src="images/icons/icon-globo.svg" alt="">
-                            </button>
-                            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'globonews')" data-device-id="${deviceId}" aria-label="GloboNews" type="button">
-                                <img src="images/icons/icon-globonews.svg" alt="">
-                            </button>
-                            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'gnt')" data-device-id="${deviceId}" aria-label="GNT" type="button">
-                                <img src="images/icons/icon-gnt.svg" alt="">
-                            </button>
-                            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'canaloff')" data-device-id="${deviceId}" aria-label="Canal Off" type="button">
-                                <img src="images/icons/icon-canaloff.svg" alt="">
-                            </button>
-                            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'discovery')" data-device-id="${deviceId}" aria-label="Discovery Channel" type="button">
-                                <img src="images/icons/icon-discovery.svg" alt="">
-                            </button>
-                            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'espn')" data-device-id="${deviceId}" aria-label="ESPN" type="button">
-                                <img src="images/icons/icon-espn.svg" alt="">
-                            </button>
-                            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'sportv')" data-device-id="${deviceId}" aria-label="Sportv" type="button">
-                                <img src="images/icons/icon-sportv.svg" alt="">
-                            </button>
-                            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'tcaction')" data-device-id="${deviceId}" aria-label="Telecine Action" type="button">
-                                <img src="images/icons/icon-tcaction.svg" alt="">
-                            </button>
-                            <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'hbo')" data-device-id="${deviceId}" aria-label="HBO" type="button">
-                                <img src="images/icons/icon-hbo.svg" alt="">
-                            </button>
+                          ${claroFavoritesListMarkup}
                         </div>
                     </div>
                 </div>
             </div>
           `
           : commandsSectionMarkup;
+        const claroFavoritesSectionMarkup = isClaroTv
+          ? `
+            <div class="tv-control-section tv-control-section--favorites" data-portrait-section="favorites">
+              <header class="tv-section-header">
+                <h3 class="tv-section-title">Favoritos</h3>
+                <div class="tv-section-line"></div>
+              </header>
+              <div class="tv-control-group tv-favorites-list">
+                ${claroFavoritesListMarkup}
+              </div>
+            </div>
+          `
+          : "";
         const middleColumnTopMarkup = isMusicPage
           ? `
             <div class="tv-control-section tv-control-section--volume" data-portrait-section="volume">
@@ -1315,7 +1333,21 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           : isClaroTv
           ? commandsSectionMarkup
           : "";
-
+        const claroPortraitTopMarkup = isClaroTv
+          ? `
+            <div class="tv-portrait-top-actions">
+              <button class="tv-btn tv-btn--power-on" onclick="tvCommand(this, '${powerOnCommand}')" data-device-id="${deviceId}" aria-label="Ligar">
+                ${powerOnLabel}
+              </button>
+              <button class="tv-btn tv-btn--power-off" onclick="tvCommand(this, '${powerOffCommand}')" data-device-id="${deviceId}" aria-label="Desligar">
+                ${powerOffLabel}
+              </button>
+              <button class="tv-btn tv-btn--icon-only tv-portrait-favorite" onclick="setClaroTvPortraitPanel(this, 'favorites')" aria-label="Favoritos" type="button">
+                <img src="images/icons/icon-fav.svg" alt="Favoritos">
+              </button>
+            </div>
+          `
+          : "";
         const claroPortraitTabsMarkup = isClaroTv
           ? `
             <div class="tv-portrait-tabs" role="tablist" aria-label="Seções">
@@ -1323,8 +1355,6 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
               <button class="tv-portrait-tab" type="button" data-target="numbers" onclick="setClaroTvPortraitPanel(this, 'numbers')" aria-pressed="false">N&uacute;meros</button>
               <button class="tv-portrait-tab" type="button" data-target="commands" onclick="setClaroTvPortraitPanel(this, 'commands')" aria-pressed="false">Comandos</button>
               <button class="tv-portrait-tab" type="button" data-target="media" onclick="setClaroTvPortraitPanel(this, 'media')" aria-pressed="false">M&iacute;dia</button>
-              <button class="tv-portrait-tab" type="button" data-target="volume" onclick="setClaroTvPortraitPanel(this, 'volume')" aria-pressed="false">Volume</button>
-              <button class="tv-portrait-tab" type="button" data-target="power" onclick="setClaroTvPortraitPanel(this, 'power')" aria-pressed="false">On/Off</button>
             </div>
           `
           : "";
@@ -1381,6 +1411,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
     </div>
 
     <div class="tv-control-wrapper" data-control-type="${typeKey}"${isClaroTv ? ' data-portrait-panel="control"' : ''}>
+        ${claroPortraitTopMarkup}
         ${claroPortraitTabsMarkup}
         
         <!-- COLUNA 1 -->
@@ -1405,7 +1436,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             <div class="tv-volume-canais-wrapper">
                 
                 <!-- BLOCO 4: VOLUME -->
-                <div class="tv-control-section tv-control-section--volume"${isClaroTv ? ' data-portrait-section="volume"' : ''}>
+                <div class="tv-control-section tv-control-section--volume">
                   ${isMusicPage ? commandsControlMarkup : volumeControlMarkup}
                 </div>
 
@@ -1470,7 +1501,9 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             <!-- BLOCO 6: NÚMEROS -->
             ${numbersSectionMarkup}
 
-            ${isMusicPage || isBluray ? "" : `
+            ${claroFavoritesSectionMarkup}
+
+            ${isMusicPage || isBluray || isClaroTv ? "" : `
             <!-- BLOCO 7: LOGO -->
             <div class="tv-control-section tv-logo-section">
               <img src="images/icons/eletrize.svg" alt="Eletrize" class="tv-eletrize-logo">

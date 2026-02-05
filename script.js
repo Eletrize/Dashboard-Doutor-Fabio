@@ -1626,6 +1626,11 @@ function setClaroTvPortraitPanel(trigger, panel) {
     tab.classList.toggle("is-active", isActive);
     tab.setAttribute("aria-pressed", isActive ? "true" : "false");
   });
+
+  const favoriteBtn = wrapper.querySelector(".tv-portrait-favorite");
+  if (favoriteBtn) {
+    favoriteBtn.classList.toggle("is-active", nextPanel === "favorites");
+  }
 }
 
 function positionAppleTvModeIndicator(section) {
