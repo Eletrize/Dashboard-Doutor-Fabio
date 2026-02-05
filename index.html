@@ -1370,8 +1370,6 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
               </button>
             </div>
           `
-            : isBluray
-            ? ""
             : `
             <div class="tv-portrait-top-actions">
               <button class="tv-btn tv-btn--power-on" onclick="tvCommand(this, '${powerOnCommand}')" data-device-id="${deviceId}" aria-label="Ligar">
