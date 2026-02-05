@@ -6770,7 +6770,7 @@ body:not(.tv-controls-on)
 
 @media (max-width: 999px) {
   .tv-control-wrapper[data-control-type="appletv"] .tv-portrait-tabs {
-    display: none;
+    display: none !important;
   }
 
   .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--power {
@@ -6807,7 +6807,7 @@ body:not(.tv-controls-on)
     [data-portrait-section="commands"],
   .tv-control-wrapper[data-control-type="appletv"]
     [data-portrait-section="control"] {
-    display: flex;
+    display: flex !important;
   }
 
   body.tv-controls-off
