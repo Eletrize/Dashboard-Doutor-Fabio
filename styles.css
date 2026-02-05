@@ -6995,6 +6995,15 @@ body:not(.tv-controls-on)
     max-height: none;
     flex: 0 0 auto;
   }
+
+  .tv-control-wrapper[data-control-type="music"] .music-now-section .music-album {
+    display: none;
+  }
+
+  .tv-control-wrapper[data-control-type="music"] .music-now-section .music-info {
+    align-items: center;
+    text-align: center;
+  }
 }
 
 .tv-volume-canais-wrapper {
