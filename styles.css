@@ -6375,6 +6375,18 @@ body:not(.tv-controls-on)
   grid-template-columns: repeat(7, minmax(0, 1fr));
   grid-auto-flow: column;
 }
+@media (max-width: 999px) {
+  .tv-control-wrapper[data-control-type="bluray"] .tv-media-grid--bluray {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: row;
+    gap: 8px;
+    height: 100%;
+  }
+  .tv-control-wrapper[data-control-type="bluray"] .tv-media-grid--bluray .tv-btn-square {
+    height: 100%;
+  }
+}
 .tv-media-grid {
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(2, 1fr);

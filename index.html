@@ -1234,13 +1234,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 <h3 class="tv-section-title">M&iacute;dia</h3>
                 <div class="tv-section-line"></div>
               </header>
-              <div class="tv-control-group tv-media-grid">
-                <button class="tv-btn-square" onclick="tvCommand(this, 'chapterPrevious')" data-device-id="${deviceId}" aria-label="Chapter Previous">
-                  <img src="images/icons/icon-previous-track.svg" alt="Chapter Previous" class="tv-btn-icon-img">
-                </button>
-                <button class="tv-btn-square" onclick="tvCommand(this, 'rewind')" data-device-id="${deviceId}" aria-label="Rewind">
-                  <img src="images/icons/icon-rewind.svg" alt="Rewind" class="tv-btn-icon-img">
-                </button>
+              <div class="tv-control-group tv-media-grid tv-media-grid--bluray">
                 <button class="tv-btn-square" onclick="tvCommand(this, 'pause')" data-device-id="${deviceId}" aria-label="Pause">
                   <img src="images/icons/icon-pause.svg" alt="Pause" class="tv-btn-icon-img tv-btn-icon-img--pause">
                 </button>
@@ -1249,6 +1243,12 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 </button>
                 <button class="tv-btn-square" onclick="tvCommand(this, 'stop')" data-device-id="${deviceId}" aria-label="Stop">
                   <img src="images/icons/icon-stop.svg" alt="Stop" class="tv-btn-icon-img">
+                </button>
+                <button class="tv-btn-square" onclick="tvCommand(this, 'chapterPrevious')" data-device-id="${deviceId}" aria-label="Chapter Previous">
+                  <img src="images/icons/icon-previous-track.svg" alt="Chapter Previous" class="tv-btn-icon-img">
+                </button>
+                <button class="tv-btn-square" onclick="tvCommand(this, 'rewind')" data-device-id="${deviceId}" aria-label="Rewind">
+                  <img src="images/icons/icon-rewind.svg" alt="Rewind" class="tv-btn-icon-img">
                 </button>
                 <button class="tv-btn-square" onclick="tvCommand(this, 'foward')" data-device-id="${deviceId}" aria-label="Foward">
                   <img src="images/icons/icon-foward.svg" alt="Foward" class="tv-btn-icon-img">
