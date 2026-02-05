@@ -6533,9 +6533,7 @@ body:not(.tv-controls-on)
     [data-portrait-section="favorites"] {
     display: flex;
     flex-direction: column;
-    flex: 0 0 var(--claro-portrait-panel-height, auto);
-    height: var(--claro-portrait-panel-height, auto);
-    max-height: var(--claro-portrait-panel-height, none);
+    flex: 1 1 auto;
     min-height: 0;
   }
 

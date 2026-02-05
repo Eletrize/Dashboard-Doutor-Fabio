@@ -1635,43 +1635,6 @@ function setClaroTvPortraitPanel(trigger, panel) {
   if (favoriteBtn) {
     favoriteBtn.classList.toggle("is-active", nextPanel === "favorites");
   }
-
-  syncClaroPortraitPanelHeight();
-}
-
-function syncClaroPortraitPanelHeight() {
-  const wrapper = document.querySelector(
-    '.tv-control-wrapper[data-control-type="clarotv"]'
-  );
-  if (!wrapper) return;
-
-  if (window.innerWidth >= 1000) {
-    wrapper.style.removeProperty("--claro-portrait-panel-height");
-    return;
-  }
-
-  const fixedBlocks = [
-    wrapper.querySelector(".tv-portrait-top-actions"),
-    wrapper.querySelector(".tv-control-section--volume"),
-    wrapper.querySelector(".tv-portrait-tabs"),
-  ].filter((el) => el && el.getBoundingClientRect().height > 0);
-
-  const wrapperHeight = wrapper.clientHeight;
-  const style = window.getComputedStyle(wrapper);
-  const gapValue = style.rowGap || style.gap || "0";
-  const gap = Number.parseFloat(gapValue) || 0;
-  const usedHeight = fixedBlocks.reduce(
-    (sum, el) => sum + el.getBoundingClientRect().height,
-    0
-  );
-  const gapCount = fixedBlocks.length;
-  let available = wrapperHeight - usedHeight - gap * gapCount;
-  if (available < 0) available = 0;
-
-  wrapper.style.setProperty(
-    "--claro-portrait-panel-height",
-    `${Math.round(available)}px`
-  );
 }
 
 function positionAppleTvModeIndicator(section) {
@@ -2625,7 +2588,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initVolumeSlider();
   initAppleTvGestureControls();
   ensureTopBarVisible();
-  syncClaroPortraitPanelHeight();
   syncRemoteControlDeviceIds();
 
   // Re-inicializar quando a página mudar (para SPAs)
@@ -2635,20 +2597,17 @@ document.addEventListener("DOMContentLoaded", () => {
       initVolumeSlider();
       initAppleTvGestureControls();
       ensureTopBarVisible();
-      syncClaroPortraitPanelHeight();
       syncRemoteControlDeviceIds();
     }, 100);
   });
 
   window.addEventListener("resize", () => {
     ensureTopBarVisible();
-    syncClaroPortraitPanelHeight();
   });
 
   window.addEventListener("orientationchange", () => {
     setTimeout(() => {
       ensureTopBarVisible();
-      syncClaroPortraitPanelHeight();
     }, 100);
   });
 
