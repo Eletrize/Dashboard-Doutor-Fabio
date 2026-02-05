@@ -1613,6 +1613,21 @@ function toggleClaroTvPanel(trigger, targetView) {
   }, 400);
 }
 
+function setClaroTvPortraitPanel(trigger, panel) {
+  const wrapper = trigger?.closest?.(".tv-control-wrapper");
+  if (!wrapper) return;
+
+  const nextPanel = String(panel || "control");
+  wrapper.dataset.portraitPanel = nextPanel;
+
+  const tabs = wrapper.querySelectorAll(".tv-portrait-tab");
+  tabs.forEach((tab) => {
+    const isActive = tab.dataset.target === nextPanel;
+    tab.classList.toggle("is-active", isActive);
+    tab.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+}
+
 function positionAppleTvModeIndicator(section) {
   if (!section) return;
   const toggle = section.querySelector(".tv-control-mode-toggle");

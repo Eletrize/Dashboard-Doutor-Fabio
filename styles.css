@@ -6397,6 +6397,106 @@ body:not(.tv-controls-on)
 .tv-control-wrapper[data-control-type="clarotv"] .tv-media-grid .tv-btn-square {
   height: 100%;
 }
+.tv-portrait-tabs {
+  display: none;
+}
+
+@media (max-width: 999px) {
+  .tv-control-wrapper[data-control-type="clarotv"] {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 12px;
+    overflow: hidden;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-controls-col {
+    display: contents;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-volume-canais-wrapper {
+    display: contents;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-portrait-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-portrait-tab {
+    background: #ffffff10;
+    border: 1px solid #ffffff26;
+    border-radius: 10px;
+    color: #fff;
+    font-family: Raleway, Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 6px;
+    text-transform: none;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-portrait-tab.is-active {
+    background: #ffffff1f;
+    border-color: #ffffff40;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"] [data-portrait-section] {
+    display: none;
+    min-height: 0;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"][data-portrait-panel="power"]
+    [data-portrait-section="power"],
+  .tv-control-wrapper[data-control-type="clarotv"][data-portrait-panel="control"]
+    [data-portrait-section="control"],
+  .tv-control-wrapper[data-control-type="clarotv"][data-portrait-panel="commands"]
+    [data-portrait-section="commands"],
+  .tv-control-wrapper[data-control-type="clarotv"][data-portrait-panel="numbers"]
+    [data-portrait-section="numbers"],
+  .tv-control-wrapper[data-control-type="clarotv"][data-portrait-panel="media"]
+    [data-portrait-section="media"],
+  .tv-control-wrapper[data-control-type="clarotv"][data-portrait-panel="volume"]
+    [data-portrait-section="volume"] {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-control-section--claro-panel
+    .tv-control-group--claro-panel,
+  .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-control-section--claro-panel
+    .tv-numpad,
+  .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-control-section--claro-panel
+    .tv-favorites-list {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-commands-grid {
+    gap: 8px;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-btn--icon-only {
+    width: 48px;
+    height: 48px;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-numpad-btn {
+    height: 56px;
+    font-size: 24px;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-numpad-btn--icon img {
+    width: 22px;
+    height: 22px;
+  }
+}
 
 .tv-volume-canais-wrapper {
   flex-direction: column;

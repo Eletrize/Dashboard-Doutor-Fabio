@@ -1113,7 +1113,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                   >
                 </div>
             `;
-            const commandsControlMarkup = `
+        const commandsControlMarkup = `
                 <header class="tv-section-header">
                   <h3 class="tv-section-title">Comandos</h3>
                   <div class="tv-section-line"></div>
@@ -1123,13 +1123,13 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 </div>
             `;
             const commandsSectionMarkup = `
-                <div class="tv-control-section tv-control-section--commands">
+                <div class="tv-control-section tv-control-section--commands" data-portrait-section="commands">
                   ${commandsControlMarkup}
                 </div>
             `;
         const mediaMarkup = isClaroTv
           ? `
-                <div class="tv-control-section tv-control-section--media">
+                <div class="tv-control-section tv-control-section--media" data-portrait-section="media">
                     <header class="tv-section-header">
                         <h3 class="tv-section-title">M&iacute;dia</h3>
                         <div class="tv-section-line"></div>
@@ -1176,7 +1176,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 `;
         const blurayMediaMarkup = isBluray
           ? `
-            <div class="tv-control-section tv-control-section--media tv-media-section--full">
+            <div class="tv-control-section tv-control-section--media tv-media-section--full" data-portrait-section="media">
               <header class="tv-section-header">
                 <h3 class="tv-section-title">M&iacute;dia</h3>
                 <div class="tv-section-line"></div>
@@ -1209,7 +1209,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           : "";
         const numbersSectionMarkup = isMusicPage
           ? `
-          <div class="tv-control-section tv-control-section--dpad" data-device-id="${deviceId}" data-control-mode="cursor">
+          <div class="tv-control-section tv-control-section--dpad" data-device-id="${deviceId}" data-control-mode="cursor" data-portrait-section="control">
             <header class="tv-section-header">
               <h3 class="tv-section-title">Controle</h3>
               <div class="tv-section-line"></div>
@@ -1253,7 +1253,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           `
           : isClaroTv
           ? `
-            <div class="tv-control-section tv-control-section--claro-panel" data-claro-panel="numbers">
+            <div class="tv-control-section tv-control-section--claro-panel" data-claro-panel="numbers" data-portrait-section="numbers">
                 <div class="tv-claro-panel-fade" data-claro-fade>
                     <header class="tv-section-header">
                         <h3 class="tv-section-title" data-claro-panel-title>N&uacute;meros</h3>
@@ -1308,12 +1308,25 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           : commandsSectionMarkup;
         const middleColumnTopMarkup = isMusicPage
           ? `
-            <div class="tv-control-section tv-control-section--volume">
+            <div class="tv-control-section tv-control-section--volume" data-portrait-section="volume">
               ${volumeControlMarkup}
             </div>
           `
           : isClaroTv
           ? commandsSectionMarkup
+          : "";
+
+        const claroPortraitTabsMarkup = isClaroTv
+          ? `
+            <div class="tv-portrait-tabs" role="tablist" aria-label="Seções">
+              <button class="tv-portrait-tab is-active" type="button" data-target="control" onclick="setClaroTvPortraitPanel(this, 'control')" aria-pressed="true">Controle</button>
+              <button class="tv-portrait-tab" type="button" data-target="numbers" onclick="setClaroTvPortraitPanel(this, 'numbers')" aria-pressed="false">N&uacute;meros</button>
+              <button class="tv-portrait-tab" type="button" data-target="commands" onclick="setClaroTvPortraitPanel(this, 'commands')" aria-pressed="false">Comandos</button>
+              <button class="tv-portrait-tab" type="button" data-target="media" onclick="setClaroTvPortraitPanel(this, 'media')" aria-pressed="false">M&iacute;dia</button>
+              <button class="tv-portrait-tab" type="button" data-target="volume" onclick="setClaroTvPortraitPanel(this, 'volume')" aria-pressed="false">Volume</button>
+              <button class="tv-portrait-tab" type="button" data-target="power" onclick="setClaroTvPortraitPanel(this, 'power')" aria-pressed="false">On/Off</button>
+            </div>
+          `
           : "";
         const musicInfoMarkup = `
           <div class="tv-control-section tv-control-section--music">
@@ -1367,12 +1380,13 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         <h1 class="page-title">${title}</h1>
     </div>
 
-    <div class="tv-control-wrapper" data-control-type="${typeKey}">
+    <div class="tv-control-wrapper" data-control-type="${typeKey}"${isClaroTv ? ' data-portrait-panel="control"' : ''}>
+        ${claroPortraitTabsMarkup}
         
         <!-- COLUNA 1 -->
         <div class="tv-controls-col tv-col-1">
             <!-- BLOCO 1: ON/OFF -->
-            <div class="tv-control-section tv-control-section--power">
+            <div class="tv-control-section tv-control-section--power"${isClaroTv ? ' data-portrait-section="power"' : ''}>
                 <header class="tv-section-header">
                     <h3 class="tv-section-title">On / Off</h3>
                     <div class="tv-section-line"></div>
@@ -1391,7 +1405,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             <div class="tv-volume-canais-wrapper">
                 
                 <!-- BLOCO 4: VOLUME -->
-                <div class="tv-control-section tv-control-section--volume">
+                <div class="tv-control-section tv-control-section--volume"${isClaroTv ? ' data-portrait-section="volume"' : ''}>
                   ${isMusicPage ? commandsControlMarkup : volumeControlMarkup}
                 </div>
 
@@ -1407,7 +1421,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
 
             <!-- BLOCO 2: CONTROLE / MÚSICA -->
             ${isMusicPage ? musicInfoMarkup : `
-            <div class="tv-control-section tv-control-section--dpad" data-device-id="${deviceId}" data-control-mode="cursor">
+            <div class="tv-control-section tv-control-section--dpad" data-device-id="${deviceId}" data-control-mode="cursor"${isClaroTv ? ' data-portrait-section="control"' : ''}>
               <header class="tv-section-header">
                 <h3 class="tv-section-title">Controle</h3>
                 <div class="tv-section-line"></div>
