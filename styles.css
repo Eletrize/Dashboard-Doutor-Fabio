@@ -6769,6 +6769,38 @@ body:not(.tv-controls-on)
 }
 
 @media (max-width: 999px) {
+  .tv-control-wrapper[data-control-type="appletv"] .tv-portrait-tabs {
+    display: none;
+  }
+
+  .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--power {
+    order: 0;
+  }
+
+  .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--volume {
+    order: 1;
+  }
+
+  .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--commands {
+    display: flex;
+    order: 2;
+  }
+
+  .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--dpad {
+    display: flex;
+    order: 3;
+    background: transparent;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+  }
+  .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--dpad .tv-section-header {
+    display: none;
+  }
+  .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--dpad .tv-control-group {
+    padding: 0;
+  }
+
   body.tv-controls-off
     .tv-control-wrapper[data-control-type]:not([data-control-type="music"])
     .tv-portrait-top-actions {
