@@ -1650,45 +1650,28 @@ function syncClaroPortraitPanelHeight() {
     return;
   }
 
-  const controlPanel = wrapper.querySelector(
-    '[data-portrait-section="control"]'
+  const fixedBlocks = [
+    wrapper.querySelector(".tv-portrait-top-actions"),
+    wrapper.querySelector(".tv-control-section--volume"),
+    wrapper.querySelector(".tv-portrait-tabs"),
+  ].filter((el) => el && el.getBoundingClientRect().height > 0);
+
+  const wrapperHeight = wrapper.clientHeight;
+  const style = window.getComputedStyle(wrapper);
+  const gapValue = style.rowGap || style.gap || "0";
+  const gap = Number.parseFloat(gapValue) || 0;
+  const usedHeight = fixedBlocks.reduce(
+    (sum, el) => sum + el.getBoundingClientRect().height,
+    0
   );
-  if (!controlPanel) return;
+  const gapCount = fixedBlocks.length;
+  let available = wrapperHeight - usedHeight - gap * gapCount;
+  if (available < 0) available = 0;
 
-  let measuredHeight = 0;
-  const computed = window.getComputedStyle(controlPanel);
-  const isHidden = computed.display === "none";
-  const originalStyles = {};
-
-  if (isHidden) {
-    ["position", "visibility", "pointerEvents", "display", "width", "left", "top"].forEach(
-      (prop) => {
-        originalStyles[prop] = controlPanel.style[prop];
-      }
-    );
-    controlPanel.style.position = "absolute";
-    controlPanel.style.visibility = "hidden";
-    controlPanel.style.pointerEvents = "none";
-    controlPanel.style.display = "flex";
-    controlPanel.style.width = "100%";
-    controlPanel.style.left = "0";
-    controlPanel.style.top = "0";
-  }
-
-  measuredHeight = controlPanel.getBoundingClientRect().height;
-
-  if (isHidden) {
-    Object.keys(originalStyles).forEach((prop) => {
-      controlPanel.style[prop] = originalStyles[prop];
-    });
-  }
-
-  if (measuredHeight > 0) {
-    wrapper.style.setProperty(
-      "--claro-portrait-panel-height",
-      `${Math.round(measuredHeight)}px`
-    );
-  }
+  wrapper.style.setProperty(
+    "--claro-portrait-panel-height",
+    `${Math.round(available)}px`
+  );
 }
 
 function positionAppleTvModeIndicator(section) {

@@ -1069,6 +1069,9 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                     <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'music')" data-device-id="${deviceId}" aria-label="Musica">
                         <img src="images/icons/icon-music.svg" alt="Musica">
                     </button>
+                    <button class="tv-btn tv-btn--icon-only tv-btn--claro-back" onclick="tvCommand(this, 'returnButton')" data-device-id="${deviceId}" aria-label="Voltar">
+                        <img src="images/icons/arrow-left.svg" alt="Voltar">
+                    </button>
                 `
           : isBluray
           ? blurayCommandsMarkup
