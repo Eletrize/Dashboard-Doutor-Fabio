@@ -1635,6 +1635,60 @@ function setClaroTvPortraitPanel(trigger, panel) {
   if (favoriteBtn) {
     favoriteBtn.classList.toggle("is-active", nextPanel === "favorites");
   }
+
+  syncClaroPortraitPanelHeight();
+}
+
+function syncClaroPortraitPanelHeight() {
+  const wrapper = document.querySelector(
+    '.tv-control-wrapper[data-control-type="clarotv"]'
+  );
+  if (!wrapper) return;
+
+  if (window.innerWidth >= 1000) {
+    wrapper.style.removeProperty("--claro-portrait-panel-height");
+    return;
+  }
+
+  const controlPanel = wrapper.querySelector(
+    '[data-portrait-section="control"]'
+  );
+  if (!controlPanel) return;
+
+  let measuredHeight = 0;
+  const computed = window.getComputedStyle(controlPanel);
+  const isHidden = computed.display === "none";
+  const originalStyles = {};
+
+  if (isHidden) {
+    ["position", "visibility", "pointerEvents", "display", "width", "left", "top"].forEach(
+      (prop) => {
+        originalStyles[prop] = controlPanel.style[prop];
+      }
+    );
+    controlPanel.style.position = "absolute";
+    controlPanel.style.visibility = "hidden";
+    controlPanel.style.pointerEvents = "none";
+    controlPanel.style.display = "flex";
+    controlPanel.style.width = "100%";
+    controlPanel.style.left = "0";
+    controlPanel.style.top = "0";
+  }
+
+  measuredHeight = controlPanel.getBoundingClientRect().height;
+
+  if (isHidden) {
+    Object.keys(originalStyles).forEach((prop) => {
+      controlPanel.style[prop] = originalStyles[prop];
+    });
+  }
+
+  if (measuredHeight > 0) {
+    wrapper.style.setProperty(
+      "--claro-portrait-panel-height",
+      `${Math.round(measuredHeight)}px`
+    );
+  }
 }
 
 function positionAppleTvModeIndicator(section) {
@@ -2588,6 +2642,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initVolumeSlider();
   initAppleTvGestureControls();
   ensureTopBarVisible();
+  syncClaroPortraitPanelHeight();
   syncRemoteControlDeviceIds();
 
   // Re-inicializar quando a página mudar (para SPAs)
@@ -2597,17 +2652,20 @@ document.addEventListener("DOMContentLoaded", () => {
       initVolumeSlider();
       initAppleTvGestureControls();
       ensureTopBarVisible();
+      syncClaroPortraitPanelHeight();
       syncRemoteControlDeviceIds();
     }, 100);
   });
 
   window.addEventListener("resize", () => {
     ensureTopBarVisible();
+    syncClaroPortraitPanelHeight();
   });
 
   window.addEventListener("orientationchange", () => {
     setTimeout(() => {
       ensureTopBarVisible();
+      syncClaroPortraitPanelHeight();
     }, 100);
   });
 
