@@ -6554,19 +6554,23 @@ body:not(.tv-controls-on)
     display: flex;
     flex-direction: column;
     gap: 10px;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 4px;
+    touch-action: pan-y;
   }
 
   .tv-control-wrapper[data-control-type="clarotv"] .tv-favorite-btn {
     width: 100%;
-    height: 56px;
-    justify-content: flex-start;
-    padding-left: 18px;
+    height: 130px;
+    justify-content: center;
+    padding: 12px;
   }
 
   .tv-control-wrapper[data-control-type="clarotv"] .tv-favorite-btn img {
-    width: 32px;
-    height: 32px;
+    width: 72%;
+    height: 72%;
   }
 
   .tv-control-wrapper[data-control-type="clarotv"] .tv-commands-grid {
