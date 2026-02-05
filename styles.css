@@ -6653,6 +6653,16 @@ body:not(.tv-controls-on)
 
   body.tv-controls-off
     .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-portrait-tabs,
+  body.tv-controls-off
+    .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-portrait-tab {
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  body.tv-controls-off
+    .tv-control-wrapper[data-control-type="clarotv"]
     .tv-portrait-top-actions
     .tv-btn--power-off,
   body.tv-controls-off
