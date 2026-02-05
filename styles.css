@@ -6784,14 +6784,10 @@ body:not(.tv-controls-on)
   .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--commands {
     display: flex;
     order: 3;
-    background: transparent;
-    border: none;
-    padding: 0;
-    box-shadow: none;
   }
 
   .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--commands .tv-section-header {
-    display: none;
+    display: flex;
   }
 
   .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--commands .tv-control-group {
