@@ -7002,6 +7002,64 @@ body:not(.tv-controls-on)
   }
 }
 
+@media (max-width: 999px) {
+  .music-control-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows:
+      var(--music-top-section-height)
+      minmax(180px, 1fr)
+      auto
+      auto;
+    column-gap: clamp(8px, 1.2vw, 14px);
+    row-gap: clamp(8px, 1.2vw, 14px);
+    position: absolute;
+    inset: 103px 8px 87px;
+    padding: 10px;
+    overflow-y: auto;
+  }
+
+  .music-control-wrapper .music-power-section {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    opacity: 1;
+  }
+
+  .music-control-wrapper .music-commands-section {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    opacity: 1;
+  }
+
+  .music-control-wrapper .music-dpad-section {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .music-control-wrapper .music-now-section {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    max-height: none;
+  }
+
+  .music-control-wrapper .music-media-section {
+    grid-column: 1 / -1;
+    grid-row: 4;
+  }
+
+  .music-control-wrapper .music-album,
+  .music-control-wrapper .music-album-img {
+    display: none !important;
+  }
+
+  .music-control-wrapper .music-info {
+    align-items: center;
+    text-align: center;
+  }
+}
+
 .tv-volume-canais-wrapper {
   flex-direction: column;
   gap: 10px;
