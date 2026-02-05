@@ -2112,7 +2112,7 @@ div {
 @media screen and (max-width: 899px), screen and (orientation: portrait) {
   .music-control-wrapper {
     grid-template-columns: 1fr 1fr !important;
-    grid-template-rows: auto auto minmax(200px, 1fr) auto !important;
+    grid-template-rows: var(--music-top-section-height) var(--music-top-section-height) minmax(200px, 1fr) auto !important;
     overflow-y: auto !important;
   }
   
@@ -2143,6 +2143,11 @@ div {
   .music-control-wrapper .music-media-section {
     grid-column: 1 / -1 !important;
     grid-row: 4 !important;
+  }
+
+  .music-control-wrapper .music-power-section,
+  .music-control-wrapper .music-commands-section {
+    min-height: var(--music-top-section-height);
   }
 }
 .music-control-wrapper .music-power-section,
