@@ -6843,11 +6843,12 @@ body:not(.tv-controls-on)
   }
 
   .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--power {
-    display: none;
+    display: none !important;
   }
 
   .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--volume {
     order: 1;
+    margin-top: 8px;
   }
 
   .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--commands {
