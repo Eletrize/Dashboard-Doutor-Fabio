@@ -6843,7 +6843,7 @@ body:not(.tv-controls-on)
   }
 
   .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--power {
-    order: 0;
+    display: none;
   }
 
   .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--volume {
