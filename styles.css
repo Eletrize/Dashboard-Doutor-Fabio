@@ -6979,6 +6979,22 @@ body:not(.tv-controls-on)
     grid-column: 1 / -1;
     grid-row: 4;
   }
+
+  .tv-control-wrapper[data-control-type="music"] .music-now-section {
+    max-height: min(48vh, 340px);
+    flex: 0 0 auto;
+  }
+
+  .tv-control-wrapper[data-control-type="music"] .music-now-section .music-player-inner {
+    justify-content: center;
+  }
+
+  .tv-control-wrapper[data-control-type="music"] .music-now-section .music-album {
+    width: min(70%, 240px);
+    aspect-ratio: 1;
+    max-height: none;
+    flex: 0 0 auto;
+  }
 }
 
 .tv-volume-canais-wrapper {
