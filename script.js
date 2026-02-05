@@ -1395,6 +1395,10 @@ function updateTVPowerState(newState) {
   tvPowerState = newState;
   document.body.classList.toggle("tv-controls-on", newState === "on");
   document.body.classList.toggle("tv-controls-off", newState !== "on");
+  const wrapper = document.querySelector(".tv-control-wrapper");
+  if (wrapper) {
+    wrapper.setAttribute("data-power-state", newState);
+  }
 
   // Selecionar botões ON e OFF
   const btnOn = document.querySelector(".tv-btn--power-on");
@@ -1402,7 +1406,7 @@ function updateTVPowerState(newState) {
 
   // Selecionar todos os outros controles (incluindo música e volume)
   const otherControls = document.querySelectorAll(
-    ".tv-volume-canais-wrapper, .tv-commands-grid, .tv-directional-pad, .tv-numpad, .tv-favorites-list, .tv-logo-section, .tv-control-mode-toggle, .tv-control-section--music, .tv-control-section--dpad, .tv-control-section--volume, .tv-control-section--media, .music-now-content, .music-album-container, .music-info, .tv-volume-slider-container, .tv-volume-slider, .tv-volume-value"
+    ".tv-control-section:not(.tv-control-section--power), .tv-volume-canais-wrapper, .tv-commands-grid, .tv-directional-pad, .tv-numpad, .tv-favorites-list, .tv-logo-section, .tv-control-mode-toggle, .tv-control-section--music, .tv-control-section--dpad, .tv-control-section--volume, .tv-control-section--media, .music-now-content, .music-album-container, .music-info, .tv-volume-slider-container, .tv-volume-slider, .tv-volume-value, .tv-portrait-tabs, .tv-portrait-tab"
   );
   const gestureIcons = document.querySelectorAll(".tv-gesture-icons");
   const gestureSurface = document.querySelectorAll(".tv-gesture-surface");
@@ -1443,31 +1447,31 @@ function updateTVPowerState(newState) {
 
     console.log("📺 TV LIGADA - Controles visíveis");
   } else {
-    // TV desligada - opacidade 40% (0.4)
+    // TV desligada - opacidade 30% (0.3)
     btnOff?.classList.add("active");
     btnOn?.classList.remove("active");
 
     // Escurecer e desabilitar outros controles
     otherControls.forEach((control) => {
-      control.style.opacity = "0.4";
+      control.style.opacity = "0.3";
       control.style.pointerEvents = "none";
     });
     gestureIcons.forEach((control) => {
-      control.style.opacity = "0.4";
+      control.style.opacity = "0.3";
       control.style.pointerEvents = "none";
     });
     gestureSurface.forEach((control) => {
-      control.style.opacity = "0.4";
+      control.style.opacity = "0.3";
       control.style.pointerEvents = "none";
     });
     volumeSection.forEach((control) => {
-      control.style.opacity = "0.4";
+      control.style.opacity = "0.3";
       control.style.pointerEvents = "none";
     });
 
     // Apagar títulos
     titles.forEach((title) => {
-      title.style.opacity = "0.4";
+      title.style.opacity = "0.3";
     });
 
     console.log("📺 TV DESLIGADA - Controles desabilitados");

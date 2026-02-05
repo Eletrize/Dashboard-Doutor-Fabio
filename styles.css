@@ -6427,6 +6427,21 @@ body:not(.tv-controls-on)
     display: flex;
     gap: 8px;
     order: 0;
+    overflow: hidden;
+    transition: gap 0.25s ease;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-portrait-top-actions
+    .tv-btn {
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease,
+      max-width 0.25s ease,
+      width 0.25s ease,
+      padding 0.25s ease,
+      border-width 0.25s ease,
+      flex 0.25s ease;
   }
 
   .tv-control-wrapper[data-control-type="clarotv"]
@@ -6438,9 +6453,11 @@ body:not(.tv-controls-on)
     flex: 1;
     height: 46px;
     font-size: 14px;
+    min-width: 0;
   }
 
   .tv-control-wrapper[data-control-type="clarotv"] .tv-portrait-favorite {
+    flex: 0 0 46px;
     width: 46px;
     height: 46px;
     padding: 0;
@@ -6534,19 +6551,22 @@ body:not(.tv-controls-on)
   }
 
   .tv-control-wrapper[data-control-type="clarotv"] .tv-favorites-list {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     overflow: hidden;
   }
 
   .tv-control-wrapper[data-control-type="clarotv"] .tv-favorite-btn {
-    height: 64px;
+    width: 100%;
+    height: 56px;
+    justify-content: flex-start;
+    padding-left: 18px;
   }
 
   .tv-control-wrapper[data-control-type="clarotv"] .tv-favorite-btn img {
-    width: 70%;
-    height: 70%;
+    width: 32px;
+    height: 32px;
   }
 
   .tv-control-wrapper[data-control-type="clarotv"] .tv-commands-grid {
@@ -6601,6 +6621,39 @@ body:not(.tv-controls-on)
     .tv-control-section--claro-panel
     .tv-favorites-list {
     display: none;
+  }
+}
+
+@media (max-width: 999px) {
+  body.tv-controls-off
+    .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-portrait-top-actions {
+    gap: 0;
+  }
+
+  body.tv-controls-off
+    .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-portrait-top-actions
+    .tv-btn--power-off,
+  body.tv-controls-off
+    .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-portrait-top-actions
+    .tv-portrait-favorite {
+    flex: 0 0 0;
+    width: 0;
+    max-width: 0;
+    padding: 0;
+    border-width: 0;
+    opacity: 0;
+    transform: translateY(-4px) scale(0.95);
+    pointer-events: none;
+  }
+
+  body.tv-controls-on
+    .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-portrait-top-actions
+    .tv-btn--power-on {
+    transform: scale(0.96);
   }
 }
 
