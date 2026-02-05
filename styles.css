@@ -6783,7 +6783,7 @@ body:not(.tv-controls-on)
 
   .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--commands {
     display: flex;
-    order: 2;
+    order: 3;
     background: transparent;
     border: none;
     padding: 0;
@@ -6798,9 +6798,15 @@ body:not(.tv-controls-on)
     padding: 0;
   }
 
+  .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--commands .tv-commands-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: 1fr;
+    gap: 10px;
+  }
+
   .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--dpad {
     display: flex;
-    order: 3;
+    order: 2;
   }
 
   .tv-control-wrapper[data-control-type="appletv"]
