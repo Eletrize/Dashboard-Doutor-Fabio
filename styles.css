@@ -6630,8 +6630,10 @@ body:not(.tv-controls-on)
   }
 }
 
-.tv-control-wrapper[data-control-type="clarotv"] .tv-btn--claro-back {
-  display: none;
+@media (min-width: 1000px) {
+  .tv-control-wrapper[data-control-type="clarotv"] .tv-btn--claro-back {
+    display: none;
+  }
 }
 
 @media (max-width: 999px) {
