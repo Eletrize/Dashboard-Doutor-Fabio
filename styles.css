@@ -6849,11 +6849,14 @@ body:not(.tv-controls-on)
   .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--volume {
     order: 1;
     margin-top: 8px;
+    flex: 0 0 auto;
+    min-height: 110px;
   }
 
   .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--commands {
     display: flex;
     order: 3;
+    flex: 0 0 auto;
   }
 
   .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--commands .tv-section-header {
@@ -6873,6 +6876,8 @@ body:not(.tv-controls-on)
   .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--dpad {
     display: flex;
     order: 2;
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   .tv-control-wrapper[data-control-type="appletv"]
