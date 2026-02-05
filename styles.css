@@ -6458,17 +6458,15 @@ body:not(.tv-controls-on)
     font-size: 14px;
   }
 
-  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
-    .tv-portrait-tabs {
+  .tv-control-wrapper[data-control-type="tv"] .tv-portrait-tabs {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
     margin-bottom: 4px;
     order: 2;
   }
 
-  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
-    .tv-portrait-tab {
+  .tv-control-wrapper[data-control-type="tv"] .tv-portrait-tab {
     background: #ffffff10;
     border: 1px solid #ffffff26;
     border-radius: 10px;
@@ -6481,19 +6479,16 @@ body:not(.tv-controls-on)
     text-transform: none;
   }
 
-  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
-    .tv-portrait-tab.is-active {
+  .tv-control-wrapper[data-control-type="tv"] .tv-portrait-tab.is-active {
     background: #ffffff1f;
     border-color: #ffffff40;
   }
 
-  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
-    .tv-control-section--power {
+  .tv-control-wrapper[data-control-type="tv"] .tv-control-section--power {
     display: none;
   }
 
-  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
-    .tv-control-section--volume {
+  .tv-control-wrapper[data-control-type="tv"] .tv-control-section--volume {
     order: 1;
     flex: 0 0 auto;
   }
@@ -6513,18 +6508,18 @@ body:not(.tv-controls-on)
     overflow: visible;
   }
 
-  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
+  .tv-control-wrapper[data-control-type="tv"]
     [data-portrait-section] {
     display: none;
     min-height: 0;
     order: 3;
   }
 
-  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])[data-portrait-panel="control"]
+  .tv-control-wrapper[data-control-type="tv"][data-portrait-panel="control"]
     [data-portrait-section="control"],
-  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])[data-portrait-panel="commands"]
+  .tv-control-wrapper[data-control-type="tv"][data-portrait-panel="commands"]
     [data-portrait-section="commands"],
-  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])[data-portrait-panel="media"]
+  .tv-control-wrapper[data-control-type="tv"][data-portrait-panel="media"]
     [data-portrait-section="media"] {
     display: flex;
     flex-direction: column;
@@ -6771,6 +6766,10 @@ body:not(.tv-controls-on)
 @media (max-width: 999px) {
   .tv-control-wrapper[data-control-type="appletv"] .tv-portrait-tabs {
     display: none !important;
+  }
+
+  .tv-control-wrapper[data-control-type="tv"] .tv-logo-section {
+    display: none;
   }
 
   .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--power {
