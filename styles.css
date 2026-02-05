@@ -6408,6 +6408,124 @@ body:not(.tv-controls-on)
 }
 
 @media (max-width: 999px) {
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"]) {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow: hidden;
+  }
+
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
+    .tv-controls-col {
+    display: contents;
+  }
+
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
+    .tv-volume-canais-wrapper {
+    display: contents;
+  }
+
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
+    .tv-portrait-top-actions {
+    display: flex;
+    gap: 8px;
+    order: 0;
+    overflow: hidden;
+    transition: gap 0.25s ease;
+  }
+
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
+    .tv-portrait-top-actions
+    .tv-btn {
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease,
+      max-width 0.25s ease,
+      width 0.25s ease,
+      padding 0.25s ease,
+      border-width 0.25s ease,
+      flex 0.25s ease;
+  }
+
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
+    .tv-portrait-top-actions
+    .tv-btn--power-on,
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
+    .tv-portrait-top-actions
+    .tv-btn--power-off {
+    flex: 1;
+    height: 46px;
+    font-size: 14px;
+  }
+
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
+    .tv-portrait-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 4px;
+    order: 2;
+  }
+
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
+    .tv-portrait-tab {
+    background: #ffffff10;
+    border: 1px solid #ffffff26;
+    border-radius: 10px;
+    color: #fff;
+    font-family: Raleway, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    min-height: 68px;
+    padding: 12px 8px;
+    text-transform: none;
+  }
+
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
+    .tv-portrait-tab.is-active {
+    background: #ffffff1f;
+    border-color: #ffffff40;
+  }
+
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
+    .tv-control-section--power {
+    display: none;
+  }
+
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
+    .tv-control-section--volume {
+    order: 1;
+    flex: 0 0 auto;
+  }
+
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
+    .tv-control-section {
+    padding: 14px;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
+    [data-portrait-section] {
+    display: none;
+    min-height: 0;
+    order: 3;
+  }
+
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])[data-portrait-panel="control"]
+    [data-portrait-section="control"],
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])[data-portrait-panel="commands"]
+    [data-portrait-section="commands"],
+  .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])[data-portrait-panel="media"]
+    [data-portrait-section="media"] {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}
+
+@media (max-width: 999px) {
   .tv-control-wrapper[data-control-type="clarotv"] {
     display: flex;
     flex-direction: column;
@@ -6644,27 +6762,27 @@ body:not(.tv-controls-on)
 
 @media (max-width: 999px) {
   body.tv-controls-off
-    .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-control-wrapper[data-control-type]:not([data-control-type="music"])
     .tv-portrait-top-actions {
     gap: 0;
   }
 
   body.tv-controls-off
-    .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-control-wrapper[data-control-type]:not([data-control-type="music"])
     .tv-portrait-tabs,
   body.tv-controls-off
-    .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-control-wrapper[data-control-type]:not([data-control-type="music"])
     .tv-portrait-tab {
     opacity: 0.3;
     pointer-events: none;
   }
 
   body.tv-controls-off
-    .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-control-wrapper[data-control-type]:not([data-control-type="music"])
     .tv-portrait-top-actions
     .tv-btn--power-off,
   body.tv-controls-off
-    .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-control-wrapper[data-control-type]:not([data-control-type="music"])
     .tv-portrait-top-actions
     .tv-portrait-favorite {
     flex: 0 0 0;
@@ -6678,7 +6796,7 @@ body:not(.tv-controls-on)
   }
 
   body.tv-controls-on
-    .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-control-wrapper[data-control-type]:not([data-control-type="music"])
     .tv-portrait-top-actions
     .tv-btn--power-on {
     transform: scale(0.96);

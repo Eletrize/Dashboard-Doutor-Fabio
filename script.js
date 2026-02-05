@@ -1617,7 +1617,7 @@ function toggleClaroTvPanel(trigger, targetView) {
   }, 400);
 }
 
-function setClaroTvPortraitPanel(trigger, panel) {
+function setTvPortraitPanel(trigger, panel) {
   const wrapper = trigger?.closest?.(".tv-control-wrapper");
   if (!wrapper) return;
 
@@ -1635,6 +1635,10 @@ function setClaroTvPortraitPanel(trigger, panel) {
   if (favoriteBtn) {
     favoriteBtn.classList.toggle("is-active", nextPanel === "favorites");
   }
+}
+
+function setClaroTvPortraitPanel(trigger, panel) {
+  setTvPortraitPanel(trigger, panel);
 }
 
 function positionAppleTvModeIndicator(section) {

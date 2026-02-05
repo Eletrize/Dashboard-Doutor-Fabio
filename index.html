@@ -805,6 +805,22 @@
       }
 
             function renderAppleTvControlPage(envKey, deviceId, title, typeKey) {
+        const applePortraitTopMarkup = `
+    <div class="tv-portrait-top-actions">
+      <button class="tv-btn tv-btn--power-on" onclick="tvCommand(this, 'on')" data-device-id="${deviceId}" aria-label="Ligar">
+        On
+      </button>
+      <button class="tv-btn tv-btn--power-off" onclick="tvCommand(this, 'off')" data-device-id="${deviceId}" aria-label="Desligar">
+        Off
+      </button>
+    </div>
+  `;
+        const applePortraitTabsMarkup = `
+    <div class="tv-portrait-tabs" role="tablist" aria-label="SeÃ§Ãµes">
+      <button class="tv-portrait-tab is-active" type="button" data-target="control" onclick="setTvPortraitPanel(this, 'control')" aria-pressed="true">Controle</button>
+      <button class="tv-portrait-tab" type="button" data-target="commands" onclick="setTvPortraitPanel(this, 'commands')" aria-pressed="false">Comandos</button>
+    </div>
+  `;
         return `
 <div class="top-bar-custom"></div>
 
@@ -817,9 +833,11 @@
     <h1 class="page-title">${title}</h1>
   </div>
 
-  <div class="tv-control-wrapper" data-control-type="${typeKey}">
+  <div class="tv-control-wrapper" data-control-type="${typeKey}" data-portrait-panel="control">
+    ${applePortraitTopMarkup}
+    ${applePortraitTabsMarkup}
     <div class="tv-controls-col tv-col-1">
-      <div class="tv-control-section tv-control-section--power">
+      <div class="tv-control-section tv-control-section--power" data-portrait-section="power">
         <header class="tv-section-header">
           <h3 class="tv-section-title">On / Off</h3>
           <div class="tv-section-line"></div>
@@ -834,7 +852,7 @@
         </div>
       </div>
 
-      <div class="tv-control-section tv-control-section--commands">
+      <div class="tv-control-section tv-control-section--commands" data-portrait-section="commands">
         <header class="tv-section-header">
           <h3 class="tv-section-title">Comandos</h3>
           <div class="tv-section-line"></div>
@@ -879,7 +897,7 @@
         </div>
       </div>
 
-      <div class="tv-control-section tv-control-section--dpad" data-device-id="${deviceId}" data-control-mode="cursor">
+      <div class="tv-control-section tv-control-section--dpad" data-device-id="${deviceId}" data-control-mode="cursor" data-portrait-section="control">
         <header class="tv-section-header">
           <h3 class="tv-section-title">Controle</h3>
           <div class="tv-section-line"></div>
@@ -956,6 +974,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         const isClaroTv = typeKey === "clarotv";
         const isBluray = typeKey === "bluray";
         const isMusicPage = /m\u00fasica/i.test(String(headingLabel || ""));
+        const isPortraitEnabled = !isMusicPage;
         const powerOnLabel = isClaroTv ? "On" : "ON";
         const powerOffLabel = isClaroTv ? "Off" : "OFF";
         const isTvControl = typeKey === "tv";
@@ -1187,7 +1206,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           : isBluray
           ? ""
           : `
-                <div class="tv-control-section tv-control-section--media">
+                <div class="tv-control-section tv-control-section--media" data-portrait-section="media">
                     <header class="tv-section-header">
                         <h3 class="tv-section-title">M&iacute;dia</h3>
                         <div class="tv-section-line"></div>
@@ -1336,8 +1355,9 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           : isClaroTv
           ? commandsSectionMarkup
           : "";
-        const claroPortraitTopMarkup = isClaroTv
-          ? `
+        const portraitTopMarkup = isPortraitEnabled
+          ? isClaroTv
+            ? `
             <div class="tv-portrait-top-actions">
               <button class="tv-btn tv-btn--power-on" onclick="tvCommand(this, '${powerOnCommand}')" data-device-id="${deviceId}" aria-label="Ligar">
                 ${powerOnLabel}
@@ -1345,19 +1365,37 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
               <button class="tv-btn tv-btn--power-off" onclick="tvCommand(this, '${powerOffCommand}')" data-device-id="${deviceId}" aria-label="Desligar">
                 ${powerOffLabel}
               </button>
-              <button class="tv-btn tv-btn--icon-only tv-portrait-favorite" onclick="setClaroTvPortraitPanel(this, 'favorites')" aria-label="Favoritos" type="button">
+              <button class="tv-btn tv-btn--icon-only tv-portrait-favorite" onclick="setTvPortraitPanel(this, 'favorites')" aria-label="Favoritos" type="button">
                 <img src="images/icons/icon-fav.svg" alt="Favoritos">
               </button>
             </div>
           `
+            : `
+            <div class="tv-portrait-top-actions">
+              <button class="tv-btn tv-btn--power-on" onclick="tvCommand(this, '${powerOnCommand}')" data-device-id="${deviceId}" aria-label="Ligar">
+                ${powerOnLabel}
+              </button>
+              <button class="tv-btn tv-btn--power-off" onclick="tvCommand(this, '${powerOffCommand}')" data-device-id="${deviceId}" aria-label="Desligar">
+                ${powerOffLabel}
+              </button>
+            </div>
+          `
           : "";
-        const claroPortraitTabsMarkup = isClaroTv
-          ? `
+        const portraitTabsMarkup = isPortraitEnabled
+          ? isClaroTv
+            ? `
             <div class="tv-portrait-tabs" role="tablist" aria-label="Seções">
-              <button class="tv-portrait-tab is-active" type="button" data-target="control" onclick="setClaroTvPortraitPanel(this, 'control')" aria-pressed="true">Controle</button>
-              <button class="tv-portrait-tab" type="button" data-target="numbers" onclick="setClaroTvPortraitPanel(this, 'numbers')" aria-pressed="false">N&uacute;meros</button>
-              <button class="tv-portrait-tab" type="button" data-target="commands" onclick="setClaroTvPortraitPanel(this, 'commands')" aria-pressed="false">Comandos</button>
-              <button class="tv-portrait-tab" type="button" data-target="media" onclick="setClaroTvPortraitPanel(this, 'media')" aria-pressed="false">M&iacute;dia</button>
+              <button class="tv-portrait-tab is-active" type="button" data-target="control" onclick="setTvPortraitPanel(this, 'control')" aria-pressed="true">Controle</button>
+              <button class="tv-portrait-tab" type="button" data-target="numbers" onclick="setTvPortraitPanel(this, 'numbers')" aria-pressed="false">N&uacute;meros</button>
+              <button class="tv-portrait-tab" type="button" data-target="commands" onclick="setTvPortraitPanel(this, 'commands')" aria-pressed="false">Comandos</button>
+              <button class="tv-portrait-tab" type="button" data-target="media" onclick="setTvPortraitPanel(this, 'media')" aria-pressed="false">M&iacute;dia</button>
+            </div>
+          `
+            : `
+            <div class="tv-portrait-tabs" role="tablist" aria-label="Seções">
+              <button class="tv-portrait-tab is-active" type="button" data-target="control" onclick="setTvPortraitPanel(this, 'control')" aria-pressed="true">Controle</button>
+              <button class="tv-portrait-tab" type="button" data-target="commands" onclick="setTvPortraitPanel(this, 'commands')" aria-pressed="false">Comandos</button>
+              <button class="tv-portrait-tab" type="button" data-target="media" onclick="setTvPortraitPanel(this, 'media')" aria-pressed="false">M&iacute;dia</button>
             </div>
           `
           : "";
@@ -1413,14 +1451,14 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         <h1 class="page-title">${title}</h1>
     </div>
 
-    <div class="tv-control-wrapper" data-control-type="${typeKey}"${isClaroTv ? ' data-portrait-panel="control"' : ''}>
-        ${claroPortraitTopMarkup}
-        ${claroPortraitTabsMarkup}
+    <div class="tv-control-wrapper" data-control-type="${typeKey}"${isPortraitEnabled ? ' data-portrait-panel="control"' : ''}>
+        ${portraitTopMarkup}
+        ${portraitTabsMarkup}
         
         <!-- COLUNA 1 -->
         <div class="tv-controls-col tv-col-1">
             <!-- BLOCO 1: ON/OFF -->
-            <div class="tv-control-section tv-control-section--power"${isClaroTv ? ' data-portrait-section="power"' : ''}>
+            <div class="tv-control-section tv-control-section--power"${isPortraitEnabled ? ' data-portrait-section="power"' : ''}>
                 <header class="tv-section-header">
                     <h3 class="tv-section-title">On / Off</h3>
                     <div class="tv-section-line"></div>
@@ -1455,7 +1493,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
 
             <!-- BLOCO 2: CONTROLE / MÚSICA -->
             ${isMusicPage ? musicInfoMarkup : `
-            <div class="tv-control-section tv-control-section--dpad" data-device-id="${deviceId}" data-control-mode="cursor"${isClaroTv ? ' data-portrait-section="control"' : ''}>
+            <div class="tv-control-section tv-control-section--dpad" data-device-id="${deviceId}" data-control-mode="cursor"${isPortraitEnabled ? ' data-portrait-section="control"' : ''}>
               <header class="tv-section-header">
                 <h3 class="tv-section-title">Controle</h3>
                 <div class="tv-section-line"></div>
@@ -6400,3 +6438,4 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
     </script>
   </body>
 </html>
+
