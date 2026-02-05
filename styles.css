@@ -6421,7 +6421,7 @@ body:not(.tv-controls-on)
   }
 
   .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
-    .tv-volume-canais-wrapper {
+    .tv-volume-canais-wrapper:not(.tv-control-section) {
     display: contents;
   }
 
@@ -6503,6 +6503,14 @@ body:not(.tv-controls-on)
     padding: 14px;
     min-height: 0;
     overflow: hidden;
+  }
+
+  .tv-control-wrapper[data-control-type="appletv"] .tv-logo-section {
+    display: none;
+  }
+
+  .tv-control-wrapper[data-control-type="appletv"] .tv-control-section--volume {
+    overflow: visible;
   }
 
   .tv-control-wrapper[data-control-type]:not([data-control-type="music"]):not([data-control-type="clarotv"])
