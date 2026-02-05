@@ -6466,9 +6466,10 @@ body:not(.tv-controls-on)
     border-radius: 10px;
     color: #fff;
     font-family: Raleway, Arial, sans-serif;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
-    padding: 8px 6px;
+    min-height: 56px;
+    padding: 12px 8px;
     text-transform: none;
   }
 
@@ -6483,10 +6484,18 @@ body:not(.tv-controls-on)
 
   .tv-control-wrapper[data-control-type="clarotv"] .tv-control-section--volume {
     order: 1;
+    flex: 0 0 auto;
   }
 
   .tv-control-wrapper[data-control-type="clarotv"] .tv-control-section {
     padding: 14px;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-control-section--commands
+    .tv-control-group {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   .tv-control-wrapper[data-control-type="clarotv"] [data-portrait-section] {
@@ -6541,12 +6550,38 @@ body:not(.tv-controls-on)
   }
 
   .tv-control-wrapper[data-control-type="clarotv"] .tv-commands-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
     gap: 8px;
+    height: 100%;
+    align-content: stretch;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-control-section--commands
+    .tv-commands-grid
+    [data-claro-panel-btn] {
+    display: none;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-control-section--commands
+    .tv-commands-grid
+    > :last-child {
+    grid-column: 1 / -1;
   }
 
   .tv-control-wrapper[data-control-type="clarotv"] .tv-btn--icon-only {
     width: 48px;
     height: 48px;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-control-section--commands
+    .tv-btn--icon-only {
+    width: 100%;
+    height: 100%;
   }
 
   .tv-control-wrapper[data-control-type="clarotv"] .tv-numpad-btn {
@@ -6557,6 +6592,12 @@ body:not(.tv-controls-on)
   .tv-control-wrapper[data-control-type="clarotv"] .tv-numpad-btn--icon img {
     width: 22px;
     height: 22px;
+  }
+
+  .tv-control-wrapper[data-control-type="clarotv"]
+    .tv-control-section--claro-panel
+    .tv-favorites-list {
+    display: none;
   }
 }
 
