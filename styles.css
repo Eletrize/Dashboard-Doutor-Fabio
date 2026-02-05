@@ -6940,8 +6940,7 @@ body:not(.tv-controls-on)
     grid-template-columns: 1fr 1fr;
     grid-template-rows:
       var(--music-top-section-height)
-      var(--music-top-section-height)
-      minmax(200px, 1fr)
+      minmax(180px, 1fr)
       auto;
     column-gap: clamp(8px, 1.2vw, 14px);
     row-gap: clamp(8px, 1.2vw, 14px);
@@ -6981,7 +6980,7 @@ body:not(.tv-controls-on)
   }
 
   .tv-control-wrapper[data-control-type="music"] .music-now-section {
-    max-height: min(48vh, 340px);
+    max-height: none;
     flex: 0 0 auto;
   }
 
@@ -6990,14 +6989,11 @@ body:not(.tv-controls-on)
   }
 
   .tv-control-wrapper[data-control-type="music"] .music-now-section .music-album {
-    width: min(70%, 240px);
-    aspect-ratio: 1;
-    max-height: none;
-    flex: 0 0 auto;
+    display: none !important;
   }
 
-  .tv-control-wrapper[data-control-type="music"] .music-now-section .music-album {
-    display: none;
+  .tv-control-wrapper[data-control-type="music"] .music-now-section .music-album-img {
+    display: none !important;
   }
 
   .tv-control-wrapper[data-control-type="music"] .music-now-section .music-info {
