@@ -4171,10 +4171,12 @@ function curtainAction(el, action) {
 
 // Master on/off (Home quick toggle) removido completamente
 
-// --- Override para contornar CORS no browser ao chamar Hubitat ---
-// Envia comandos em modo no-cors (resposta opaca) e, em falha, faz um GET via Image.
+// --- Override legado para contornar CORS ---
+// Mantido desativado por padrão: /hubitat-proxy já resolve CORS e
+// o sender principal tem fila + retry mais confiáveis.
+const ENABLE_HUBITAT_CORS_BYPASS = false;
 try {
-  if (typeof sendHubitatCommand === "function") {
+  if (ENABLE_HUBITAT_CORS_BYPASS && typeof sendHubitatCommand === "function") {
     const _corsBypassSend = function (deviceId, command, value) {
       const baseUrl = urlSendCommand(deviceId, command, value);
       // Adiciona cache-buster para evitar SW/cache do navegador
@@ -4315,6 +4317,7 @@ if (typeof document !== "undefined") {
 
 async function updateDeviceStatesFromServer(options = {}) {
   const skipSchedule = Boolean(options && options.skipSchedule);
+  const forceUpdate = Boolean(options && options.forceUpdate);
   let hasStateChanges = false;
   let encounteredError = false;
 
@@ -4450,7 +4453,7 @@ async function updateDeviceStatesFromServer(options = {}) {
         updateDeviceUI(deviceId, {
           state: nextState,
           level: nextLevel,
-        });
+        }, forceUpdate);
 
         if (String(deviceId) === "354" && deviceData.volume !== undefined) {
           updateDenonVolumeUI(deviceData.volume);
@@ -4686,6 +4689,14 @@ function setHomeLightButtonIcon(button, state) {
   }
 }
 
+function setHomeMasterButtonLoading(button, loading) {
+  if (!button) return;
+  const isLoading = Boolean(loading);
+  button.dataset.loading = isLoading ? "true" : "false";
+  button.classList.toggle("loading", isLoading);
+  button.disabled = isLoading;
+}
+
 function syncHomeLightButtons() {
   document.querySelectorAll(".room-master-btn").forEach((btn) => {
     const route = btn.dataset.route || "";
@@ -4699,9 +4710,10 @@ function syncHomeLightButtons() {
   });
 }
 
-function onHomeMasterClick(event, button) {
+async function onHomeMasterClick(event, button) {
   event.preventDefault();
   event.stopPropagation();
+  if (!button || button.dataset.loading === "true") return;
 
   const route = button?.dataset?.route || "";
   const actionType = button?.dataset?.action || "lights";
@@ -4713,28 +4725,85 @@ function onHomeMasterClick(event, button) {
 
   const currentState = anyQuickActionOn(devices) ? "on" : "off";
   const nextState = currentState === "on" ? "off" : "on";
+  const HOME_MASTER_MAX_PARALLEL = 3;
+  const HOME_MASTER_RETRY_ATTEMPTS = 2;
+  const HOME_MASTER_RETRY_DELAY_MS = 200;
 
+  setHomeMasterButtonLoading(button, true);
   setHomeLightButtonIcon(button, nextState);
 
-  devices.forEach((device) => {
+  const runCommandsForDevice = async (device) => {
     const deviceId = device.id;
     recentCommands.set(deviceId, Date.now());
 
+    const desiredState = nextState === "on" ? "on" : "off";
+    const rollbackState = currentState === "on" ? "on" : "off";
+    setStoredState(deviceId, desiredState);
+
+    const commands = [];
     if (nextState === "off") {
-      setStoredState(deviceId, "off");
-      sendHubitatCommand(deviceId, device.commandOff);
-      return;
-    }
-
-    setStoredState(deviceId, "on");
-    if (device.commandOn === "setLevel") {
+      commands.push({ command: device.commandOff });
+    } else if (device.commandOn === "setLevel") {
       const levelToSet = clampDimmerValue(device.valueOn, 80);
-      sendHubitatCommand(deviceId, "setLevel", String(levelToSet));
-      return;
+      // Dimmer em nuvem é mais confiável com "on" + "setLevel" em sequência.
+      commands.push({ command: "on" });
+      commands.push({ command: "setLevel", value: String(levelToSet) });
+    } else {
+      commands.push({ command: device.commandOn });
     }
 
-    sendHubitatCommand(deviceId, device.commandOn);
-  });
+    let lastError = null;
+    for (let attempt = 1; attempt <= HOME_MASTER_RETRY_ATTEMPTS; attempt += 1) {
+      try {
+        for (const item of commands) {
+          await sendHubitatCommand(deviceId, item.command, item.value);
+        }
+        return { ok: true, deviceId };
+      } catch (error) {
+        lastError = error;
+        if (attempt < HOME_MASTER_RETRY_ATTEMPTS) {
+          await sleep(HOME_MASTER_RETRY_DELAY_MS);
+        }
+      }
+    }
+
+    setStoredState(deviceId, rollbackState);
+    updateDeviceUI(deviceId, rollbackState, true);
+    console.warn(
+      `⚠️Master lights: falha ao enviar comandos para ${deviceId} após retries`,
+      lastError
+    );
+    return { ok: false, deviceId };
+  };
+
+  const failures = [];
+
+  try {
+    for (let i = 0; i < devices.length; i += HOME_MASTER_MAX_PARALLEL) {
+      const chunk = devices.slice(i, i + HOME_MASTER_MAX_PARALLEL);
+      const results = await Promise.all(chunk.map(runCommandsForDevice));
+
+      results.forEach((result) => {
+        if (!result?.ok) {
+          failures.push(result.deviceId);
+        }
+      });
+    }
+
+    if (failures.length === devices.length) {
+      setHomeLightButtonIcon(button, currentState);
+    }
+  } finally {
+    setHomeMasterButtonLoading(button, false);
+  }
+
+  if (typeof updateDeviceStatesFromServer === "function") {
+    setTimeout(() => {
+      updateDeviceStatesFromServer({ skipSchedule: true, forceUpdate: true }).catch(
+        () => {}
+      );
+    }, 250);
+  }
 }
 
 // Função auxiliar para verificar se alguma cortina está aberta
