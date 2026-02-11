@@ -509,15 +509,6 @@ const CLIENT_CONFIG = {
         ],
       },
     },
-    airConditioners: {
-      ambiente1: "110",
-      ambiente2: "167",
-      ambiente7: "182",
-      ambiente8: "188",
-      ambiente9: "180",
-      ambiente10: "180",
-    },
-
     // Inicializa????o por ambiente (dispositivos com comando "initialize")
     initializeDevicesByEnv: {
       ambiente1: ["357", "347", "354", "355", "356", "362"],
@@ -578,11 +569,7 @@ function getAllLightIds() {
 }
 
 function getAcDeviceIds() {
-  const ids =
-    (CLIENT_CONFIG?.devices?.airConditioners && {
-      ...CLIENT_CONFIG.devices.airConditioners,
-    }) ||
-    {};
+  const ids = {};
   getVisibleEnvironments().forEach((env) => {
     const acConfig = env?.airConditioner || null;
     const explicitAcId = acConfig?.deviceId ? String(acConfig.deviceId) : "";

@@ -1825,15 +1825,9 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           Math.max(minTemp, defaultTemp),
         );
         const acDeviceId = ac?.deviceId ? String(ac.deviceId) : "";
-        const acDeviceMap =
-          typeof getAcDeviceIds === "function" ? getAcDeviceIds() : {};
-        const mappedDeviceId =
-          acDeviceMap && acDeviceMap[envKey] ? String(acDeviceMap[envKey]) : "";
         const firstZoneDeviceId =
           zones.length && zones[0]?.deviceId ? String(zones[0].deviceId) : "";
-        const acOverrideId = acDeviceId || firstZoneDeviceId || mappedDeviceId;
-        const defaultDeviceId =
-          acOverrideId || firstZoneDeviceId;
+        const defaultDeviceId = acDeviceId || firstZoneDeviceId;
 
         let zoneRow = "";
         if (showZones) {
@@ -1849,7 +1843,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 const label = String(index + 1);
                 const ariaLabel = zone.name || `Zona ${index + 1}`;
                 const deviceId =
-                  acOverrideId || (zone.deviceId ? String(zone.deviceId) : "");
+                  acDeviceId || (zone.deviceId ? String(zone.deviceId) : "");
                 return `
                   <button type="button" class="acv2-btn acv2-zone-btn" data-zone-button data-zone-ids="${deviceId}" aria-pressed="false" aria-label="${ariaLabel}">
                     ${label}
@@ -1861,7 +1855,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             const allIds = zones
               .map(
                 (zone) =>
-                  acOverrideId || (zone?.deviceId ? String(zone.deviceId) : ""),
+                  acDeviceId || (zone?.deviceId ? String(zone.deviceId) : ""),
               )
               .filter(Boolean);
             const uniqueAllIds = Array.from(new Set(allIds));

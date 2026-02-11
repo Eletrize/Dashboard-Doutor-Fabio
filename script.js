@@ -708,12 +708,6 @@ let ALL_LIGHT_IDS =
     ? getAllLightIds()
     : [];
 
-// Mapeamento de IDs de Ar Condicionado por ambiente (obtidos do config.js)
-const AC_DEVICE_IDS =
-  typeof getAcDeviceIds === "function"
-    ? getAcDeviceIds()
-    : {};
-
 // ID do dispositivo de Ar Condicionado atual (será atualizado dinamicamente)
 let AC_DEVICE_ID = getACDeviceIdForCurrentRoute(); // Atualizado dinamicamente
 
@@ -735,12 +729,9 @@ function getACDeviceIdForCurrentRoute() {
       if (zoneId) {
         return String(zoneId);
       }
-      if (AC_DEVICE_IDS[ambiente]) {
-        return String(AC_DEVICE_IDS[ambiente]);
-      }
     }
   }
-  return AC_DEVICE_IDS["ambiente1"] || "110"; // Fallback para ambiente1
+  return "";
 }
 
 // ========================================
@@ -3118,14 +3109,9 @@ function initAirConditionerControl() {
     envKey && typeof getEnvironment === "function"
       ? getEnvironment(envKey)?.airConditioner || null
       : null;
-  const mappedDeviceId =
-    envKey && AC_DEVICE_IDS[envKey] ? String(AC_DEVICE_IDS[envKey]) : "";
-  const firstZoneDeviceId = Array.isArray(acConfig?.zones)
-    ? String(acConfig.zones.find((zone) => zone?.deviceId)?.deviceId || "")
-    : "";
   const baseDeviceId = acConfig?.deviceId
     ? String(acConfig.deviceId)
-    : firstZoneDeviceId || mappedDeviceId;
+    : "";
   const acBrandProfiles =
     (typeof CLIENT_CONFIG !== "undefined" &&
       CLIENT_CONFIG?.devices?.airConditionerBrands) ||
