@@ -1927,9 +1927,19 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                     <h2 class="acv2-title">Temperatura</h2>
                     <span class="acv2-title-line"></span>
                   </div>
-                  <div class="acv2-temp-display">
-                    <span class="acv2-temp-value" data-role="temp-current">${safeDefaultTemp}</span>
-                    <span class="acv2-temp-unit">C</span>
+                  <div class="acv2-temp-display-wrap">
+                    <div class="acv2-temp-display">
+                      <span class="acv2-temp-value" data-role="temp-current">${safeDefaultTemp}</span>
+                      <span class="acv2-temp-unit">C</span>
+                    </div>
+                    <div class="acv2-temp-side-actions">
+                      <button type="button" class="acv2-btn acv2-btn--icon acv2-temp-side-btn acv2-temp-side-btn--increase" data-role="temp-increase" aria-label="Aumentar temperatura">
+                        <img src="images/icons/arrow-up.svg" alt="">
+                      </button>
+                      <button type="button" class="acv2-btn acv2-btn--icon acv2-temp-side-btn acv2-temp-side-btn--decrease" data-role="temp-decrease" aria-label="Diminuir temperatura">
+                        <img src="images/icons/arrow-down.svg" alt="">
+                      </button>
+                    </div>
                   </div>
                   <div class="acv2-slider-block acv2-temp-controls">
                     <input type="range" class="acv2-temp-slider" data-role="temp-slider" min="${minTemp}" max="${maxTemp}" value="${safeDefaultTemp}" step="1" aria-label="Temperatura">
