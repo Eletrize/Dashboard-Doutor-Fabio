@@ -314,9 +314,32 @@ const CLIENT_CONFIG = {
           ],
         },
       ],
-      curtains: [{ id: "121", name: "Cortina" }],
+      curtains: [
+        {
+          name: "Todas",
+          description: "Aciona Todas as cortinas do ambiente",
+          targets: ["368", "369", "371", "370"],
+          commands: { open: "open", stop: "stop", close: "close" },
+        },
+        {
+          name: "Esquerda",
+          description: "Aciona cortinas a esquerda",
+          targets: ["368", "369"],
+          commands: { open: "open", stop: "stop", close: "close" },
+        },
+        {
+          name: "Direita",
+          description: "Aciona cortinas a direita",
+          targets: ["371", "370"],
+          commands: { open: "open", stop: "stop", close: "close" },
+        },
+        { id: "368", name: "Cortina Esquerda" },
+        { id: "369", name: "Central Esquerda" },
+        { id: "371", name: "Central Direita" },
+        { id: "370", name: "Cortina Direita" },
+      ],
       airConditioner: {
-        deviceId: "348",
+        deviceId: "349",
         brand: "carrier",
         zones: [{ id: "Varanda", name: "Varanda" }],
         controls: { zoneSelector: true, aletas: true, windfree: false },
@@ -324,10 +347,15 @@ const CLIENT_CONFIG = {
       },
       roku: [{ id: "122", name: "Roku" }],
       games: [{ id: "123", name: "Games" }],
-      music: [{ id: "124", name: "Música" }],
-      // Placeholder até receber o deviceId real da Claro TV da Varanda
-      clarotv: [{ id: "musica", name: "Claro TV" }],
-      tv: [{ id: "125", name: "Televisão" }],
+      music: [
+        {
+          id: "124",
+          name: "Música",
+          volumeDeviceId: "353",
+          powerDeviceId: "353",
+        },
+      ],
+      tv: [{ id: "363", name: "Televisão" }],
     },
 
     ambiente4: {
