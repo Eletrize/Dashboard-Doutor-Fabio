@@ -708,16 +708,52 @@ let ALL_LIGHT_IDS =
     ? getAllLightIds()
     : [];
 
+const DEFAULT_DENON_COMMAND_DEVICE_ID = "354";
+const DENON_COMMAND_DEVICE_ID_BY_ENV = {
+  ambiente3: "353",
+};
+
+function getEnvironmentKeyFromRouteHash(hash = window.location.hash) {
+  const route = (hash || "").replace("#", "");
+  const match = route.match(/^(ambiente\d+)/);
+  return match ? match[1] : null;
+}
+
+function getDenonCommandDeviceIdForEnv(envKey) {
+  if (!envKey) return DEFAULT_DENON_COMMAND_DEVICE_ID;
+  return (
+    DENON_COMMAND_DEVICE_ID_BY_ENV[envKey] || DEFAULT_DENON_COMMAND_DEVICE_ID
+  );
+}
+
+function getDenonCommandDeviceIdForCurrentRoute(hash = window.location.hash) {
+  const envKey = getEnvironmentKeyFromRouteHash(hash);
+  return getDenonCommandDeviceIdForEnv(envKey);
+}
+
+function getPollingDeviceIds() {
+  const ids = Array.isArray(ALL_LIGHT_IDS) ? [...ALL_LIGHT_IDS] : [];
+  const denonId = String(getDenonCommandDeviceIdForCurrentRoute());
+
+  if (denonId && denonId !== DEFAULT_DENON_COMMAND_DEVICE_ID) {
+    const filtered = ids.filter(
+      (id) => String(id) !== DEFAULT_DENON_COMMAND_DEVICE_ID
+    );
+    filtered.push(denonId);
+    return Array.from(new Set(filtered.map((id) => String(id))));
+  }
+
+  ids.push(denonId);
+  return Array.from(new Set(ids.map((id) => String(id))));
+}
+
 // ID do dispositivo de Ar Condicionado atual (será atualizado dinamicamente)
 let AC_DEVICE_ID = getACDeviceIdForCurrentRoute(); // Atualizado dinamicamente
 
 // Função para obter o ID do AC baseado na rota atual
 function getACDeviceIdForCurrentRoute() {
-  const currentRoute = (window.location.hash || "").replace("#", "");
-  // Extrair o ambiente da rota (ex: "ambiente7-conforto" -> "ambiente7")
-  const match = currentRoute.match(/^(ambiente\d+)/);
-  if (match) {
-    const ambiente = match[1];
+  const ambiente = getEnvironmentKeyFromRouteHash(window.location.hash);
+  if (ambiente) {
     if (typeof getEnvironment === "function") {
       const env = getEnvironment(ambiente);
       const acConfig = env?.airConditioner || null;
@@ -2201,7 +2237,7 @@ function fireTVMacro() {
 function initVolumeSlider() {
   const slider = document.getElementById("tv-volume-slider");
   const display = document.getElementById("tv-volume-display");
-  const DENON_DEVICE_ID = "354"; // ID do Denon AVR no Hubitat
+  const DENON_DEVICE_ID = getDenonCommandDeviceIdForCurrentRoute();
 
   if (!slider || !display) {
     console.log("Ã¢Å¡Â Ã¯Â¸Â Slider ou display não encontrado");
@@ -2248,6 +2284,7 @@ function initVolumeSlider() {
     );
 
     // Enviar comando setVolume para o Denon AVR
+    recentCommands.set(String(DENON_DEVICE_ID), Date.now());
     sendHubitatCommand(DENON_DEVICE_ID, "setVolume", value)
       .then(() => {
         console.log(`Ã¢Å“â€¦ Volume do Denon definido para ${value}`);
@@ -2262,7 +2299,7 @@ function initVolumeSlider() {
 
 // Função para atualizar o volume do Denon a partir do servidor
 async function updateDenonVolumeFromServer() {
-  const DENON_DEVICE_ID = "354";
+  const DENON_DEVICE_ID = getDenonCommandDeviceIdForCurrentRoute();
   const tvSlider = document.getElementById("tv-volume-slider");
   const tvDisplay = document.getElementById("tv-volume-display");
   const musicSlider =
@@ -2382,7 +2419,7 @@ async function updateDenonVolumeFromServer() {
     }
 
     if (powerState) {
-      applyDenonPowerState(powerState);
+      applyDenonPowerState(powerState, DENON_DEVICE_ID);
     }
   } catch (error) {
     console.error("⚠️Erro ao buscar volume do Denon:", error);
@@ -2390,7 +2427,13 @@ async function updateDenonVolumeFromServer() {
 }
 
 // Função para atualizar a UI do volume do Denon (chamada pelo polling)
-function updateDenonVolumeUI(volume) {
+function updateDenonVolumeUI(
+  volume,
+  denonDeviceId = getDenonCommandDeviceIdForCurrentRoute()
+) {
+  const resolvedDenonId = String(
+    denonDeviceId || getDenonCommandDeviceIdForCurrentRoute()
+  );
   const tvSlider = document.getElementById("tv-volume-slider");
   const tvDisplay = document.getElementById("tv-volume-display");
   const musicSlider =
@@ -2432,7 +2475,7 @@ function updateDenonVolumeUI(volume) {
     },
   ]);
 
-  const lastCmd = recentCommands.get("354");
+  const lastCmd = recentCommands.get(resolvedDenonId);
   if (lastCmd && Date.now() - lastCmd < COMMAND_PROTECTION_MS) {
     debugLog(
       () => "updateDenonVolumeUI: comando manual recente, ignorando polling"
@@ -2541,12 +2584,18 @@ function getDenonPowerStateFromDevice(device) {
   return null;
 }
 
-function applyDenonPowerState(rawState) {
+function applyDenonPowerState(
+  rawState,
+  denonDeviceId = getDenonCommandDeviceIdForCurrentRoute()
+) {
+  const resolvedDenonId = String(
+    denonDeviceId || getDenonCommandDeviceIdForCurrentRoute()
+  );
   const normalized = normalizeDenonPowerState(rawState);
   if (!normalized) return;
 
   if (typeof recentCommands !== "undefined") {
-    const lastCmd = recentCommands.get("354");
+    const lastCmd = recentCommands.get(resolvedDenonId);
     if (lastCmd && Date.now() - lastCmd < COMMAND_PROTECTION_MS) {
       console.log(
         "[Denon] Ignorando sincronizacao de power por comando recente"
@@ -4318,7 +4367,8 @@ async function updateDeviceStatesFromServer(options = {}) {
       return;
     }
 
-    const deviceIds = ALL_LIGHT_IDS.join(",");
+    const pollingDeviceIds = getPollingDeviceIds();
+    const deviceIds = pollingDeviceIds.join(",");
     const pollingUrl = `${POLLING_URL}?devices=${deviceIds}`;
 
     debugLog(() => [
@@ -4349,14 +4399,14 @@ async function updateDeviceStatesFromServer(options = {}) {
 
     if (looksLikeHtml) {
       console.warn("⚠️ Polling retornou HTML (Cloudflare Functions falhando). Tentando fallback Maker API...");
-      const direct = await loadAllDeviceStatesDirect(ALL_LIGHT_IDS);
+      const direct = await loadAllDeviceStatesDirect(pollingDeviceIds);
       devicesMap = direct.devices;
     } else {
       try {
         data = JSON.parse(rawText);
       } catch (err) {
         console.warn("⚠️ Polling JSON parse falhou, tentando fallback Maker API...", err);
-        const direct = await loadAllDeviceStatesDirect(ALL_LIGHT_IDS);
+        const direct = await loadAllDeviceStatesDirect(pollingDeviceIds);
         devicesMap = direct.devices;
       }
 
@@ -4416,6 +4466,7 @@ async function updateDeviceStatesFromServer(options = {}) {
       debugLog(() => ["Polling response sem devices", data]);
       return;
     }
+    const activeDenonDeviceId = String(getDenonCommandDeviceIdForCurrentRoute());
 
     Object.entries(devicesMap).forEach(([deviceId, deviceData]) => {
       if (!deviceData) {
@@ -4444,8 +4495,11 @@ async function updateDeviceStatesFromServer(options = {}) {
           level: nextLevel,
         }, forceUpdate);
 
-        if (String(deviceId) === "354" && deviceData.volume !== undefined) {
-          updateDenonVolumeUI(deviceData.volume);
+        if (
+          String(deviceId) === activeDenonDeviceId &&
+          deviceData.volume !== undefined
+        ) {
+          updateDenonVolumeUI(deviceData.volume, activeDenonDeviceId);
         }
       } else {
         console.warn(`Falha no device ${deviceId}:`, deviceData.error);
@@ -4604,8 +4658,9 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
   });
 
   // Atualizar botÃƒÂµes master da home apÃƒÂ³s qualquer mudanÃƒÂ§a de dispositivo
-  if (String(deviceId) === "354") {
-    applyDenonPowerState(state);
+  const activeDenonDeviceId = String(getDenonCommandDeviceIdForCurrentRoute());
+  if (String(deviceId) === activeDenonDeviceId) {
+    applyDenonPowerState(state, activeDenonDeviceId);
   }
 
   if (typeof syncHomeLightButtons === "function") {
@@ -6897,7 +6952,7 @@ function initMusicPlayerUI() {
   }
 
   // Device IDs (default) Ã¢â‚¬â€ podem ser sobrescritos por data-* no HTML da página ativa
-  let DENON_CMD_DEVICE_ID = "354"; // Denon AVR - comandos (volume/mute/power)
+  let DENON_CMD_DEVICE_ID = getDenonCommandDeviceIdForCurrentRoute(); // Denon AVR - comandos (volume/mute/power)
   let DENON_MUSIC_DEVICE_ID = "29"; // Denon HEOS - metadados/transport (play/pause/next/prev)
 
   // Tentar detectar overrides a partir dos atributos data-*
@@ -6928,6 +6983,25 @@ function initMusicPlayerUI() {
       e
     );
   }
+
+  // Regras por ambiente têm precedência para evitar IDs legados nos controles de volume.
+  const currentEnvKey = getEnvironmentKeyFromRouteHash(window.location.hash);
+  const forcedDenonCmdId = DENON_COMMAND_DEVICE_ID_BY_ENV[currentEnvKey];
+  if (forcedDenonCmdId) {
+    DENON_CMD_DEVICE_ID = String(forcedDenonCmdId);
+  }
+
+  [
+    queryActiveMusic("#music-mute"),
+    queryActiveMusic("#music-volume-slider"),
+    queryActiveMusic("#music-master-on"),
+    queryActiveMusic("#music-master-off"),
+    queryActiveMusic(".music-volume-section"),
+  ]
+    .filter(Boolean)
+    .forEach((el) => {
+      el.dataset.deviceId = DENON_CMD_DEVICE_ID;
+    });
 
   playToggleBtn.addEventListener("click", () => {
     const action = isPlaying ? "pause" : "play";
