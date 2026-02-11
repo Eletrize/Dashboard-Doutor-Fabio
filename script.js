@@ -1143,8 +1143,17 @@ function updateDimmerIconIntensity(controlEl, level) {
   const icon = getMainControlIcon(controlEl);
   if (!icon) return;
 
+  // Mantém ícone estável por padrão (evita aspecto "apagado"/travado em ON).
+  // Só aplica variação por nível quando explicitamente habilitado no elemento.
+  const shouldApplyIntensity =
+    String(controlEl.dataset?.iconIntensity || "").toLowerCase() === "true";
+  if (!shouldApplyIntensity) {
+    icon.style.opacity = "";
+    return;
+  }
+
   const normalized = clampDimmerValue(level, level);
-  const minOpacity = 0.35;
+  const minOpacity = 0.55;
   const maxOpacity = 1;
   const fraction = normalized / 100;
   const op = minOpacity + (maxOpacity - minOpacity) * fraction;
@@ -2648,6 +2657,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function setRoomControlUI(el, state) {
+  if (!el || !el.dataset) return;
+
   const ICON_ON = resolveIconPath(
     (el && el.dataset && (el.dataset.iconOn || el.dataset.iconon)) ||
       "images/icons/icon-small-light-on.svg"
@@ -2658,27 +2669,42 @@ function setRoomControlUI(el, state) {
   );
   const normalized = state === "on" ? "on" : "off";
 
+  const ICON_BG = resolveIconPath(
+    (el.dataset.iconBg || el.dataset.iconbg || ICON_ON)
+  );
+
   el.dataset.state = normalized;
 
-  // Usa a camada principal do ícone, mantendo o contorno separado
-  const img = getMainControlIcon(el);
-  if (img) {
-    img.src = ICON_OFF; // Sempre usa outline
-  } else {
-    console.warn(
-      `Ã¢Å¡Â Ã¯Â¸Â setRoomControlUI: Imagem não encontrada para elemento com classes: ${el.className}`
-    );
-    // Debug: mostrar todos os elementos filhos para diagnÃƒÂ³stico
-    console.log(
-      `Ã°Å¸â€Â Elementos filhos:`,
-      Array.from(el.children).map((child) => child.className)
-    );
+  // Camada de contorno sempre em OFF para manter leitura consistente do desenho.
+  const outlineIcon = el.querySelector(".control-icon-outline");
+  if (outlineIcon && outlineIcon.getAttribute("src") !== ICON_OFF) {
+    outlineIcon.setAttribute("src", ICON_OFF);
   }
 
-  // Para todas as luzes: controlar opacidade do ícone de background
+  // Camada principal alterna entre ON/OFF (compatível com cards novos e legados).
+  const mainIcon = getMainControlIcon(el);
+  if (mainIcon) {
+    const nextIcon = normalized === "on" ? ICON_ON : ICON_OFF;
+    if (mainIcon.getAttribute("src") !== nextIcon) {
+      mainIcon.setAttribute("src", nextIcon);
+    }
+    if (mainIcon.style.opacity) {
+      mainIcon.style.opacity = "";
+    }
+  } else {
+    debugLog(() => [
+      "setRoomControlUI: icon not found",
+      { classes: el.className },
+    ]);
+  }
+
+  // Glow de fundo opcional para cards com layout em camadas.
   const bgIcon = el.querySelector(".control-icon-bg");
   if (bgIcon) {
-    bgIcon.style.opacity = normalized === "on" ? "0.6" : "0";
+    if (bgIcon.getAttribute("src") !== ICON_BG) {
+      bgIcon.setAttribute("src", ICON_BG);
+    }
+    bgIcon.style.opacity = normalized === "on" ? "0.3" : "0";
   }
 }
 
@@ -4162,7 +4188,7 @@ let pollingAbortController = null;
 
 // Sistema para evitar conflitos entre comandos manuais e polling
 const recentCommands = new Map(); // deviceId -> timestamp do ÃƒÂºltimo comando
-const COMMAND_PROTECTION_MS = 8000; // 8 segundos de proteÃƒÂ§ÃƒÂ£o apÃƒÂ³s comando manual
+const COMMAND_PROTECTION_MS = 3000; // Proteção curta para evitar "travar" feedback visual
 
 function cleanupExpiredCommands() {
   const now = Date.now();
@@ -4477,16 +4503,21 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
   const roomControls = document.querySelectorAll(
     `[data-device-id="${deviceId}"]`
   );
-  console.log(
-    `Ã°Å¸â€Â§ updateDeviceUI(${deviceId}, ${state}) - Encontrados ${roomControls.length} controles`
-  );
+  debugLog(() => [
+    "updateDeviceUI",
+    { deviceId, state, controls: roomControls.length, forceUpdate },
+  ]);
 
   roomControls.forEach((el, index) => {
-    console.log(
-      `Ã°Å¸â€Â§ Controle ${index + 1}: classes="${
-        el.className
-      }", currentState="${el.dataset.state}"`
-    );
+    debugLog(() => [
+      "updateDeviceUI:control",
+      {
+        deviceId,
+        index: index + 1,
+        classes: el.className,
+        currentState: el.dataset.state,
+      },
+    ]);
 
     // Suporta tanto .room-control quanto .control-card
     if (
@@ -4495,24 +4526,22 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
     ) {
       const currentState = el.dataset.state;
       if (currentState !== normalizedState || forceUpdate) {
-        console.log(
-          `Ã°Å¸â€â€ž Atualizando controle ${deviceId}: "${currentState}" Ã¢â€ â€™ "${normalizedState}" (force=${forceUpdate})`
-        );
+        debugLog(() => [
+          "updateDeviceUI:apply",
+          { deviceId, from: currentState, to: normalizedState, forceUpdate },
+        ]);
         setRoomControlUI(el, normalizedState);
         if (level !== null) {
           applyDimmerLevelToControl(el, level);
         }
         // Salvar o estado atualizado
         setStoredState(deviceId, normalizedState);
-      } else {
-        console.log(
-          `Ã¢Å“â€œ Controle ${deviceId} jÃƒÂ¡ está no estado correto: "${normalizedState}"`
-        );
       }
     } else {
-      console.log(
-        `Ã¢Å¡Â Ã¯Â¸Â Elemento encontrado mas não é room-control nem control-card: ${el.className}`
-      );
+      debugLog(() => [
+        "updateDeviceUI:skip-unsupported",
+        { deviceId, classes: el.className },
+      ]);
     }
   });
 
