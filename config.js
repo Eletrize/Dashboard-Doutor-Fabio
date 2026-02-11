@@ -274,11 +274,11 @@ const CLIENT_CONFIG = {
         {
           name: "Todas",
           description: "Aciona todas as cortinas do ambiente",
-          targets: ["359", "361"],
+          targets: ["374", "375"],
           commands: { open: "open", stop: "stop", close: "close" },
         },
-        { id: "359", name: "Corredor" },
-        { id: "361", name: "Varanda" },
+        { id: "374", name: "Corredor" },
+        { id: "375", name: "Varanda" },
       ],
       airConditioner: {
         deviceId: "366",
@@ -333,10 +333,10 @@ const CLIENT_CONFIG = {
           targets: ["371", "370"],
           commands: { open: "open", stop: "stop", close: "close" },
         },
-        { id: "368", name: "Cortina Esquerda" },
+        { id: "368", name: "Pia" },
         { id: "369", name: "Central Esquerda" },
         { id: "371", name: "Central Direita" },
-        { id: "370", name: "Cortina Direita" },
+        { id: "370", name: "Corredor" },
       ],
       airConditioner: {
         deviceId: "349",

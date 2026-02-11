@@ -4166,19 +4166,69 @@ async function sendHubitatCommand(deviceId, command, value) {
 function getCurtainActionPlanFromElement(el, action) {
   if (!el || !action) return [];
 
+  const resolveCurtainIds = () => {
+    const rawIds =
+      el?.dataset?.deviceIds ||
+      el?.closest?.("[data-device-ids]")?.dataset?.deviceIds ||
+      "";
+
+    const parsedIds = String(rawIds)
+      .split(",")
+      .map((id) => String(id || "").trim())
+      .filter(Boolean);
+
+    if (parsedIds.length > 0) {
+      return parsedIds;
+    }
+
+    const singleId =
+      el?.dataset?.deviceId ||
+      el?.closest?.("[data-device-id]")?.dataset?.deviceId;
+
+    return singleId ? [String(singleId)] : [];
+  };
+
+  const buildFallbackPlan = () => {
+    const ids = resolveCurtainIds();
+    if (!ids.length) return [];
+
+    const directCommand =
+      el?.dataset?.cmd ||
+      el?.closest?.("[data-cmd]")?.dataset?.cmd ||
+      action;
+
+    const directValue =
+      el?.dataset?.value ??
+      el?.closest?.("[data-value]")?.dataset?.value;
+
+    return ids.map((id) => {
+      const payload = { id: String(id), command: String(directCommand || action) };
+      if (directValue !== undefined && directValue !== null && directValue !== "") {
+        payload.value = directValue;
+      }
+      return payload;
+    });
+  };
+
   const actionKey = `action${action.charAt(0).toUpperCase()}${action.slice(1)}`;
   const rawPlan =
     el?.dataset?.[actionKey] ||
     el?.closest?.("[data-device-id],[data-device-ids]")?.dataset?.[actionKey];
 
-  if (!rawPlan) return [];
+  if (!rawPlan) return buildFallbackPlan();
 
   try {
-    const decoded = decodeURIComponent(rawPlan);
-    const parsed = JSON.parse(decoded);
-    if (!Array.isArray(parsed)) return [];
+    let parsed = [];
 
-    return parsed
+    try {
+      parsed = JSON.parse(rawPlan);
+    } catch (_) {
+      parsed = JSON.parse(decodeURIComponent(rawPlan));
+    }
+
+    if (!Array.isArray(parsed)) return buildFallbackPlan();
+
+    const normalized = parsed
       .map((item) => {
         const id = item?.id || item?.deviceId;
         const command = item?.command || item?.cmd || action;
@@ -4193,9 +4243,11 @@ function getCurtainActionPlanFromElement(el, action) {
         return payload;
       })
       .filter(Boolean);
+
+    return normalized.length > 0 ? normalized : buildFallbackPlan();
   } catch (error) {
     console.warn("Falha ao ler plano de ação da cortina:", error);
-    return [];
+    return buildFallbackPlan();
   }
 }
 
