@@ -1829,10 +1829,11 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           typeof getAcDeviceIds === "function" ? getAcDeviceIds() : {};
         const mappedDeviceId =
           acDeviceMap && acDeviceMap[envKey] ? String(acDeviceMap[envKey]) : "";
-        const acOverrideId = acDeviceId || mappedDeviceId;
+        const firstZoneDeviceId =
+          zones.length && zones[0]?.deviceId ? String(zones[0].deviceId) : "";
+        const acOverrideId = acDeviceId || firstZoneDeviceId || mappedDeviceId;
         const defaultDeviceId =
-          acOverrideId ||
-          (zones.length && zones[0]?.deviceId ? String(zones[0].deviceId) : "");
+          acOverrideId || firstZoneDeviceId;
 
         let zoneRow = "";
         if (showZones) {

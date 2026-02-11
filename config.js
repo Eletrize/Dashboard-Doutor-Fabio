@@ -584,9 +584,15 @@ function getAcDeviceIds() {
     }) ||
     {};
   getVisibleEnvironments().forEach((env) => {
-    const acId = env?.airConditioner?.deviceId;
-    if (acId) {
-      ids[env.key] = String(acId);
+    const acConfig = env?.airConditioner || null;
+    const explicitAcId = acConfig?.deviceId ? String(acConfig.deviceId) : "";
+    const firstZoneId = Array.isArray(acConfig?.zones)
+      ? String(acConfig.zones.find((zone) => zone?.deviceId)?.deviceId || "")
+      : "";
+    const resolvedAcId = explicitAcId || firstZoneId;
+    if (resolvedAcId) {
+      // Configuração por ambiente (deviceId/zones) tem precedência sobre mapa legado.
+      ids[env.key] = resolvedAcId;
     }
   });
   return ids;
