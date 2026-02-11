@@ -271,6 +271,12 @@ const CLIENT_CONFIG = {
         },
       ],
       curtains: [
+        {
+          name: "Todas",
+          description: "Aciona todas as cortinas do ambiente",
+          targets: ["359", "361"],
+          commands: { open: "open", stop: "stop", close: "close" },
+        },
         { id: "359", name: "Corredor" },
         { id: "361", name: "Varanda" },
       ],
@@ -543,18 +549,139 @@ function getEnvironmentLightIds(envKey) {
   return env.lights.map((light) => String(light.id));
 }
 
+function normalizeCurtainTargets(curtain) {
+  if (!curtain) return [];
+
+  const rawTargets =
+    Array.isArray(curtain.targets) && curtain.targets.length > 0
+      ? curtain.targets
+      : curtain?.id || curtain?.deviceId
+        ? [curtain.id || curtain.deviceId]
+        : [];
+
+  return rawTargets
+    .map((target) => {
+      if (target && typeof target === "object") {
+        const id = target.id || target.deviceId;
+        if (!id) return null;
+        return { id: String(id), config: target };
+      }
+
+      if (target === undefined || target === null || target === "") {
+        return null;
+      }
+
+      return { id: String(target), config: {} };
+    })
+    .filter(Boolean);
+}
+
+function getCurtainActionConfig(source, action) {
+  if (!source || typeof source !== "object") {
+    return { command: null, value: undefined };
+  }
+
+  const commandByAction =
+    source.commands && typeof source.commands === "object"
+      ? source.commands[action]
+      : undefined;
+  const commandByAlias =
+    source[`${action}Command`] ??
+    source[`command${action.charAt(0).toUpperCase() + action.slice(1)}`] ??
+    (typeof source[action] === "string" ? source[action] : undefined);
+
+  const valueByAction =
+    source.values && typeof source.values === "object"
+      ? source.values[action]
+      : undefined;
+  const valueByAlias =
+    source[`${action}Value`] ??
+    source[`value${action.charAt(0).toUpperCase() + action.slice(1)}`];
+
+  return {
+    command:
+      commandByAction !== undefined && commandByAction !== null
+        ? String(commandByAction)
+        : commandByAlias !== undefined && commandByAlias !== null
+          ? String(commandByAlias)
+          : null,
+    value:
+      valueByAction !== undefined
+        ? valueByAction
+        : valueByAlias !== undefined
+          ? valueByAlias
+          : undefined,
+  };
+}
+
+function buildCurtainActionPlan(curtain, action) {
+  const targets = normalizeCurtainTargets(curtain);
+  if (!targets.length) return [];
+
+  const curtainConfig = getCurtainActionConfig(curtain, action);
+
+  return targets.map((target) => {
+    const targetConfig = getCurtainActionConfig(target.config, action);
+    const command = targetConfig.command || curtainConfig.command || action;
+    const value =
+      targetConfig.value !== undefined
+        ? targetConfig.value
+        : curtainConfig.value !== undefined
+          ? curtainConfig.value
+          : undefined;
+
+    const payload = { id: String(target.id), command: String(command) };
+    if (value !== undefined && value !== null && value !== "") {
+      payload.value = value;
+    }
+    return payload;
+  });
+}
+
+function encodeCurtainActionPlan(plan) {
+  return encodeURIComponent(JSON.stringify(Array.isArray(plan) ? plan : []));
+}
+
+function buildCurtainControlModel(curtain) {
+  const targets = normalizeCurtainTargets(curtain);
+  if (!targets.length) return null;
+
+  const openPlan = buildCurtainActionPlan(curtain, "open");
+  const stopPlan = buildCurtainActionPlan(curtain, "stop");
+  const closePlan = buildCurtainActionPlan(curtain, "close");
+  const deviceIds = targets.map((target) => String(target.id));
+  const firstId = deviceIds[0] || "";
+
+  return {
+    title: curtain?.name || curtain?.title || `Cortina ${firstId}`,
+    description: curtain?.description || "",
+    deviceId: firstId,
+    deviceIds: deviceIds.join(","),
+    actionOpen: encodeCurtainActionPlan(openPlan),
+    actionStop: encodeCurtainActionPlan(stopPlan),
+    actionClose: encodeCurtainActionPlan(closePlan),
+    isGroup: deviceIds.length > 1,
+  };
+}
+
 function getEnvironmentCurtainIds(envKey) {
   const env = getEnvironment(envKey);
   if (!env?.curtains) return [];
-  return env.curtains.map((curtain) => String(curtain.id));
+  const ids = [];
+  env.curtains.forEach((curtain) => {
+    normalizeCurtainTargets(curtain).forEach((target) => ids.push(target.id));
+  });
+  return Array.from(new Set(ids));
 }
 
 function getAllCurtainIds() {
   const ids = [];
   getVisibleEnvironments().forEach((env) => {
-    (env.curtains || []).forEach((curtain) => ids.push(String(curtain.id)));
+    (env.curtains || []).forEach((curtain) => {
+      normalizeCurtainTargets(curtain).forEach((target) => ids.push(target.id));
+    });
   });
-  return ids;
+  return Array.from(new Set(ids));
 }
 
 function getAllLightIds() {
@@ -635,11 +762,9 @@ function buildCurtainSectionsFromConfig() {
     .map((env) => ({
       key: env.key,
       name: env.name,
-      curtains: env.curtains.map((curtain) => ({
-        deviceId: String(curtain.id),
-        title: curtain.name,
-        description: curtain.description || "",
-      })),
+      curtains: env.curtains
+        .map((curtain) => buildCurtainControlModel(curtain))
+        .filter(Boolean),
     }));
 }
 
@@ -738,22 +863,35 @@ function generateCurtainsControls(envKey) {
     CLIENT_CONFIG?.ui?.actions?.curtainClose ||
     "images/icons/close-curtain.svg";
 
+  const buildCurtainDataAttributes = (curtain) =>
+    [
+      curtain?.deviceId ? `data-device-id="${curtain.deviceId}"` : "",
+      curtain?.deviceIds ? `data-device-ids="${curtain.deviceIds}"` : "",
+      curtain?.actionOpen ? `data-action-open="${curtain.actionOpen}"` : "",
+      curtain?.actionStop ? `data-action-stop="${curtain.actionStop}"` : "",
+      curtain?.actionClose ? `data-action-close="${curtain.actionClose}"` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
   return env.curtains
+    .map((curtainConfig) => buildCurtainControlModel(curtainConfig))
+    .filter(Boolean)
     .map(
       (curtain) => `
-        <article class="curtain-tile curtain-tile--transparent" data-device-id="${String(curtain.id)}" data-environment="${env.name}">
+        <article class="curtain-tile curtain-tile--transparent" data-device-id="${curtain.deviceId}" data-device-ids="${curtain.deviceIds}" data-environment="${env.name}">
           <header class="curtain-tile__header curtain-tile__header--minimal">
-            <h3 class="curtain-tile__title">${curtain.name}</h3>
+            <h3 class="curtain-tile__title">${curtain.title}</h3>
             <div class="curtain-tile__line"></div>
           </header>
           <div class="curtain-tile__actions">
-            <button class="curtain-tile__btn" data-device-id="${String(curtain.id)}" onclick="curtainAction(this, 'open')" aria-label="Abrir ${curtain.name}">
+            <button class="curtain-tile__btn" ${buildCurtainDataAttributes(curtain)} onclick="curtainAction(this, 'open')" aria-label="Abrir ${curtain.title}">
               <img src="${ICON_OPEN}" alt="Abrir">
             </button>
-            <button class="curtain-tile__btn curtain-tile__btn--stop" data-device-id="${String(curtain.id)}" onclick="curtainAction(this, 'stop')" aria-label="Parar ${curtain.name}">
+            <button class="curtain-tile__btn curtain-tile__btn--stop" ${buildCurtainDataAttributes(curtain)} onclick="curtainAction(this, 'stop')" aria-label="Parar ${curtain.title}">
               <img src="${ICON_STOP}" alt="Parar">
             </button>
-            <button class="curtain-tile__btn" data-device-id="${String(curtain.id)}" onclick="curtainAction(this, 'close')" aria-label="Fechar ${curtain.name}">
+            <button class="curtain-tile__btn" ${buildCurtainDataAttributes(curtain)} onclick="curtainAction(this, 'close')" aria-label="Fechar ${curtain.title}">
               <img src="${ICON_CLOSE}" alt="Fechar">
             </button>
           </div>

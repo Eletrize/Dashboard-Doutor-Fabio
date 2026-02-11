@@ -2374,9 +2374,26 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
       }
 
       function renderCurtainControlCard(curtain, environment) {
-        const { deviceId, title, description } = curtain;
+        const {
+          deviceId,
+          deviceIds,
+          title,
+          description,
+          actionOpen,
+          actionStop,
+          actionClose,
+        } = curtain;
+        const buttonDataAttrs = [
+          deviceId ? `data-device-id="${deviceId}"` : "",
+          deviceIds ? `data-device-ids="${deviceIds}"` : "",
+          actionOpen ? `data-action-open="${actionOpen}"` : "",
+          actionStop ? `data-action-stop="${actionStop}"` : "",
+          actionClose ? `data-action-close="${actionClose}"` : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
         return `
-        <article class="curtain-tile" data-device-id="${deviceId}" data-environment="${environment}">
+        <article class="curtain-tile" data-device-id="${deviceId || ""}" data-device-ids="${deviceIds || ""}" data-environment="${environment}">
             <header class="curtain-tile__header">
                 <h3 class="curtain-tile__title">${title}</h3>
                 ${
@@ -2386,13 +2403,13 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 }
             </header>
             <div class="curtain-tile__actions">
-                <button class="curtain-tile__btn" data-device-id="${deviceId}" onclick="curtainAction(this, 'open')" aria-label="Abrir ${title}">
+                <button class="curtain-tile__btn" ${buttonDataAttrs} onclick="curtainAction(this, 'open')" aria-label="Abrir ${title}">
                   <img src="images/icons/open-curtain.svg" alt="Abrir">
                 </button>
-                <button class="curtain-tile__btn curtain-tile__btn--stop" data-device-id="${deviceId}" onclick="curtainAction(this, 'stop')" aria-label="Parar ${title}">
+                <button class="curtain-tile__btn curtain-tile__btn--stop" ${buttonDataAttrs} onclick="curtainAction(this, 'stop')" aria-label="Parar ${title}">
                     <img src="images/icons/icon-stop.svg" alt="Parar">
                 </button>
-                <button class="curtain-tile__btn" data-device-id="${deviceId}" onclick="curtainAction(this, 'close')" aria-label="Fechar ${title}">
+                <button class="curtain-tile__btn" ${buttonDataAttrs} onclick="curtainAction(this, 'close')" aria-label="Fechar ${title}">
                   <img src="images/icons/close-curtain.svg" alt="Fechar">
                 </button>
             </div>

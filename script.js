@@ -4163,20 +4163,85 @@ async function sendHubitatCommand(deviceId, command, value) {
 }
 
 // --- Cortinas (abrir/parar/fechar) ---
-function sendCurtainCommand(deviceId, action, commandName) {
-  // Sempre usa comandos padrão do Maker API (open/stop/close)
+function getCurtainActionPlanFromElement(el, action) {
+  if (!el || !action) return [];
+
+  const actionKey = `action${action.charAt(0).toUpperCase()}${action.slice(1)}`;
+  const rawPlan =
+    el?.dataset?.[actionKey] ||
+    el?.closest?.("[data-device-id],[data-device-ids]")?.dataset?.[actionKey];
+
+  if (!rawPlan) return [];
+
+  try {
+    const decoded = decodeURIComponent(rawPlan);
+    const parsed = JSON.parse(decoded);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .map((item) => {
+        const id = item?.id || item?.deviceId;
+        const command = item?.command || item?.cmd || action;
+        if (!id || !command) return null;
+        const payload = {
+          id: String(id),
+          command: String(command),
+        };
+        if (item?.value !== undefined) {
+          payload.value = item.value;
+        }
+        return payload;
+      })
+      .filter(Boolean);
+  } catch (error) {
+    console.warn("Falha ao ler plano de ação da cortina:", error);
+    return [];
+  }
+}
+
+function sendCurtainCommandBatch(actionPlan, action) {
+  if (!Array.isArray(actionPlan) || actionPlan.length === 0) {
+    return Promise.resolve([]);
+  }
+
+  const normalizedAction = String(action || "").toLowerCase();
+  const persistState = normalizedAction === "open" || normalizedAction === "close";
+  const nextState = normalizedAction === "open" ? "open" : "closed";
+
+  const commands = actionPlan.map((item) => {
+    recentCommands.set(item.id, Date.now());
+    if (persistState) {
+      setCurtainState(item.id, nextState);
+    }
+    return sendHubitatCommand(item.id, item.command, item.value);
+  });
+
+  return Promise.allSettled(commands);
+}
+
+function sendCurtainCommand(deviceId, action, commandName, value) {
   const commandMap = {
     open: "open",
     stop: "stop",
     close: "close",
   };
-  const commandToSend = commandMap[action];
+  const commandToSend = commandName || commandMap[action];
   if (!commandToSend) throw new Error("Ação de cortina inválida");
-  return sendHubitatCommand(deviceId, commandToSend);
+  return sendHubitatCommand(deviceId, commandToSend, value);
 }
 
 function curtainAction(el, action) {
   try {
+    const actionPlan = getCurtainActionPlanFromElement(el, action);
+    if (actionPlan.length > 0) {
+      console.log(
+        `🪟 curtainAction em lote: action=${action}, dispositivos=${actionPlan
+          .map((item) => item.id)
+          .join(",")}`
+      );
+      return sendCurtainCommandBatch(actionPlan, action);
+    }
+
     const id =
       el?.dataset?.deviceId ||
       el.closest("[data-device-id]")?.dataset?.deviceId;
@@ -4200,10 +4265,12 @@ function curtainAction(el, action) {
         });
     }
     
-    const cmd = el?.dataset?.cmd || "push";
-    sendCurtainCommand(id, action, cmd);
+    const cmd = el?.dataset?.cmd;
+    const value = el?.dataset?.value;
+    return sendCurtainCommand(id, action, cmd, value);
   } catch (e) {
     console.error("Falha ao acionar cortina:", e);
+    return;
   }
 }
 
