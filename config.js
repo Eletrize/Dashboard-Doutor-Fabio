@@ -275,7 +275,7 @@ const CLIENT_CONFIG = {
         { id: "361", name: "Varanda" },
       ],
       airConditioner: {
-        deviceId: "348",
+        deviceId: "366",
         brand: "carrier",
         zones: [{ id: "Living", name: "Living" }],
         controls: { zoneSelector: false, aletas: true, windfree: false },
