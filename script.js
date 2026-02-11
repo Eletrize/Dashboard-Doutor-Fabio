@@ -1013,15 +1013,6 @@ function getMainControlIcon(el) {
 
 function toggleRoomControl(el) {
   const resolvedDeviceId = resolveLightDeviceIdFromConfig(el);
-  const ICON_ON = resolveIconPath(
-    (el && el.dataset && (el.dataset.iconOn || el.dataset.iconon)) ||
-      "images/icons/icon-small-light-on.svg"
-  );
-  const ICON_OFF = resolveIconPath(
-    (el && el.dataset && (el.dataset.iconOff || el.dataset.iconoff)) ||
-      "images/icons/icon-small-light-off.svg"
-  );
-  const img = getMainControlIcon(el);
   const isOff = (el.dataset.state || "off") === "off";
   const newState = isOff ? "on" : "off";
   const deviceId = resolvedDeviceId || el.dataset.deviceId;
@@ -1032,8 +1023,7 @@ function toggleRoomControl(el) {
   recentCommands.set(deviceId, Date.now());
 
   // Atualizar UI imediatamente
-  el.dataset.state = newState;
-  if (img) img.src = newState === "on" ? ICON_ON : ICON_OFF;
+  setRoomControlUI(el, newState);
 
   // Persist locally
   setStoredState(deviceId, newState);
@@ -1054,8 +1044,7 @@ function toggleRoomControl(el) {
       );
       // Em caso de erro, reverter o estado visual
       const revertState = newState === "on" ? "off" : "on";
-      el.dataset.state = revertState;
-      if (img) img.src = revertState === "on" ? ICON_ON : ICON_OFF;
+      setRoomControlUI(el, revertState);
       setStoredState(deviceId, revertState);
     });
 }
@@ -2667,7 +2656,7 @@ function setRoomControlUI(el, state) {
     (el && el.dataset && (el.dataset.iconOff || el.dataset.iconoff)) ||
       "images/icons/icon-small-light-off.svg"
   );
-  const normalized = state === "on" ? "on" : "off";
+  const normalized = normalizeSwitchState(state);
 
   const ICON_BG = resolveIconPath(
     (el.dataset.iconBg || el.dataset.iconbg || ICON_ON)
@@ -2706,6 +2695,64 @@ function setRoomControlUI(el, state) {
     }
     bgIcon.style.opacity = normalized === "on" ? "0.3" : "0";
   }
+}
+
+function normalizeSwitchState(value, fallback = "off") {
+  const fb = String(fallback || "off").trim().toLowerCase();
+  const safeFallback = fb === "on" ? "on" : "off";
+
+  if (value === undefined || value === null) {
+    return safeFallback;
+  }
+
+  const normalized = String(value).trim().toLowerCase();
+  if (normalized === "on" || normalized === "off") {
+    return normalized;
+  }
+  if (normalized === "true" || normalized === "1") {
+    return "on";
+  }
+  if (normalized === "false" || normalized === "0") {
+    return "off";
+  }
+
+  return safeFallback;
+}
+
+function needsControlVisualSync(el, state) {
+  if (!el || !el.dataset) return false;
+
+  const normalizedState = normalizeSwitchState(state);
+  const ICON_ON = resolveIconPath(
+    (el.dataset.iconOn || el.dataset.iconon) ||
+      "images/icons/icon-small-light-on.svg"
+  );
+  const ICON_OFF = resolveIconPath(
+    (el.dataset.iconOff || el.dataset.iconoff) ||
+      "images/icons/icon-small-light-off.svg"
+  );
+
+  const mainIcon = getMainControlIcon(el);
+  if (mainIcon) {
+    const expectedIcon = normalizedState === "on" ? ICON_ON : ICON_OFF;
+    const currentIcon = mainIcon.getAttribute("src");
+    if (currentIcon && currentIcon !== expectedIcon) {
+      return true;
+    }
+  }
+
+  const bgIcon = el.querySelector(".control-icon-bg");
+  if (bgIcon) {
+    const inlineOpacity = String(bgIcon.style.opacity || "").trim();
+    if (normalizedState === "off" && inlineOpacity !== "" && inlineOpacity !== "0") {
+      return true;
+    }
+    if (normalizedState === "on" && inlineOpacity === "0") {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function deviceStateKey(deviceId) {
@@ -4384,9 +4431,16 @@ async function updateDeviceStatesFromServer(options = {}) {
       }
 
       if (deviceData.success) {
-        const previousState = getStoredState(deviceId);
-        const nextState = deviceData.state;
+        const previousState = normalizeSwitchState(getStoredState(deviceId));
         const nextLevel = deviceData.level;
+        const nextState = normalizeSwitchState(
+          deviceData.state,
+          nextLevel !== null &&
+            nextLevel !== undefined &&
+            clampDimmerValue(nextLevel, 0) > 0
+            ? "on"
+            : "off"
+        );
 
         if (previousState !== nextState) {
           hasStateChanges = true;
@@ -4489,7 +4543,12 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
     }
   }
 
-  const normalizedState = state === "on" ? "on" : state === "off" ? "off" : String(state || "off");
+  const normalizedState = normalizeSwitchState(
+    state,
+    level !== null && level !== undefined && clampDimmerValue(level, 0) > 0
+      ? "on"
+      : "off"
+  );
 
   // Verificar se hÃƒÂ¡ comando recente que deve ser respeitado
   if (!forceUpdate) {
@@ -4525,10 +4584,17 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
       el.classList.contains("control-card")
     ) {
       const currentState = el.dataset.state;
-      if (currentState !== normalizedState || forceUpdate) {
+      const needsVisualSync = needsControlVisualSync(el, normalizedState);
+      if (currentState !== normalizedState || forceUpdate || needsVisualSync) {
         debugLog(() => [
           "updateDeviceUI:apply",
-          { deviceId, from: currentState, to: normalizedState, forceUpdate },
+          {
+            deviceId,
+            from: currentState,
+            to: normalizedState,
+            forceUpdate,
+            needsVisualSync,
+          },
         ]);
         setRoomControlUI(el, normalizedState);
         if (level !== null) {
@@ -5463,10 +5529,18 @@ async function loadAllDeviceStatesGlobally() {
 
           deviceEntries.forEach(([deviceId, deviceData]) => {
             if (deviceData.success) {
-              setStoredState(deviceId, deviceData.state);
-              updateDeviceUI(deviceId, deviceData.state, true);
+              const normalized = normalizeSwitchState(
+                deviceData.state,
+                deviceData.level !== null &&
+                  deviceData.level !== undefined &&
+                  clampDimmerValue(deviceData.level, 0) > 0
+                  ? "on"
+                  : "off"
+              );
+              setStoredState(deviceId, normalized);
+              updateDeviceUI(deviceId, normalized, true);
               console.log(
-                `Ã¢Å“â€¦ Device ${deviceId}: ${deviceData.state} (direto)`
+                `Ã¢Å“â€¦ Device ${deviceId}: ${normalized} (direto)`
               );
             } else {
               const storedState = getStoredState(deviceId) || "off";
@@ -5606,10 +5680,18 @@ async function loadAllDeviceStatesGlobally() {
 
     function handleDeviceEntry(deviceId, deviceData) {
       if (deviceData.success) {
-        setStoredState(deviceId, deviceData.state);
+        const normalized = normalizeSwitchState(
+          deviceData.state,
+          deviceData.level !== null &&
+            deviceData.level !== undefined &&
+            clampDimmerValue(deviceData.level, 0) > 0
+            ? "on"
+            : "off"
+        );
+        setStoredState(deviceId, normalized);
         updateDeviceUI(
           deviceId,
-          { state: deviceData.state, level: deviceData.level },
+          { state: normalized, level: deviceData.level },
           true
         ); // forceUpdate = true
       } else {
