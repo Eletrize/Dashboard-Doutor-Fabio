@@ -1407,6 +1407,20 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                           ${rokuPanelCommandsMarkup}
                           ${rokuAppsListMarkup}
                         </div>
+                        <div class="tv-roku-portrait-shortcuts">
+                          <button class="tv-btn tv-roku-portrait-shortcut-btn" onclick="tvCommand(this, 'primevideo')" data-device-id="${deviceId}" aria-label="Prime Video" type="button">
+                            <img src="images/icons/icon-primevideo.svg" alt="Prime Video">
+                          </button>
+                          <button class="tv-btn tv-roku-portrait-shortcut-btn" onclick="tvCommand(this, 'netflix')" data-device-id="${deviceId}" aria-label="Netflix" type="button">
+                            <img src="images/icons/icon-netflix.svg" alt="Netflix">
+                          </button>
+                          <button class="tv-btn tv-roku-portrait-shortcut-btn" onclick="tvCommand(this, 'appletv')" data-device-id="${deviceId}" aria-label="Apple TV" type="button">
+                            <img src="images/icons/icon-apple-tv.svg" alt="Apple TV">
+                          </button>
+                          <button class="tv-btn tv-roku-portrait-shortcut-btn" onclick="tvCommand(this, 'disney')" data-device-id="${deviceId}" aria-label="Disney+" type="button">
+                            <img src="images/icons/icon-disney.svg" alt="Disney+">
+                          </button>
+                        </div>
                     </div>
                 </div>
             </div>
