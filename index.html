@@ -1386,17 +1386,6 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                           ${rokuPanelCommandsMarkup}
                           ${rokuAppsListMarkup}
                         </div>
-                        <div class="tv-roku-portrait-commands">
-                          <button class="tv-btn tv-roku-portrait-command-btn" onclick="tvCommand(this, 'back')" data-device-id="${deviceId}" aria-label="Voltar" type="button">
-                            <img src="images/icons/arrow-left.svg" alt="Voltar">
-                          </button>
-                          <button class="tv-btn tv-roku-portrait-command-btn" onclick="tvCommand(this, 'home')" data-device-id="${deviceId}" aria-label="Home" type="button">
-                            <img src="images/icons/icon-home.svg" alt="Home">
-                          </button>
-                          <button class="tv-btn tv-roku-portrait-command-btn" onclick="tvCommand(this, 'asteriscom')" data-device-id="${deviceId}" aria-label="Asterisco" type="button">
-                            <img src="images/icons/icon-asterisco.svg" alt="Asterisco">
-                          </button>
-                        </div>
                         <div class="tv-roku-portrait-shortcuts">
                           <button class="tv-btn tv-roku-portrait-shortcut-btn" onclick="tvCommand(this, 'primevideo')" data-device-id="${deviceId}" aria-label="Prime Video" type="button">
                             <img src="images/icons/icon-primevideo.svg" alt="Prime Video">
@@ -1494,6 +1483,21 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             </div>
           `
           : "";
+        const rokuPortraitFixedCommandsMarkup = isRoku && isPortraitEnabled
+          ? `
+            <div class="tv-roku-fixed-commands" aria-label="Comandos Roku" role="group">
+              <button class="tv-btn tv-roku-fixed-command-btn" onclick="tvCommand(this, 'back')" data-device-id="${deviceId}" aria-label="Voltar" type="button">
+                <img src="images/icons/arrow-left.svg" alt="Voltar">
+              </button>
+              <button class="tv-btn tv-roku-fixed-command-btn" onclick="tvCommand(this, 'home')" data-device-id="${deviceId}" aria-label="Home" type="button">
+                <img src="images/icons/icon-home.svg" alt="Home">
+              </button>
+              <button class="tv-btn tv-roku-fixed-command-btn" onclick="tvCommand(this, 'asteriscom')" data-device-id="${deviceId}" aria-label="Asterisco" type="button">
+                <img src="images/icons/icon-asterisco.svg" alt="Asterisco">
+              </button>
+            </div>
+          `
+          : "";
         const portraitTabsMarkup = isPortraitEnabled
           ? useClaroLayout
             ? `
@@ -1582,6 +1586,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
 
     <div class="tv-control-wrapper" data-control-type="${layoutTypeKey}" data-device-type="${typeKey}"${isPortraitEnabled ? ' data-portrait-panel="control"' : ''}>
         ${portraitTopMarkup}
+        ${rokuPortraitFixedCommandsMarkup}
         ${portraitTabsMarkup}
         
         <!-- COLUNA 1 -->
