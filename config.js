@@ -458,12 +458,14 @@ const CLIENT_CONFIG = {
       photo: "photo-brinquedoteca.webp",
       visible: true,
       order: 7,
-      tv: [{ id: "50", name: "Televisão" }],
+      tv: [{ id: "382", name: "Televisao" }],
       airConditioner: {
+        deviceId: "379",
+        brand: "samsung",
         zones: [
-          { id: "Brinquedoteca", name: "Brinquedoteca", deviceId: "182" },
+          { id: "Brinquedoteca", name: "Brinquedoteca", deviceId: "379" },
         ],
-        controls: { zoneSelector: true, aletas: true, windfree: false },
+        controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
     },
