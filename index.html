@@ -984,7 +984,6 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         const portraitSecondaryPanelLabel = isRoku
           ? "Atalhos"
           : "N&uacute;meros";
-        const portraitFavoriteLabel = isRoku ? "Apps" : "Favoritos";
         const isTvControl = typeKey === "tv";
         const powerOnCommand = useClaroLayout
           ? "on"
@@ -1039,12 +1038,6 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                     </button>
                 `;
         const rokuCommandsMarkup = `
-                    <button class="tv-btn tv-btn--icon-only" data-claro-panel-btn="favorites" onclick="toggleClaroTvPanel(this, 'favorites')" aria-label="Apps" aria-pressed="false" type="button">
-                        <img src="images/icons/icon-roku.svg" alt="Apps">
-                    </button>
-                    <button class="tv-btn tv-btn--icon-only" data-claro-panel-btn="numbers" onclick="toggleClaroTvPanel(this, 'numbers')" aria-label="Atalhos" aria-pressed="true" type="button">
-                        <img src="images/icons/icon-numbers.svg" alt="Atalhos">
-                    </button>
                     <button class="tv-btn tv-btn--icon-only tv-btn--voltar" onclick="tvCommand(this, 'back')" data-device-id="${deviceId}" aria-label="Voltar">
                         <img src="images/icons/arrow-left.svg" alt="Voltar">
                     </button>
@@ -1406,14 +1399,12 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             <div class="tv-control-section tv-control-section--claro-panel" data-claro-panel="numbers" data-portrait-section="numbers">
                 <div class="tv-claro-panel-fade" data-claro-fade>
                     <header class="tv-section-header">
-                        <h3 class="tv-section-title" data-claro-panel-title>Comandos</h3>
+                        <h3 class="tv-section-title" data-claro-panel-title>Atalhos</h3>
                         <div class="tv-section-line"></div>
                     </header>
                     <div class="tv-control-group tv-control-group--claro-panel">
-                        <div class="tv-favorites-list" data-claro-panel-content="numbers">
+                        <div class="tv-favorites-list">
                           ${rokuPanelCommandsMarkup}
-                        </div>
-                        <div class="tv-favorites-list" data-claro-panel-content="favorites">
                           ${rokuAppsListMarkup}
                         </div>
                     </div>
@@ -1461,18 +1452,6 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
               </div>
             </div>
           `
-          : isRoku
-          ? `
-            <div class="tv-control-section tv-control-section--favorites" data-portrait-section="favorites">
-              <header class="tv-section-header">
-                <h3 class="tv-section-title">Apps</h3>
-                <div class="tv-section-line"></div>
-              </header>
-              <div class="tv-control-group tv-favorites-list">
-                ${rokuAppsListMarkup}
-              </div>
-            </div>
-          `
           : "";
         const middleColumnTopMarkup = isMusicPage
           ? `
@@ -1493,9 +1472,11 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
               <button class="tv-btn tv-btn--power-off" onclick="tvCommand(this, '${powerOffCommand}')" data-device-id="${deviceId}" aria-label="Desligar">
                 ${powerOffLabel}
               </button>
-              <button class="tv-btn tv-btn--icon-only tv-portrait-favorite" onclick="setTvPortraitPanel(this, 'favorites')" aria-label="${portraitFavoriteLabel}" type="button">
-                <img src="images/icons/icon-fav.svg" alt="${portraitFavoriteLabel}">
+              ${isClaroTv ? `
+              <button class="tv-btn tv-btn--icon-only tv-portrait-favorite" onclick="setTvPortraitPanel(this, 'favorites')" aria-label="Favoritos" type="button">
+                <img src="images/icons/icon-fav.svg" alt="Favoritos">
               </button>
+              ` : ""}
             </div>
           `
             : `
