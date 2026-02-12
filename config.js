@@ -384,7 +384,7 @@ const CLIENT_CONFIG = {
         controls: { zoneSelector: false, aletas: true, windfree: false },
         temperature: { min: 18, max: 25, default: 22 },
       },
-      roku: [{ id: "122", name: "Roku" }],
+      roku: [{ id: "365", name: "Roku" }],
       games: [{ id: "123", name: "Games" }],
       music: [
         {
