@@ -5491,6 +5491,12 @@ body:not(.tv-controls-on)
 }
 body:not(.tv-controls-on)
   .tv-control-wrapper
+  .tv-roku-fixed-commands {
+  opacity: 0.3;
+  pointer-events: none;
+}
+body:not(.tv-controls-on)
+  .tv-control-wrapper
   .tv-control-section:not(.tv-control-section--power)
   .tv-section-title,
 body:not(.tv-controls-on)
@@ -6775,6 +6781,15 @@ body:not(.tv-controls-on)
     min-height: 0;
   }
 
+  .tv-control-wrapper[data-control-type="clarotv"][data-device-type="roku"][data-portrait-panel="control"]
+    [data-portrait-section="control"],
+  .tv-control-wrapper[data-control-type="clarotv"][data-device-type="roku"][data-portrait-panel="numbers"]
+    [data-portrait-section="numbers"],
+  .tv-control-wrapper[data-control-type="clarotv"][data-device-type="roku"][data-portrait-panel="media"]
+    [data-portrait-section="media"] {
+    flex: 0.92 1 0;
+  }
+
   .tv-control-wrapper[data-control-type="clarotv"]
     .tv-control-section--claro-panel
     .tv-control-group--claro-panel,
@@ -6877,6 +6892,7 @@ body:not(.tv-controls-on)
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
     width: 100%;
+    grid-auto-rows: minmax(68px, auto);
     flex: 0 0 auto;
     order: 2;
   }
@@ -6884,9 +6900,9 @@ body:not(.tv-controls-on)
   .tv-control-wrapper[data-control-type="clarotv"][data-device-type="roku"]
     .tv-roku-fixed-command-btn {
     width: 100%;
-    height: 100%;
-    min-height: 0;
-    padding: 6px;
+    height: auto;
+    min-height: 68px;
+    padding: 8px;
     justify-content: center;
     align-items: center;
     display: flex;
@@ -6895,8 +6911,8 @@ body:not(.tv-controls-on)
   .tv-control-wrapper[data-control-type="clarotv"][data-device-type="roku"]
     .tv-roku-fixed-command-btn
     img {
-    width: clamp(22px, 5.5vw, 34px);
-    height: clamp(22px, 5.5vw, 34px);
+    width: clamp(28px, 7vw, 40px);
+    height: clamp(28px, 7vw, 40px);
     object-fit: contain;
     filter: brightness(0) invert();
     display: block;
@@ -6912,7 +6928,7 @@ body:not(.tv-controls-on)
     width: 100%;
     height: auto;
     min-height: 0;
-    flex: 0 0 62%;
+    flex: 0 0 56%;
   }
 
   .tv-control-wrapper[data-control-type="clarotv"][data-device-type="roku"]
