@@ -4777,6 +4777,11 @@ body.orchestrated-animation.reveal-home .room-card {
   width: 32px;
   height: 32px;
 }
+.curtain-tile__btn img[src$="arrow-up.svg"],
+.curtain-tile__btn img[src$="arrow-down.svg"] {
+  width: 32px;
+  height: 32px;
+}
 .curtain-tile--transparent {
   -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
