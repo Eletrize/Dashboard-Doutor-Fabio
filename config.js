@@ -421,15 +421,15 @@ const CLIENT_CONFIG = {
     },
 
     ambiente5: {
-      name: "Escrit\u00f3rio",
+      name: "Escritório",
       photo: "photo-escritorio.webp",
       visible: true,
       order: 5,
       curtains: [{ id: "373", name: "Cortina" }],
       airConditioner: {
         deviceId: "350",
-        zones: [{ id: "escritorio", name: "Escrit\u00f3rio", deviceId: "350" }],
-        controls: { zoneSelector: true, aletas: true, windfree: true },
+        zones: [{ id: "escritorio", name: "Escritório", deviceId: "350" }],
+        controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
     },
@@ -439,17 +439,11 @@ const CLIENT_CONFIG = {
       photo: "photo-escada.webp",
       visible: true,
       order: 6,
-      lights: [
-        { id: "81", name: "Luz" },
-        { id: "82", name: "Luz 2" },
-      ],
+      lights: [{ id: "316", name: "Trilho" }],
       quickActions: [
         {
           type: "lights",
-          devices: [
-            { id: "81", commandOn: "on", commandOff: "off" },
-            { id: "82", commandOn: "on", commandOff: "off" },
-          ],
+          devices: [{ id: "316", commandOn: "on", commandOff: "off" }],
         },
       ],
     },
@@ -459,7 +453,7 @@ const CLIENT_CONFIG = {
       photo: "photo-brinquedoteca.webp",
       visible: true,
       order: 7,
-      tv: [{ id: "382", name: "Televis\u00e3o" }],
+      tv: [{ id: "382", name: "Televisão" }],
       airConditioner: {
         deviceId: "379",
         brand: "samsung",
@@ -472,48 +466,45 @@ const CLIENT_CONFIG = {
     },
 
     ambiente8: {
-      name: "Su\u00edte Milena",
+      name: "Suíte Milena",
       photo: "photo-suitemilena.webp",
       visible: true,
       order: 8,
-      curtains: [{ id: "378", name: "Veneziana" }],
+      curtains: [{ id: "51", name: "Cortina" }],
       airConditioner: {
-        deviceId: "383",
-        zones: [{ id: "suitemilena", name: "Su\u00edte Milena", deviceId: "383" }],
-        controls: { zoneSelector: true, aletas: true, windfree: true },
+        zones: [{ id: "suitemilena", name: "Suíte Milena", deviceId: "188" }],
+        controls: { zoneSelector: false, aletas: true, windfree: false },
         temperature: { min: 18, max: 25, default: 22 },
       },
-      tv: [{ id: "384", name: "Televis\u00e3o" }],
-      music: [{ id: "54", name: "M\u00fasica" }],
+      tv: [{ id: "53", name: "Televisão" }],
+      music: [{ id: "54", name: "Música" }],
       clarotv: [{ id: "55", name: "Claro TV" }],
     },
 
     ambiente9: {
-      name: "Su\u00edte Fabio",
+      name: "Suíte Fabio",
       photo: "photo-suitefabio.webp",
       visible: true,
       order: 10,
       lights: [],
-      curtains: [{ id: "376", name: "Veneziana" }],
+      curtains: [{ id: "52", name: "Cortina" }],
       airConditioner: {
-        deviceId: "380",
-        zones: [{ id: "suitefabio", name: "Su\u00edte Fabio", deviceId: "380" }],
-        controls: { zoneSelector: true, aletas: true, windfree: true },
+        zones: [{ id: "suitemaster", name: "Suíte Master", deviceId: "180" }],
+        controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
     },
 
     ambiente10: {
-      name: "Su\u00edte Laura",
+      name: "Suíte Laura",
       photo: "photo-suitelaura.webp",
       visible: true,
       order: 10,
       lights: [],
-      curtains: [{ id: "377", name: "Veneziana" }],
+      curtains: [{ id: "52", name: "Cortina" }],
       airConditioner: {
-        deviceId: "381",
-        zones: [{ id: "suitelaura", name: "Su\u00edte Laura", deviceId: "381" }],
-        controls: { zoneSelector: true, aletas: true, windfree: true },
+        zones: [{ id: "suitemaster", name: "Suíte Master", deviceId: "180" }],
+        controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
     },
@@ -835,8 +826,11 @@ function getUiActionIcon(key) {
 }
 
 function resolveCurtainMotionType(curtain, env) {
-  const rawType = curtain?.curtainMotionType || env?.curtainMotionType || "lateral";
-  return String(rawType || "lateral").trim().toLowerCase();
+  const rawType =
+    curtain?.curtainMotionType || env?.curtainMotionType || "lateral";
+  return String(rawType || "lateral")
+    .trim()
+    .toLowerCase();
 }
 
 function resolveCurtainIconsByType(curtain, env) {
