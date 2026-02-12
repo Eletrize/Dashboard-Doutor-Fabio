@@ -6884,8 +6884,8 @@ body:not(.tv-controls-on)
   .tv-control-wrapper[data-control-type="clarotv"][data-device-type="roku"]
     .tv-roku-portrait-shortcut-btn
     img {
-    width: clamp(30px, 7.8vw, 42px);
-    height: clamp(30px, 7.8vw, 42px);
+    width: clamp(40px, 10vw, 56px);
+    height: clamp(40px, 10vw, 56px);
     object-fit: contain;
     filter: brightness(0) invert();
   }

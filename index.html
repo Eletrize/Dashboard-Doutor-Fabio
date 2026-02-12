@@ -1041,20 +1041,11 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                     <button class="tv-btn tv-btn--icon-only tv-btn--voltar" onclick="tvCommand(this, 'back')" data-device-id="${deviceId}" aria-label="Voltar">
                         <img src="images/icons/arrow-left.svg" alt="Voltar">
                     </button>
-                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'configure')" data-device-id="${deviceId}" aria-label="Configurar">
-                        <img src="images/icons/icon-settings.svg" alt="Configurar">
-                    </button>
                     <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'home')" data-device-id="${deviceId}" aria-label="Home">
                         <img src="images/icons/icon-home.svg" alt="Home">
                     </button>
-                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'initialize')" data-device-id="${deviceId}" aria-label="Inicializar">
-                        <img src="images/icons/icon-setup.svg" alt="Inicializar">
-                    </button>
                     <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'asteriscom')" data-device-id="${deviceId}" aria-label="Asterisco">
                         <span class="tv-btn-icon-label">*</span>
-                    </button>
-                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'push')" data-device-id="${deviceId}" aria-label="Push">
-                        <span class="tv-btn-icon-label">Push</span>
                     </button>
                 `;
         const blurayCommandsMarkup = `
@@ -1180,17 +1171,8 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             `;
         const rokuPanelCommandsMarkup = isRoku
           ? `
-            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'configure')" data-device-id="${deviceId}" aria-label="Configurar" type="button">
-              <span class="tv-favorite-label">Configure</span>
-            </button>
-            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'initialize')" data-device-id="${deviceId}" aria-label="Inicializar" type="button">
-              <span class="tv-favorite-label">Initialize</span>
-            </button>
             <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'asteriscom')" data-device-id="${deviceId}" aria-label="Asterisco" type="button">
               <span class="tv-favorite-label">*</span>
-            </button>
-            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'push')" data-device-id="${deviceId}" aria-label="Push" type="button">
-              <span class="tv-favorite-label">Push</span>
             </button>
             <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'back')" data-device-id="${deviceId}" aria-label="Voltar" type="button">
               <span class="tv-favorite-label">Back</span>
@@ -1263,9 +1245,6 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                         </button>
                         <button class="tv-btn-square" onclick="tvCommand(this, 'play')" data-device-id="${deviceId}" aria-label="Play">
                             <img src="images/icons/icon-play.svg" alt="Play" class="tv-btn-icon-img">
-                        </button>
-                        <button class="tv-btn-square" onclick="tvCommand(this, 'push')" data-device-id="${deviceId}" aria-label="Push">
-                            <span class="tv-btn-square-label">Push</span>
                         </button>
                     </div>
                 </div>
