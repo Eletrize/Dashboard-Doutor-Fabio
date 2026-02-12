@@ -2382,6 +2382,9 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           actionOpen,
           actionStop,
           actionClose,
+          iconOpen,
+          iconStop,
+          iconClose,
         } = curtain;
         const buttonDataAttrs = [
           deviceId ? `data-device-id="${deviceId}"` : "",
@@ -2404,13 +2407,13 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             </header>
             <div class="curtain-tile__actions">
                 <button class="curtain-tile__btn" ${buttonDataAttrs} onclick="curtainAction(this, 'open')" aria-label="Abrir ${title}">
-                  <img src="images/icons/open-curtain.svg" alt="Abrir">
+                  <img src="${iconOpen || "images/icons/open-curtain.svg"}" alt="Abrir">
                 </button>
                 <button class="curtain-tile__btn curtain-tile__btn--stop" ${buttonDataAttrs} onclick="curtainAction(this, 'stop')" aria-label="Parar ${title}">
-                    <img src="images/icons/icon-stop.svg" alt="Parar">
+                    <img src="${iconStop || "images/icons/icon-stop.svg"}" alt="Parar">
                 </button>
                 <button class="curtain-tile__btn" ${buttonDataAttrs} onclick="curtainAction(this, 'close')" aria-label="Fechar ${title}">
-                  <img src="images/icons/close-curtain.svg" alt="Fechar">
+                  <img src="${iconClose || "images/icons/close-curtain.svg"}" alt="Fechar">
                 </button>
             </div>
         </article>`;

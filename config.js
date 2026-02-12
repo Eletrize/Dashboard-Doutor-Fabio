@@ -118,6 +118,20 @@ const CLIENT_CONFIG = {
       curtainClose: "images/icons/close-curtain.svg",
     },
 
+    // Ícones por tipo de movimento de cortina (configurável por ambiente/cortina)
+    curtainTypes: {
+      lateral: {
+        open: "images/icons/open-curtain.svg",
+        stop: "images/icons/icon-stop.svg",
+        close: "images/icons/close-curtain.svg",
+      },
+      vertical: {
+        open: "images/icons/arrow-up.svg",
+        stop: "images/icons/icon-stop.svg",
+        close: "images/icons/arrow-down.svg",
+      },
+    },
+
     iconOverrides: {
       // Exemplos (descomente e ajuste conforme necessidade):
       // "images/icons/icon-mute.svg": "images/icons/icon-volume.svg",
@@ -294,6 +308,7 @@ const CLIENT_CONFIG = {
       photo: "photo-varanda.webp",
       visible: true,
       order: 3,
+      curtainMotionType: "vertical",
       lights: [
         { id: "306", name: "Spots" },
         { id: "307", name: "Churrasqueira" },
@@ -333,7 +348,7 @@ const CLIENT_CONFIG = {
           targets: ["371", "370"],
           commands: { open: "open", stop: "stop", close: "close" },
         },
-        { id: "368", name: "Pia" },
+        { id: "368", name: "Churrasqueira" },
         { id: "369", name: "Central Esquerda" },
         { id: "371", name: "Central Direita" },
         { id: "370", name: "Corredor" },
@@ -342,7 +357,7 @@ const CLIENT_CONFIG = {
         deviceId: "349",
         brand: "carrier",
         zones: [{ id: "Varanda", name: "Varanda" }],
-        controls: { zoneSelector: true, aletas: true, windfree: false },
+        controls: { zoneSelector: false, aletas: true, windfree: false },
         temperature: { min: 18, max: 25, default: 22 },
       },
       roku: [{ id: "122", name: "Roku" }],
@@ -670,7 +685,7 @@ function encodeCurtainActionPlan(plan) {
   return encodeURIComponent(JSON.stringify(Array.isArray(plan) ? plan : []));
 }
 
-function buildCurtainControlModel(curtain) {
+function buildCurtainControlModel(curtain, env = null) {
   const targets = normalizeCurtainTargets(curtain);
   if (!targets.length) return null;
 
@@ -679,6 +694,7 @@ function buildCurtainControlModel(curtain) {
   const closePlan = buildCurtainActionPlan(curtain, "close");
   const deviceIds = targets.map((target) => String(target.id));
   const firstId = deviceIds[0] || "";
+  const icons = resolveCurtainIconsByType(curtain, env);
 
   return {
     title: curtain?.name || curtain?.title || `Cortina ${firstId}`,
@@ -688,6 +704,10 @@ function buildCurtainControlModel(curtain) {
     actionOpen: encodeCurtainActionPlan(openPlan),
     actionStop: encodeCurtainActionPlan(stopPlan),
     actionClose: encodeCurtainActionPlan(closePlan),
+    curtainMotionType: icons.motionType,
+    iconOpen: icons.open,
+    iconStop: icons.stop,
+    iconClose: icons.close,
     isGroup: deviceIds.length > 1,
   };
 }
@@ -784,6 +804,43 @@ function getUiActionIcon(key) {
   return (CLIENT_CONFIG?.ui?.actions && CLIENT_CONFIG.ui.actions[key]) || null;
 }
 
+function resolveCurtainMotionType(curtain, env) {
+  const rawType = curtain?.curtainMotionType || env?.curtainMotionType || "lateral";
+  return String(rawType || "lateral").trim().toLowerCase();
+}
+
+function resolveCurtainIconsByType(curtain, env) {
+  const motionType = resolveCurtainMotionType(curtain, env);
+  const typeIcons = CLIENT_CONFIG?.ui?.curtainTypes?.[motionType] || {};
+  const defaultTypeIcons = CLIENT_CONFIG?.ui?.curtainTypes?.lateral || {};
+  const actionIcons = CLIENT_CONFIG?.ui?.actions || {};
+
+  return {
+    motionType,
+    open:
+      curtain?.iconOpen ||
+      curtain?.icons?.open ||
+      typeIcons.open ||
+      defaultTypeIcons.open ||
+      actionIcons.curtainOpen ||
+      "images/icons/open-curtain.svg",
+    stop:
+      curtain?.iconStop ||
+      curtain?.icons?.stop ||
+      typeIcons.stop ||
+      defaultTypeIcons.stop ||
+      actionIcons.curtainStop ||
+      "images/icons/icon-stop.svg",
+    close:
+      curtain?.iconClose ||
+      curtain?.icons?.close ||
+      typeIcons.close ||
+      defaultTypeIcons.close ||
+      actionIcons.curtainClose ||
+      "images/icons/close-curtain.svg",
+  };
+}
+
 function buildCurtainSectionsFromConfig() {
   return getVisibleEnvironments()
     .filter((env) => Array.isArray(env.curtains) && env.curtains.length > 0)
@@ -791,7 +848,7 @@ function buildCurtainSectionsFromConfig() {
       key: env.key,
       name: env.name,
       curtains: env.curtains
-        .map((curtain) => buildCurtainControlModel(curtain))
+        .map((curtain) => buildCurtainControlModel(curtain, env))
         .filter(Boolean),
     }));
 }
@@ -883,14 +940,6 @@ function generateCurtainsControls(envKey) {
   const env = getEnvironment(envKey);
   if (!env?.curtains?.length) return "";
 
-  const ICON_OPEN =
-    CLIENT_CONFIG?.ui?.actions?.curtainOpen || "images/icons/open-curtain.svg";
-  const ICON_STOP =
-    CLIENT_CONFIG?.ui?.actions?.curtainStop || "images/icons/icon-stop.svg";
-  const ICON_CLOSE =
-    CLIENT_CONFIG?.ui?.actions?.curtainClose ||
-    "images/icons/close-curtain.svg";
-
   const buildCurtainDataAttributes = (curtain) =>
     [
       curtain?.deviceId ? `data-device-id="${curtain.deviceId}"` : "",
@@ -903,7 +952,7 @@ function generateCurtainsControls(envKey) {
       .join(" ");
 
   return env.curtains
-    .map((curtainConfig) => buildCurtainControlModel(curtainConfig))
+    .map((curtainConfig) => buildCurtainControlModel(curtainConfig, env))
     .filter(Boolean)
     .map(
       (curtain) => `
@@ -914,13 +963,13 @@ function generateCurtainsControls(envKey) {
           </header>
           <div class="curtain-tile__actions">
             <button class="curtain-tile__btn" ${buildCurtainDataAttributes(curtain)} onclick="curtainAction(this, 'open')" aria-label="Abrir ${curtain.title}">
-              <img src="${ICON_OPEN}" alt="Abrir">
+              <img src="${curtain.iconOpen}" alt="Abrir">
             </button>
             <button class="curtain-tile__btn curtain-tile__btn--stop" ${buildCurtainDataAttributes(curtain)} onclick="curtainAction(this, 'stop')" aria-label="Parar ${curtain.title}">
-              <img src="${ICON_STOP}" alt="Parar">
+              <img src="${curtain.iconStop}" alt="Parar">
             </button>
             <button class="curtain-tile__btn" ${buildCurtainDataAttributes(curtain)} onclick="curtainAction(this, 'close')" aria-label="Fechar ${curtain.title}">
-              <img src="${ICON_CLOSE}" alt="Fechar">
+              <img src="${curtain.iconClose}" alt="Fechar">
             </button>
           </div>
         </article>
