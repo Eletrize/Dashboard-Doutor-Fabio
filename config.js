@@ -403,16 +403,16 @@ const CLIENT_CONFIG = {
       visible: true,
       order: 4,
       lights: [
-        { id: "70", name: "Corredor Espeto" },
-        { id: "66", name: "Piscina" },
+        { id: "308", name: "Corredor Espeto" },
+        { id: "310", name: "Piscina" },
         { id: "59", name: "LED Piscina" },
       ],
       quickActions: [
         {
           type: "lights",
           devices: [
-            { id: "70", commandOn: "on", commandOff: "off" },
-            { id: "66", commandOn: "on", commandOff: "off" },
+            { id: "308", commandOn: "on", commandOff: "off" },
+            { id: "310", commandOn: "on", commandOff: "off" },
             { id: "59", commandOn: "on", commandOff: "off" },
           ],
         },
@@ -421,13 +421,14 @@ const CLIENT_CONFIG = {
     },
 
     ambiente5: {
-      name: "Escritório",
+      name: "Escrit\u00f3rio",
       photo: "photo-escritorio.webp",
       visible: true,
       order: 5,
-      curtains: [{ id: "40", name: "Cortina" }],
+      curtains: [{ id: "373", name: "Cortina" }],
       airConditioner: {
-        zones: [{ id: "escritorio", name: "Escritório", deviceId: "169" }],
+        deviceId: "350",
+        zones: [{ id: "escritorio", name: "Escrit\u00f3rio", deviceId: "350" }],
         controls: { zoneSelector: true, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
@@ -458,7 +459,7 @@ const CLIENT_CONFIG = {
       photo: "photo-brinquedoteca.webp",
       visible: true,
       order: 7,
-      tv: [{ id: "382", name: "Televisao" }],
+      tv: [{ id: "382", name: "Televis\u00e3o" }],
       airConditioner: {
         deviceId: "379",
         brand: "samsung",
