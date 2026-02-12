@@ -1169,32 +1169,19 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                   ${commandsControlMarkup}
                 </div>
             `;
-        const rokuPanelCommandsMarkup = isRoku
-          ? `
-            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'asteriscom')" data-device-id="${deviceId}" aria-label="Asterisco" type="button">
-              <img src="images/icons/icon-asterisco.svg" alt="Asterisco">
-            </button>
-            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'back')" data-device-id="${deviceId}" aria-label="Voltar" type="button">
-              <span class="tv-favorite-label">Back</span>
-            </button>
-            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'home')" data-device-id="${deviceId}" aria-label="Home" type="button">
-              <span class="tv-favorite-label">Home</span>
-            </button>
-          `
-          : "";
         const rokuAppsListMarkup = isRoku
           ? `
-            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'netflix')" data-device-id="${deviceId}" aria-label="Netflix" type="button">
-              <span class="tv-favorite-label">Netflix</span>
+            <button class="tv-btn tv-favorite-btn tv-favorite-btn--logo" onclick="tvCommand(this, 'netflix')" data-device-id="${deviceId}" aria-label="Netflix" type="button">
+              <img src="images/icons/icon-netflix.svg" alt="Netflix">
             </button>
-            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'disney')" data-device-id="${deviceId}" aria-label="Disney+" type="button">
-              <span class="tv-favorite-label">Disney+</span>
+            <button class="tv-btn tv-favorite-btn tv-favorite-btn--logo" onclick="tvCommand(this, 'disney')" data-device-id="${deviceId}" aria-label="Disney+" type="button">
+              <img src="images/icons/icon-disney.svg" alt="Disney+">
             </button>
-            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'primevideo')" data-device-id="${deviceId}" aria-label="Prime Video" type="button">
-              <span class="tv-favorite-label">Prime Video</span>
+            <button class="tv-btn tv-favorite-btn tv-favorite-btn--logo" onclick="tvCommand(this, 'primevideo')" data-device-id="${deviceId}" aria-label="Prime Video" type="button">
+              <img src="images/icons/icon-primevideo.svg" alt="Prime Video">
             </button>
-            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'appletv')" data-device-id="${deviceId}" aria-label="Apple TV" type="button">
-              <span class="tv-favorite-label">Apple TV</span>
+            <button class="tv-btn tv-favorite-btn tv-favorite-btn--logo" onclick="tvCommand(this, 'appletv')" data-device-id="${deviceId}" aria-label="Apple TV" type="button">
+              <img src="images/icons/icon-apple-tv.svg" alt="Apple TV">
             </button>
           `
           : "";
@@ -1383,7 +1370,6 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                     </header>
                     <div class="tv-control-group tv-control-group--claro-panel tv-control-group--roku-shortcuts">
                         <div class="tv-favorites-list">
-                          ${rokuPanelCommandsMarkup}
                           ${rokuAppsListMarkup}
                         </div>
                         <div class="tv-roku-portrait-shortcuts">
