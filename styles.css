@@ -5529,6 +5529,14 @@ body:not(.tv-controls-on)
   width: 32px;
   height: 32px;
 }
+.tv-btn-icon-label {
+  color: #fff;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
 .tv-btn-icon-img--pause {
   width: 28px;
   height: 28px;
@@ -6335,6 +6343,19 @@ body:not(.tv-controls-on)
   width: 100%;
   height: 130px;
   padding: 12px;
+}
+.tv-favorite-btn--text {
+  color: #fff;
+  text-align: center;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: 14px;
+  font-weight: 600;
+}
+.tv-favorite-label {
+  display: inline-block;
+  max-width: 100%;
+  line-height: 1.15;
 }
 .tv-favorite-btn img {
   width: 72%;
@@ -7443,6 +7464,13 @@ body:not(.tv-controls-on)
   filter: brightness(0) invert();
   width: 24px;
   height: 24px;
+}
+.tv-btn-square-label {
+  color: #fff;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 700;
 }
 @media (width>=900px) {
   .tv-btn-icon-img {

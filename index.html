@@ -972,18 +972,26 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
 
         const deviceId = device.id;
         const isClaroTv = typeKey === "clarotv";
+        const isRoku = typeKey === "roku";
+        const useClaroLayout = isClaroTv || isRoku;
+        const layoutTypeKey = useClaroLayout ? "clarotv" : typeKey;
         const isBluray = typeKey === "bluray";
         const isMusicPage = /m\u00fasica/i.test(String(headingLabel || ""));
         const isPortraitEnabled = !isMusicPage;
-        const powerOnLabel = isClaroTv ? "On" : "ON";
-        const powerOffLabel = isClaroTv ? "Off" : "OFF";
+        const powerOnLabel = useClaroLayout ? "On" : "ON";
+        const powerOffLabel = useClaroLayout ? "Off" : "OFF";
+        const directionalCenterCommand = isRoku ? "cursorOK" : "cursorCenter";
+        const portraitSecondaryPanelLabel = isRoku
+          ? "Atalhos"
+          : "N&uacute;meros";
+        const portraitFavoriteLabel = isRoku ? "Apps" : "Favoritos";
         const isTvControl = typeKey === "tv";
-        const powerOnCommand = isClaroTv
+        const powerOnCommand = useClaroLayout
           ? "on"
           : isTvControl
           ? "powerOn"
           : "on";
-        const powerOffCommand = isClaroTv
+        const powerOffCommand = useClaroLayout
           ? "off"
           : isTvControl
           ? "powerOff"
@@ -1030,6 +1038,32 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                         <img src="images/icons/icon-home.svg" alt="Home">
                     </button>
                 `;
+        const rokuCommandsMarkup = `
+                    <button class="tv-btn tv-btn--icon-only" data-claro-panel-btn="favorites" onclick="toggleClaroTvPanel(this, 'favorites')" aria-label="Apps" aria-pressed="false" type="button">
+                        <img src="images/icons/icon-roku.svg" alt="Apps">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" data-claro-panel-btn="numbers" onclick="toggleClaroTvPanel(this, 'numbers')" aria-label="Atalhos" aria-pressed="true" type="button">
+                        <img src="images/icons/icon-numbers.svg" alt="Atalhos">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only tv-btn--voltar" onclick="tvCommand(this, 'back')" data-device-id="${deviceId}" aria-label="Voltar">
+                        <img src="images/icons/arrow-left.svg" alt="Voltar">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'configure')" data-device-id="${deviceId}" aria-label="Configurar">
+                        <img src="images/icons/icon-settings.svg" alt="Configurar">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'home')" data-device-id="${deviceId}" aria-label="Home">
+                        <img src="images/icons/icon-home.svg" alt="Home">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'initialize')" data-device-id="${deviceId}" aria-label="Inicializar">
+                        <img src="images/icons/icon-setup.svg" alt="Inicializar">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'asteriscom')" data-device-id="${deviceId}" aria-label="Asterisco">
+                        <span class="tv-btn-icon-label">*</span>
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'push')" data-device-id="${deviceId}" aria-label="Push">
+                        <span class="tv-btn-icon-label">Push</span>
+                    </button>
+                `;
         const blurayCommandsMarkup = `
                     <button class="tv-btn tv-btn--icon-only tv-btn--voltar" onclick="tvCommand(this, 'voltar')" data-device-id="${deviceId}" aria-label="Voltar">
                         <img src="images/icons/arrow-left.svg" alt="Voltar">
@@ -1065,6 +1099,8 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 <img src="images/icons/icon-usb.svg" alt="USB">
               </button>
             `
+          : isRoku
+          ? rokuCommandsMarkup
           : isClaroTv
           ? `
                     <button class="tv-btn tv-btn--icon-only" data-claro-panel-btn="favorites" onclick="toggleClaroTvPanel(this, 'favorites'); tvCommand(this, 'favorites')" data-device-id="${deviceId}" aria-label="Favoritos" aria-pressed="false" type="button">
@@ -1149,6 +1185,44 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                   ${commandsControlMarkup}
                 </div>
             `;
+        const rokuPanelCommandsMarkup = isRoku
+          ? `
+            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'configure')" data-device-id="${deviceId}" aria-label="Configurar" type="button">
+              <span class="tv-favorite-label">Configure</span>
+            </button>
+            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'initialize')" data-device-id="${deviceId}" aria-label="Inicializar" type="button">
+              <span class="tv-favorite-label">Initialize</span>
+            </button>
+            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'asteriscom')" data-device-id="${deviceId}" aria-label="Asterisco" type="button">
+              <span class="tv-favorite-label">*</span>
+            </button>
+            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'push')" data-device-id="${deviceId}" aria-label="Push" type="button">
+              <span class="tv-favorite-label">Push</span>
+            </button>
+            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'back')" data-device-id="${deviceId}" aria-label="Voltar" type="button">
+              <span class="tv-favorite-label">Back</span>
+            </button>
+            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'home')" data-device-id="${deviceId}" aria-label="Home" type="button">
+              <span class="tv-favorite-label">Home</span>
+            </button>
+          `
+          : "";
+        const rokuAppsListMarkup = isRoku
+          ? `
+            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'netflix')" data-device-id="${deviceId}" aria-label="Netflix" type="button">
+              <span class="tv-favorite-label">Netflix</span>
+            </button>
+            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'disney')" data-device-id="${deviceId}" aria-label="Disney+" type="button">
+              <span class="tv-favorite-label">Disney+</span>
+            </button>
+            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'primevideo')" data-device-id="${deviceId}" aria-label="Prime Video" type="button">
+              <span class="tv-favorite-label">Prime Video</span>
+            </button>
+            <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'appletv')" data-device-id="${deviceId}" aria-label="Apple TV" type="button">
+              <span class="tv-favorite-label">Apple TV</span>
+            </button>
+          `
+          : "";
         const claroFavoritesListMarkup = isClaroTv
           ? `
             <button class="tv-btn tv-favorite-btn" onclick="tvCommand(this, 'globo')" data-device-id="${deviceId}" aria-label="Globo" type="button">
@@ -1180,7 +1254,30 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             </button>
           `
           : "";
-        const mediaMarkup = isClaroTv
+        const mediaMarkup = isRoku
+          ? `
+                <div class="tv-control-section tv-control-section--media" data-portrait-section="media">
+                    <header class="tv-section-header">
+                        <h3 class="tv-section-title">M&iacute;dia</h3>
+                        <div class="tv-section-line"></div>
+                    </header>
+                    <div class="tv-control-group tv-media-grid">
+                        <button class="tv-btn-square" onclick="tvCommand(this, 'previous')" data-device-id="${deviceId}" aria-label="Anterior">
+                            <img src="images/icons/icon-previous-track.svg" alt="Anterior" class="tv-btn-icon-img">
+                        </button>
+                        <button class="tv-btn-square" onclick="tvCommand(this, 'next')" data-device-id="${deviceId}" aria-label="Pr&oacute;ximo">
+                            <img src="images/icons/icon-next-track.svg" alt="Pr&oacute;ximo" class="tv-btn-icon-img">
+                        </button>
+                        <button class="tv-btn-square" onclick="tvCommand(this, 'play')" data-device-id="${deviceId}" aria-label="Play">
+                            <img src="images/icons/icon-play.svg" alt="Play" class="tv-btn-icon-img">
+                        </button>
+                        <button class="tv-btn-square" onclick="tvCommand(this, 'push')" data-device-id="${deviceId}" aria-label="Push">
+                            <span class="tv-btn-square-label">Push</span>
+                        </button>
+                    </div>
+                </div>
+                `
+          : isClaroTv
           ? `
                 <div class="tv-control-section tv-control-section--media" data-portrait-section="media">
                     <header class="tv-section-header">
@@ -1289,7 +1386,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                     <button class="tv-directional-btn tv-directional-btn--left" onclick="tvCommand(this, 'cursorLeft')" data-device-id="${deviceId}" aria-label="Esquerda">
                       <img src="images/icons/arrow-left.svg" alt="Esquerda" class="tv-btn-icon-img">
                     </button>
-                    <button class="tv-directional-btn tv-directional-btn--ok" onclick="tvCommand(this, 'cursorCenter')" data-device-id="${deviceId}" aria-label="OK">
+                    <button class="tv-directional-btn tv-directional-btn--ok" onclick="tvCommand(this, '${directionalCenterCommand}')" data-device-id="${deviceId}" aria-label="OK">
                       <div class="tv-ok-circle"></div>
                     </button>
                     <button class="tv-directional-btn tv-directional-btn--right" onclick="tvCommand(this, 'cursorRight')" data-device-id="${deviceId}" aria-label="Direita">
@@ -1303,6 +1400,25 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
               </div>
             </div>
           </div>
+          `
+          : isRoku
+          ? `
+            <div class="tv-control-section tv-control-section--claro-panel" data-claro-panel="numbers" data-portrait-section="numbers">
+                <div class="tv-claro-panel-fade" data-claro-fade>
+                    <header class="tv-section-header">
+                        <h3 class="tv-section-title" data-claro-panel-title>Comandos</h3>
+                        <div class="tv-section-line"></div>
+                    </header>
+                    <div class="tv-control-group tv-control-group--claro-panel">
+                        <div class="tv-favorites-list" data-claro-panel-content="numbers">
+                          ${rokuPanelCommandsMarkup}
+                        </div>
+                        <div class="tv-favorites-list" data-claro-panel-content="favorites">
+                          ${rokuAppsListMarkup}
+                        </div>
+                    </div>
+                </div>
+            </div>
           `
           : isClaroTv
           ? `
@@ -1345,6 +1461,18 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
               </div>
             </div>
           `
+          : isRoku
+          ? `
+            <div class="tv-control-section tv-control-section--favorites" data-portrait-section="favorites">
+              <header class="tv-section-header">
+                <h3 class="tv-section-title">Apps</h3>
+                <div class="tv-section-line"></div>
+              </header>
+              <div class="tv-control-group tv-favorites-list">
+                ${rokuAppsListMarkup}
+              </div>
+            </div>
+          `
           : "";
         const middleColumnTopMarkup = isMusicPage
           ? `
@@ -1352,11 +1480,11 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
               ${volumeControlMarkup}
             </div>
           `
-          : isClaroTv
+          : useClaroLayout
           ? commandsSectionMarkup
           : "";
         const portraitTopMarkup = isPortraitEnabled
-          ? isClaroTv
+          ? useClaroLayout
             ? `
             <div class="tv-portrait-top-actions">
               <button class="tv-btn tv-btn--power-on" onclick="tvCommand(this, '${powerOnCommand}')" data-device-id="${deviceId}" aria-label="Ligar">
@@ -1365,8 +1493,8 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
               <button class="tv-btn tv-btn--power-off" onclick="tvCommand(this, '${powerOffCommand}')" data-device-id="${deviceId}" aria-label="Desligar">
                 ${powerOffLabel}
               </button>
-              <button class="tv-btn tv-btn--icon-only tv-portrait-favorite" onclick="setTvPortraitPanel(this, 'favorites')" aria-label="Favoritos" type="button">
-                <img src="images/icons/icon-fav.svg" alt="Favoritos">
+              <button class="tv-btn tv-btn--icon-only tv-portrait-favorite" onclick="setTvPortraitPanel(this, 'favorites')" aria-label="${portraitFavoriteLabel}" type="button">
+                <img src="images/icons/icon-fav.svg" alt="${portraitFavoriteLabel}">
               </button>
             </div>
           `
@@ -1382,11 +1510,11 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           `
           : "";
         const portraitTabsMarkup = isPortraitEnabled
-          ? isClaroTv
+          ? useClaroLayout
             ? `
             <div class="tv-portrait-tabs" role="tablist" aria-label="Seções">
               <button class="tv-portrait-tab is-active" type="button" data-target="control" onclick="setTvPortraitPanel(this, 'control')" aria-pressed="true">Controle</button>
-              <button class="tv-portrait-tab" type="button" data-target="numbers" onclick="setTvPortraitPanel(this, 'numbers')" aria-pressed="false">N&uacute;meros</button>
+              <button class="tv-portrait-tab" type="button" data-target="numbers" onclick="setTvPortraitPanel(this, 'numbers')" aria-pressed="false">${portraitSecondaryPanelLabel}</button>
               <button class="tv-portrait-tab" type="button" data-target="commands" onclick="setTvPortraitPanel(this, 'commands')" aria-pressed="false">Comandos</button>
               <button class="tv-portrait-tab" type="button" data-target="media" onclick="setTvPortraitPanel(this, 'media')" aria-pressed="false">M&iacute;dia</button>
             </div>
@@ -1467,7 +1595,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         <h1 class="page-title">${title}</h1>
     </div>
 
-    <div class="tv-control-wrapper" data-control-type="${typeKey}"${isPortraitEnabled ? ' data-portrait-panel="control"' : ''}>
+    <div class="tv-control-wrapper" data-control-type="${layoutTypeKey}" data-device-type="${typeKey}"${isPortraitEnabled ? ' data-portrait-panel="control"' : ''}>
         ${portraitTopMarkup}
         ${portraitTabsMarkup}
         
@@ -1536,7 +1664,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                       <button class="tv-directional-btn tv-directional-btn--left" onclick="tvCommand(this, 'cursorLeft')" data-device-id="${deviceId}" aria-label="Esquerda">
                         <img src="images/icons/arrow-left.svg" alt="Esquerda" class="tv-btn-icon-img">
                       </button>
-                      <button class="tv-directional-btn tv-directional-btn--ok" onclick="tvCommand(this, 'cursorCenter')" data-device-id="${deviceId}" aria-label="OK">
+                      <button class="tv-directional-btn tv-directional-btn--ok" onclick="tvCommand(this, '${directionalCenterCommand}')" data-device-id="${deviceId}" aria-label="OK">
                         <div class="tv-ok-circle"></div>
                       </button>
                       <button class="tv-directional-btn tv-directional-btn--right" onclick="tvCommand(this, 'cursorRight')" data-device-id="${deviceId}" aria-label="Direita">
@@ -1560,7 +1688,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
 
             ${claroFavoritesSectionMarkup}
 
-            ${isMusicPage || isBluray || isClaroTv ? "" : `
+            ${isMusicPage || isBluray || useClaroLayout ? "" : `
             <!-- BLOCO 7: LOGO -->
             <div class="tv-control-section tv-logo-section">
               <img src="images/icons/eletrize.svg" alt="Eletrize" class="tv-eletrize-logo">

@@ -847,7 +847,9 @@ function syncRemoteControlDeviceIds() {
     ".page.active .tv-control-wrapper[data-control-type]",
   );
   if (!wrapper) return;
-  const controlType = String(wrapper.dataset.controlType || "").toLowerCase();
+  const controlType = String(
+    wrapper.dataset.deviceType || wrapper.dataset.controlType || "",
+  ).toLowerCase();
   if (!controlType || controlType === "music") return;
 
   const targetId = getRemoteDeviceIdForEnv(envKey, controlType);
@@ -1521,7 +1523,10 @@ function tvCommand(el, command) {
   // Alguns controles precisam disparar comando duplo (ex.: Claro TV: returnButton + voltar)
   const commandsToSend = [command];
   const wrapper = el.closest?.(".tv-control-wrapper");
-  const isClaroTv = wrapper?.dataset?.controlType === "clarotv";
+  const controlType = String(
+    wrapper?.dataset?.deviceType || wrapper?.dataset?.controlType || "",
+  ).toLowerCase();
+  const isClaroTv = controlType === "clarotv";
   if (isClaroTv && command === "returnButton") {
     commandsToSend.push("voltar");
   }
@@ -1537,7 +1542,6 @@ function tvCommand(el, command) {
   if (command === "on" || command === "powerOn") {
     const route = (window.location.hash || "").replace("#", "");
     const envKey = route.split("-")[0] || "";
-    const controlType = String(wrapper?.dataset?.controlType || "").toLowerCase();
     if (envKey === "ambiente1" && controlType) {
       const receiverId = "354";
       const tvId = "362";
@@ -1597,6 +1601,13 @@ function toggleClaroTvPanel(trigger, targetView) {
   const view = targetView === "favorites" ? "favorites" : "numbers";
   const wrapper = trigger?.closest?.(".tv-control-wrapper");
   if (!wrapper) return;
+  const controlType = String(
+    wrapper.dataset.deviceType || wrapper.dataset.controlType || "",
+  ).toLowerCase();
+  const panelLabels =
+    controlType === "roku"
+      ? { favorites: "Apps", numbers: "Comandos" }
+      : { favorites: "Favoritos", numbers: "Números" };
 
   const panel = wrapper.querySelector(
     ".tv-control-section[data-claro-panel]"
@@ -1613,7 +1624,8 @@ function toggleClaroTvPanel(trigger, targetView) {
   const applyView = () => {
     panel.dataset.claroPanel = view;
     if (title) {
-      title.textContent = view === "favorites" ? "Favoritos" : "N\u00fameros";
+      title.textContent =
+        view === "favorites" ? panelLabels.favorites : panelLabels.numbers;
     }
 
     buttons.forEach((btn) => {
@@ -1733,6 +1745,11 @@ function initAppleTvGestureControls(root = document) {
       right: section.querySelector(".tv-directional-btn--right"),
       center: section.querySelector(".tv-directional-btn--ok"),
     };
+    const wrapper = section.closest(".tv-control-wrapper");
+    const controlType = String(
+      wrapper?.dataset?.deviceType || wrapper?.dataset?.controlType || "",
+    ).toLowerCase();
+    const centerCommand = controlType === "roku" ? "cursorOK" : "cursorCenter";
 
     const sendCommand = (command, btn) => {
       if (btn) {
@@ -1787,7 +1804,7 @@ function initAppleTvGestureControls(root = document) {
     surface.addEventListener("pointerup", (e) => {
       if (pointerId !== e.pointerId) return;
       if (isGesturesMode() && !moved) {
-        sendCommand("cursorCenter", buttons.center);
+        sendCommand(centerCommand, buttons.center);
       }
       resetGesture();
     });
