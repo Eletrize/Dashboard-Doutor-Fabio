@@ -1045,7 +1045,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                         <img src="images/icons/icon-home.svg" alt="Home">
                     </button>
                     <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'asteriscom')" data-device-id="${deviceId}" aria-label="Asterisco">
-                        <span class="tv-btn-icon-label">*</span>
+                        <img src="images/icons/icon-asterisco.svg" alt="Asterisco">
                     </button>
                 `;
         const blurayCommandsMarkup = `
@@ -1172,7 +1172,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         const rokuPanelCommandsMarkup = isRoku
           ? `
             <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'asteriscom')" data-device-id="${deviceId}" aria-label="Asterisco" type="button">
-              <span class="tv-favorite-label">*</span>
+              <img src="images/icons/icon-asterisco.svg" alt="Asterisco">
             </button>
             <button class="tv-btn tv-favorite-btn tv-favorite-btn--text" onclick="tvCommand(this, 'back')" data-device-id="${deviceId}" aria-label="Voltar" type="button">
               <span class="tv-favorite-label">Back</span>
@@ -1381,10 +1381,21 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                         <h3 class="tv-section-title" data-claro-panel-title>Atalhos</h3>
                         <div class="tv-section-line"></div>
                     </header>
-                    <div class="tv-control-group tv-control-group--claro-panel">
+                    <div class="tv-control-group tv-control-group--claro-panel tv-control-group--roku-shortcuts">
                         <div class="tv-favorites-list">
                           ${rokuPanelCommandsMarkup}
                           ${rokuAppsListMarkup}
+                        </div>
+                        <div class="tv-roku-portrait-commands">
+                          <button class="tv-btn tv-roku-portrait-command-btn" onclick="tvCommand(this, 'back')" data-device-id="${deviceId}" aria-label="Voltar" type="button">
+                            <img src="images/icons/arrow-left.svg" alt="Voltar">
+                          </button>
+                          <button class="tv-btn tv-roku-portrait-command-btn" onclick="tvCommand(this, 'home')" data-device-id="${deviceId}" aria-label="Home" type="button">
+                            <img src="images/icons/icon-home.svg" alt="Home">
+                          </button>
+                          <button class="tv-btn tv-roku-portrait-command-btn" onclick="tvCommand(this, 'asteriscom')" data-device-id="${deviceId}" aria-label="Asterisco" type="button">
+                            <img src="images/icons/icon-asterisco.svg" alt="Asterisco">
+                          </button>
                         </div>
                         <div class="tv-roku-portrait-shortcuts">
                           <button class="tv-btn tv-roku-portrait-shortcut-btn" onclick="tvCommand(this, 'primevideo')" data-device-id="${deviceId}" aria-label="Prime Video" type="button">
@@ -1489,7 +1500,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             <div class="tv-portrait-tabs" role="tablist" aria-label="Seções">
               <button class="tv-portrait-tab is-active" type="button" data-target="control" onclick="setTvPortraitPanel(this, 'control')" aria-pressed="true">Controle</button>
               <button class="tv-portrait-tab" type="button" data-target="numbers" onclick="setTvPortraitPanel(this, 'numbers')" aria-pressed="false">${portraitSecondaryPanelLabel}</button>
-              <button class="tv-portrait-tab" type="button" data-target="commands" onclick="setTvPortraitPanel(this, 'commands')" aria-pressed="false">Comandos</button>
+              ${isRoku ? "" : `<button class="tv-portrait-tab" type="button" data-target="commands" onclick="setTvPortraitPanel(this, 'commands')" aria-pressed="false">Comandos</button>`}
               <button class="tv-portrait-tab" type="button" data-target="media" onclick="setTvPortraitPanel(this, 'media')" aria-pressed="false">M&iacute;dia</button>
             </div>
           `
