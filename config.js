@@ -589,6 +589,146 @@ const CLIENT_CONFIG = {
   },
 };
 
+/**
+ * Bottom Navigation (pill + glass) configuration.
+ * Ajuste este bloco para mudar layout, estilo e comportamento da bottom nav.
+ */
+const bottomNavConfig = {
+  enabled: true,
+  breakpoint: 768,
+  // Mantem a navbar visivel em qualquer largura de tela.
+  showOnDesktop: true,
+  showOnLandscapeMobile: true,
+  landscapeMaxHeight: 560,
+  landscapeMaxWidth: 1024,
+
+  // Layout geral da barra
+  containerStyle: {
+    width: "fit-content",
+    maxWidth: "296px",
+    height: "80px",
+    padding: "8px 4px",
+    bottomOffset: "18px",
+    itemGap: "0px",
+    itemMinTouch: "44px",
+    // Largura horizontal de cada item (aproxima/afasta os elementos)
+    itemSlotWidth: "80px",
+    iconSize: "22px",
+    labelSize: "11px",
+    // Tamanho da barrinha (notch) quando a nav recolhe no scroll
+    notchWidth: "62px",
+    notchHeight: "9px",
+    // Ajuste aqui o pequeno respiro no fim do conteudo (degrau)
+    contentPaddingBottom: "12px",
+    // Ajuste aqui o espaco de ancoragem inferior de layouts absolutos/fixos
+    dockSpaceBottom: "12px",
+  },
+
+  // Glassmorphism
+  glassStyle: {
+    background: "rgba(8, 8, 8, 0.86)",
+    fallbackBackground: "rgba(8, 8, 8, 0.94)",
+    borderColor: "rgba(255, 255, 255, 0.06)",
+    blur: "16px",
+    shadow: "0 6px 14px rgba(0, 0, 0, 0.36), 0 14px 24px rgba(0, 0, 0, 0.28)",
+    innerGlow:
+      "linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 36%, rgba(255,255,255,0.00) 100%)",
+  },
+
+  // Estado ativo e transicoes
+  activeStyle: {
+    highlightColor: "#FFFFFF",
+    highlightSize: "62px",
+    textColor: "rgba(255, 255, 255, 0.84)",
+    textColorActive: "#ffffff",
+    iconTint: "rgba(255, 255, 255, 0.96)",
+    iconTintActive: "#101010",
+    labelWeight: 500,
+    labelWeightActive: 700,
+    transitionDuration: "240ms",
+    transitionEasing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+    iconPopScale: 1.1,
+  },
+
+  // Comportamento da barra durante o scroll
+  behavior: {
+    autoHideOnScroll: true,
+    scrollDelta: 8,
+    revealAtTop: 10,
+    // Atalho nas páginas de controle: recolhe a nav para um único botão Home.
+    controlHomeShortcut: {
+      enabled: true,
+      // Aplicar atalho somente em páginas de controle (não em qualquer rota).
+      onlyControlRoutes: true,
+      // Rotas de controle seguem o padrão: ambiente{n}-{controle}
+      controlRoutePattern: "^ambiente\\d+-",
+      // Rotas principais que mantêm a barra completa no centro.
+      // Todas as demais rotas entram no modo compacto de retorno.
+      primaryRoutes: ["home", "curtains", "scenes"],
+      // Como localizar o item de Home dentro de items[].
+      homePath: "home",
+      homeId: "home",
+      // No modo compacto, mantém sempre visível (sem notch de scroll).
+      disableAutoHide: true,
+      // Ajustes visuais do botão recolhido no canto inferior esquerdo.
+      leftOffset: "16px",
+      bottomOffset: "18px",
+      size: "68px",
+      padding: "7px",
+      highlightSize: "54px",
+      iconSize: "24px",
+      background: "rgba(8, 8, 8, 0.88)",
+      fallbackBackground: "rgba(8, 8, 8, 0.95)",
+      borderColor: "rgba(255, 255, 255, 0.08)",
+      blur: "16px",
+      shadow:
+        "0 8px 16px rgba(0, 0, 0, 0.34), 0 16px 26px rgba(0, 0, 0, 0.24)",
+    },
+  },
+
+  items: [
+    {
+      id: "home",
+      label: "Home",
+      path: "home",
+      icon: "images/icons/icon-home.svg",
+      visible: true,
+      disabled: false,
+      external: false,
+      order: 2,
+      styleOverrides: {},
+      ariaLabel: "Ir para Home",
+      tooltip: "Home",
+    },
+    {
+      id: "curtains",
+      label: "Cortinas",
+      path: "curtains",
+      icon: "images/icons/icon-curtain.svg",
+      visible: true,
+      disabled: false,
+      external: false,
+      order: 1,
+      styleOverrides: {},
+      ariaLabel: "Ir para Cortinas",
+      tooltip: "Cortinas",
+    },
+    {
+      id: "scenes",
+      label: "Cenarios",
+      path: "scenes",
+      icon: "images/icons/icon-scenes.svg",
+      visible: true,
+      disabled: false,
+      external: false,
+      order: 3,
+      styleOverrides: {},
+      ariaLabel: "Ir para Cenarios",
+      tooltip: "Cenarios",
+    },
+  ],
+};
+
 // =========================
 // Helpers (API pública)
 // =========================
@@ -1002,7 +1142,13 @@ function generateCurtainsControls(envKey) {
     .join("");
 }
 
+function getBottomNavConfig() {
+  return bottomNavConfig;
+}
+
 window.CLIENT_CONFIG = CLIENT_CONFIG;
+window.bottomNavConfig = bottomNavConfig;
+window.getBottomNavConfig = getBottomNavConfig;
 window.getVisibleEnvironments = getVisibleEnvironments;
 window.getEnvironment = getEnvironment;
 window.getEnvironmentLightIds = getEnvironmentLightIds;

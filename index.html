@@ -308,33 +308,11 @@
 
     <!-- Navbar fixa SPA -->
 
-    <nav class="navbar" id="spa-navbar">
-      <div class="nav-item" data-page="curtains" data-ui-item="curtains">
-        <div class="nav-icon-wrapper">
-          <img
-            src="images/icons/icon-curtain.svg"
-            alt="Cortinas"
-            class="nav-icon"
-          />
-        </div>
-      </div>
-
-      <div class="nav-item" data-page="home" data-ui-item="home">
-        <div class="nav-icon-wrapper">
-          <img src="images/icons/icon-home.svg" alt="Home" class="nav-icon" />
-        </div>
-      </div>
-
-      <div class="nav-item" data-page="scenes" data-ui-item="scenes">
-        <div class="nav-icon-wrapper">
-          <img
-            src="images/icons/icon-scenes.svg"
-            alt="Cenarios"
-            class="nav-icon"
-          />
-        </div>
-      </div>
-    </nav>
+    <nav
+      class="navbar bottom-nav"
+      id="spa-navbar"
+      aria-label="Navegacao principal"
+    ></nav>
     <script>
       (function () {
         var originalConsole = window.__DASHBOARD_ORIGINAL_CONSOLE__ || {
@@ -504,6 +482,931 @@
           }
         } catch (e) {}
         return fallback || "";
+      }
+
+      // --- Bottom Nav component (100% config-driven) ---
+      let bottomNavLocalActiveId = "";
+      let bottomNavScrollListenerBound = false;
+      let bottomNavScrollRaf = 0;
+      let bottomNavPendingScrollSource = null;
+      let bottomNavPendingScrollY = 0;
+      let bottomNavLastScrollAnchor = 0;
+      let bottomNavLastScrollSource = null;
+      let bottomNavCollapseClickBound = false;
+      let bottomNavBubbleSyncRaf = 0;
+      let bottomNavBubbleSyncTimeouts = [];
+
+      function getBottomNavConfigSafe() {
+        try {
+          if (typeof getBottomNavConfig === "function") {
+            const cfg = getBottomNavConfig();
+            if (cfg && typeof cfg === "object") return cfg;
+          }
+        } catch (e) {}
+
+        try {
+          if (
+            window.bottomNavConfig &&
+            typeof window.bottomNavConfig === "object"
+          ) {
+            return window.bottomNavConfig;
+          }
+        } catch (e) {}
+
+        return null;
+      }
+
+      function normalizeBottomNavRoute(value) {
+        const raw = String(value || "").trim();
+        if (!raw) return "";
+        return raw.replace(/^#/, "").replace(/^\/+/, "");
+      }
+
+      function getBottomNavItems(config = getBottomNavConfigSafe()) {
+        if (!config || !Array.isArray(config.items)) return [];
+
+        return config.items
+          .filter((item) => item && item.visible !== false)
+          .sort((a, b) => {
+            const orderA = Number.isFinite(Number(a?.order))
+              ? Number(a.order)
+              : Number.MAX_SAFE_INTEGER;
+            const orderB = Number.isFinite(Number(b?.order))
+              ? Number(b.order)
+              : Number.MAX_SAFE_INTEGER;
+
+            if (orderA !== orderB) return orderA - orderB;
+            return String(a?.label || "").localeCompare(String(b?.label || ""));
+          });
+      }
+
+      function resolveBottomNavIcon(iconPath) {
+        const icon = String(iconPath || "").trim();
+        if (!icon) return "";
+
+        try {
+          if (typeof resolveIconPath === "function") {
+            return resolveIconPath(icon) || icon;
+          }
+        } catch (e) {}
+
+        return icon;
+      }
+
+      function shouldShowBottomNav(config) {
+        if (!config || config.enabled === false) return false;
+
+        const breakpoint = Number.parseInt(config.breakpoint, 10);
+        const showOnDesktop = config.showOnDesktop === true;
+        if (showOnDesktop) return true;
+
+        if (typeof window.matchMedia === "function") {
+          if (
+            Number.isFinite(breakpoint) &&
+            window.matchMedia(`(max-width: ${breakpoint}px)`).matches
+          ) {
+            return true;
+          }
+
+          const showOnLandscapeMobile = config.showOnLandscapeMobile !== false;
+          if (showOnLandscapeMobile) {
+            const landscapeMaxHeight = Number.parseInt(
+              config.landscapeMaxHeight,
+              10,
+            );
+            const landscapeMaxWidth = Number.parseInt(
+              config.landscapeMaxWidth,
+              10,
+            );
+            const isLandscape = window.matchMedia("(orientation: landscape)")
+              .matches;
+
+            const heightOk =
+              !Number.isFinite(landscapeMaxHeight) ||
+              window.innerHeight <= landscapeMaxHeight;
+            const widthOk =
+              !Number.isFinite(landscapeMaxWidth) ||
+              window.innerWidth <= landscapeMaxWidth;
+
+            if (isLandscape && heightOk && widthOk) {
+              return true;
+            }
+          }
+
+          return false;
+        }
+
+        if (Number.isFinite(breakpoint) && window.innerWidth <= breakpoint) {
+          return true;
+        }
+
+        if (config.showOnLandscapeMobile !== false) {
+          const landscapeMaxHeight = Number.parseInt(config.landscapeMaxHeight, 10);
+          const landscapeMaxWidth = Number.parseInt(config.landscapeMaxWidth, 10);
+          const isLandscape = window.innerWidth > window.innerHeight;
+          const heightOk =
+            !Number.isFinite(landscapeMaxHeight) ||
+            window.innerHeight <= landscapeMaxHeight;
+          const widthOk =
+            !Number.isFinite(landscapeMaxWidth) ||
+            window.innerWidth <= landscapeMaxWidth;
+          if (isLandscape && heightOk && widthOk) {
+            return true;
+          }
+        }
+
+        return false;
+      }
+
+      function getBottomNavScrollY() {
+        const y =
+          window.pageYOffset ||
+          document.documentElement.scrollTop ||
+          document.body.scrollTop ||
+          0;
+        return y > 0 ? y : 0;
+      }
+
+      function resolveBottomNavScrollSource(target) {
+        if (
+          !target ||
+          target === window ||
+          target === document ||
+          target === document.documentElement ||
+          target === document.body
+        ) {
+          return window;
+        }
+
+        if (target instanceof Element) {
+          return target;
+        }
+
+        return window;
+      }
+
+      function getBottomNavSourceScrollY(source) {
+        const normalizedSource = resolveBottomNavScrollSource(source);
+        if (normalizedSource === window) {
+          return getBottomNavScrollY();
+        }
+
+        const y = Number(normalizedSource.scrollTop || 0);
+        return y > 0 ? y : 0;
+      }
+
+      function getBottomNavBehavior(config = getBottomNavConfigSafe()) {
+        const behavior =
+          config && typeof config.behavior === "object" ? config.behavior : {};
+        const controlHomeShortcut =
+          behavior && typeof behavior.controlHomeShortcut === "object"
+            ? behavior.controlHomeShortcut
+            : {};
+
+        const parsePositiveNumber = (value, fallback) => {
+          const parsed = Number(value);
+          if (!Number.isFinite(parsed) || parsed < 0) return fallback;
+          return parsed;
+        };
+
+        return {
+          autoHideOnScroll: behavior.autoHideOnScroll === true,
+          scrollDelta: Math.max(1, parsePositiveNumber(behavior.scrollDelta, 8)),
+          revealAtTop: Math.max(0, parsePositiveNumber(behavior.revealAtTop, 10)),
+          controlHomeShortcutEnabled: controlHomeShortcut.enabled === true,
+          controlHomeShortcutDisableAutoHide:
+            controlHomeShortcut.disableAutoHide !== false,
+        };
+      }
+
+      function getBottomNavControlHomeShortcut(
+        config = getBottomNavConfigSafe(),
+        items = [],
+      ) {
+        const behavior =
+          config && typeof config.behavior === "object" ? config.behavior : {};
+        const controlHomeShortcut =
+          behavior && typeof behavior.controlHomeShortcut === "object"
+            ? behavior.controlHomeShortcut
+            : {};
+
+        const normalizeRoutes = (routes) => {
+          if (!Array.isArray(routes)) return [];
+          const values = routes
+            .map((route) => normalizeBottomNavRoute(route))
+            .filter(Boolean);
+          return Array.from(new Set(values));
+        };
+
+        const primaryRoutesFromConfig = normalizeRoutes(
+          controlHomeShortcut.primaryRoutes,
+        );
+        const primaryRoutes =
+          primaryRoutesFromConfig.length > 0
+            ? primaryRoutesFromConfig
+            : Array.from(
+                new Set(
+                  (Array.isArray(items) ? items : [])
+                    .map((item) => normalizeBottomNavRoute(item?.path))
+                    .filter(Boolean),
+                ),
+              );
+
+        return {
+          enabled: controlHomeShortcut.enabled === true,
+          primaryRoutes,
+          homePath: normalizeBottomNavRoute(controlHomeShortcut.homePath || "home"),
+          homeId: String(controlHomeShortcut.homeId || "home"),
+          onlyControlRoutes: controlHomeShortcut.onlyControlRoutes !== false,
+          controlRoutePattern: String(
+            controlHomeShortcut.controlRoutePattern || "^ambiente\\d+-",
+          ),
+          includeRoutes: normalizeRoutes(controlHomeShortcut.includeRoutes),
+          excludeRoutes: normalizeRoutes(controlHomeShortcut.excludeRoutes),
+        };
+      }
+
+      function resolveBottomNavHomeItem(items, shortcutConfig) {
+        if (!Array.isArray(items) || items.length === 0) return null;
+
+        const byId = items.find(
+          (item, index) =>
+            getBottomNavItemId(item, index) === String(shortcutConfig.homeId || ""),
+        );
+        if (byId) return byId;
+
+        const byPath = items.find(
+          (item) =>
+            normalizeBottomNavRoute(item?.path) ===
+            normalizeBottomNavRoute(shortcutConfig.homePath || "home"),
+        );
+        if (byPath) return byPath;
+
+        const fallbackByHomePath = items.find(
+          (item) => normalizeBottomNavRoute(item?.path) === "home",
+        );
+        if (fallbackByHomePath) return fallbackByHomePath;
+
+        return items[0] || null;
+      }
+
+      function resolveBottomNavRenderModel(
+        currentRoute,
+        items,
+        config = getBottomNavConfigSafe(),
+      ) {
+        const route = normalizeBottomNavRoute(currentRoute);
+        const safeItems = Array.isArray(items) ? items : [];
+        const shortcutConfig = getBottomNavControlHomeShortcut(config, safeItems);
+        const homeItem = resolveBottomNavHomeItem(safeItems, shortcutConfig);
+
+        const isPrimaryRoute =
+          !route ||
+          shortcutConfig.primaryRoutes.includes(route) ||
+          route === shortcutConfig.homePath;
+
+        const isExplicitControlRoute = shortcutConfig.includeRoutes.includes(route);
+        const isExplicitExcludedRoute = shortcutConfig.excludeRoutes.includes(route);
+        let isControlRoute = isExplicitControlRoute;
+
+        if (!isControlRoute && route) {
+          try {
+            const controlRouteRegex = new RegExp(
+              shortcutConfig.controlRoutePattern,
+              "i",
+            );
+            isControlRoute = controlRouteRegex.test(route);
+          } catch (error) {
+            isControlRoute = false;
+          }
+        }
+
+        if (isExplicitExcludedRoute) {
+          isControlRoute = false;
+        }
+
+        const canUseShortcutByRoute = shortcutConfig.onlyControlRoutes
+          ? isControlRoute
+          : !isPrimaryRoute;
+        const useControlHomeShortcut =
+          shortcutConfig.enabled && canUseShortcutByRoute && !!homeItem;
+
+        if (!useControlHomeShortcut) {
+          return {
+            mode: "full",
+            items: safeItems,
+            forcedActiveId: "",
+          };
+        }
+
+        const homeId = getBottomNavItemId(homeItem, 0);
+
+        return {
+          mode: "control-home-shortcut",
+          items: [homeItem],
+          forcedActiveId: homeId,
+        };
+      }
+
+      function setBottomNavScrollHidden(nav, hidden) {
+        if (!nav) return;
+        nav.classList.toggle("is-scroll-hidden", hidden);
+      }
+
+      function syncBottomNavScrollState(
+        config = getBottomNavConfigSafe(),
+        source = bottomNavLastScrollSource || window,
+        forcedScrollY = null,
+      ) {
+        const nav = document.getElementById("spa-navbar");
+        if (!nav) return;
+
+        const normalizedSource = resolveBottomNavScrollSource(source);
+        const currentY =
+          forcedScrollY !== null && forcedScrollY !== undefined
+            ? Math.max(0, Number(forcedScrollY) || 0)
+            : getBottomNavSourceScrollY(normalizedSource);
+
+        if (nav.classList.contains("is-hidden")) {
+          setBottomNavScrollHidden(nav, false);
+          bottomNavLastScrollAnchor = currentY;
+          bottomNavLastScrollSource = normalizedSource;
+          return;
+        }
+
+        const behavior = getBottomNavBehavior(config);
+        if (
+          nav.classList.contains("is-control-home-mode") &&
+          behavior.controlHomeShortcutEnabled &&
+          behavior.controlHomeShortcutDisableAutoHide
+        ) {
+          setBottomNavScrollHidden(nav, false);
+          bottomNavLastScrollAnchor = currentY;
+          bottomNavLastScrollSource = normalizedSource;
+          return;
+        }
+
+        if (!behavior.autoHideOnScroll) {
+          setBottomNavScrollHidden(nav, false);
+          bottomNavLastScrollAnchor = currentY;
+          bottomNavLastScrollSource = normalizedSource;
+          return;
+        }
+
+        if (bottomNavLastScrollSource !== normalizedSource) {
+          bottomNavLastScrollSource = normalizedSource;
+          bottomNavLastScrollAnchor = currentY;
+          if (currentY <= behavior.revealAtTop) {
+            setBottomNavScrollHidden(nav, false);
+          }
+          return;
+        }
+
+        if (currentY <= behavior.revealAtTop) {
+          setBottomNavScrollHidden(nav, false);
+          bottomNavLastScrollAnchor = currentY;
+          bottomNavLastScrollSource = normalizedSource;
+          return;
+        }
+
+        const delta = currentY - bottomNavLastScrollAnchor;
+        if (delta >= behavior.scrollDelta) {
+          setBottomNavScrollHidden(nav, true);
+          bottomNavLastScrollAnchor = currentY;
+          bottomNavLastScrollSource = normalizedSource;
+          return;
+        }
+
+        if (delta <= -behavior.scrollDelta) {
+          setBottomNavScrollHidden(nav, false);
+          bottomNavLastScrollAnchor = currentY;
+          bottomNavLastScrollSource = normalizedSource;
+        }
+      }
+
+      function onBottomNavAnyScroll(event) {
+        bottomNavPendingScrollSource = resolveBottomNavScrollSource(event?.target);
+        bottomNavPendingScrollY = getBottomNavSourceScrollY(
+          bottomNavPendingScrollSource,
+        );
+
+        if (bottomNavScrollRaf) return;
+        bottomNavScrollRaf = window.requestAnimationFrame(() => {
+          bottomNavScrollRaf = 0;
+          syncBottomNavScrollState(
+            getBottomNavConfigSafe(),
+            bottomNavPendingScrollSource,
+            bottomNavPendingScrollY,
+          );
+        });
+      }
+
+      function ensureBottomNavScrollListener() {
+        if (bottomNavScrollListenerBound) return;
+        bottomNavScrollListenerBound = true;
+        bottomNavLastScrollSource = window;
+        bottomNavLastScrollAnchor = getBottomNavScrollY();
+        window.addEventListener("scroll", onBottomNavAnyScroll, {
+          passive: true,
+        });
+        document.addEventListener("scroll", onBottomNavAnyScroll, {
+          passive: true,
+          capture: true,
+        });
+      }
+
+      function onBottomNavCollapsedClick(event) {
+        const nav = event?.currentTarget;
+        if (
+          !nav ||
+          !nav.classList.contains("is-scroll-hidden") ||
+          nav.classList.contains("is-control-home-mode")
+        ) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        setBottomNavScrollHidden(nav, false);
+        const source = bottomNavLastScrollSource || window;
+        bottomNavLastScrollAnchor = getBottomNavSourceScrollY(source);
+      }
+
+      function ensureBottomNavCollapsedClickListener(nav) {
+        if (!nav || bottomNavCollapseClickBound) return;
+        bottomNavCollapseClickBound = true;
+        nav.addEventListener("click", onBottomNavCollapsedClick);
+      }
+
+      function applyBottomNavContainerStyles(nav, config, currentRoute) {
+        if (!nav || !config) return;
+
+        const containerStyle = config.containerStyle || {};
+        const glassStyle = config.glassStyle || {};
+        const activeStyle = config.activeStyle || {};
+        const behavior = config.behavior || {};
+        const controlShortcutStyle =
+          behavior && typeof behavior.controlHomeShortcut === "object"
+            ? behavior.controlHomeShortcut
+            : {};
+
+        const setNavVar = (name, value) => {
+          if (value === undefined || value === null || value === "") return;
+          nav.style.setProperty(name, String(value));
+        };
+
+        setNavVar("--bottom-nav-width", containerStyle.width);
+        setNavVar("--bottom-nav-max-width", containerStyle.maxWidth);
+        setNavVar("--bottom-nav-height", containerStyle.height);
+        setNavVar("--bottom-nav-padding", containerStyle.padding);
+        setNavVar("--bottom-nav-bottom-offset", containerStyle.bottomOffset);
+        setNavVar("--bottom-nav-gap", containerStyle.itemGap);
+        setNavVar("--bottom-nav-item-touch", containerStyle.itemMinTouch);
+        setNavVar("--bottom-nav-item-slot-width", containerStyle.itemSlotWidth);
+        setNavVar("--bottom-nav-icon-size", containerStyle.iconSize);
+        setNavVar("--bottom-nav-label-size", containerStyle.labelSize);
+        setNavVar("--bottom-nav-notch-width", containerStyle.notchWidth);
+        setNavVar("--bottom-nav-notch-height", containerStyle.notchHeight);
+
+        setNavVar("--bottom-nav-bg", glassStyle.background);
+        setNavVar("--bottom-nav-bg-fallback", glassStyle.fallbackBackground);
+        setNavVar("--bottom-nav-border", glassStyle.borderColor);
+        setNavVar("--bottom-nav-blur", glassStyle.blur);
+        setNavVar("--bottom-nav-shadow", glassStyle.shadow);
+        setNavVar("--bottom-nav-inner-glow", glassStyle.innerGlow);
+
+        setNavVar("--bottom-nav-highlight-color", activeStyle.highlightColor);
+        setNavVar("--bottom-nav-highlight-size", activeStyle.highlightSize);
+        setNavVar("--bottom-nav-item-color", activeStyle.textColor);
+        setNavVar("--bottom-nav-item-color-active", activeStyle.textColorActive);
+        setNavVar("--bottom-nav-item-icon", activeStyle.iconTint);
+        setNavVar("--bottom-nav-item-icon-active", activeStyle.iconTintActive);
+        setNavVar("--bottom-nav-label-weight", activeStyle.labelWeight);
+        setNavVar("--bottom-nav-label-weight-active", activeStyle.labelWeightActive);
+        setNavVar(
+          "--bottom-nav-transition-duration",
+          activeStyle.transitionDuration,
+        );
+        setNavVar("--bottom-nav-transition-easing", activeStyle.transitionEasing);
+        setNavVar("--bottom-nav-icon-pop-scale", activeStyle.iconPopScale);
+        setNavVar(
+          "--bottom-nav-control-left-offset",
+          controlShortcutStyle.leftOffset,
+        );
+        setNavVar(
+          "--bottom-nav-control-bottom-offset",
+          controlShortcutStyle.bottomOffset,
+        );
+        setNavVar("--bottom-nav-control-size", controlShortcutStyle.size);
+        setNavVar("--bottom-nav-control-padding", controlShortcutStyle.padding);
+        setNavVar(
+          "--bottom-nav-control-highlight-size",
+          controlShortcutStyle.highlightSize,
+        );
+        setNavVar("--bottom-nav-control-icon-size", controlShortcutStyle.iconSize);
+        setNavVar("--bottom-nav-control-bg", controlShortcutStyle.background);
+        setNavVar(
+          "--bottom-nav-control-bg-fallback",
+          controlShortcutStyle.fallbackBackground,
+        );
+        setNavVar("--bottom-nav-control-border", controlShortcutStyle.borderColor);
+        setNavVar("--bottom-nav-control-blur", controlShortcutStyle.blur);
+        setNavVar("--bottom-nav-control-shadow", controlShortcutStyle.shadow);
+
+        const route = normalizeBottomNavRoute(currentRoute);
+        const isHomeRoute = !route || route === "home";
+
+        const root = document.documentElement;
+        const contentPadding = isHomeRoute
+          ? "0px"
+          : String(containerStyle.contentPaddingBottom || "0px");
+        const dockSpace = isHomeRoute
+          ? "0px"
+          : String(containerStyle.dockSpaceBottom || "0px");
+        root.style.setProperty("--bottom-nav-content-padding-base", contentPadding);
+        root.style.setProperty("--bottom-nav-dock-space-base", dockSpace);
+      }
+
+      function applyBottomNavItemStyleOverrides(itemEl, styleOverrides) {
+        if (!itemEl || !styleOverrides || typeof styleOverrides !== "object") {
+          return;
+        }
+
+        Object.entries(styleOverrides).forEach(([key, value]) => {
+          if (value === undefined || value === null || value === "") return;
+
+          if (key.startsWith("--")) {
+            itemEl.style.setProperty(key, String(value));
+            return;
+          }
+
+          switch (key) {
+            case "highlightColor":
+              itemEl.style.setProperty("--bottom-nav-item-highlight", String(value));
+              break;
+            case "textColor":
+              itemEl.style.setProperty("--bottom-nav-item-color", String(value));
+              break;
+            case "activeTextColor":
+              itemEl.style.setProperty("--bottom-nav-item-color-active", String(value));
+              break;
+            case "iconTint":
+              itemEl.style.setProperty("--bottom-nav-item-icon", String(value));
+              break;
+            case "iconTintActive":
+              itemEl.style.setProperty(
+                "--bottom-nav-item-icon-active",
+                String(value),
+              );
+              break;
+          }
+        });
+      }
+
+      function itemMatchesBottomNavRoute(item, currentRoute) {
+        const current = normalizeBottomNavRoute(currentRoute);
+        if (!current) return false;
+
+        const candidates = [];
+        const mainPath = normalizeBottomNavRoute(item?.path);
+        if (mainPath) candidates.push(mainPath);
+
+        if (Array.isArray(item?.matchPaths)) {
+          item.matchPaths.forEach((matchPath) => {
+            const normalized = normalizeBottomNavRoute(matchPath);
+            if (normalized) candidates.push(normalized);
+          });
+        }
+
+        return candidates.some((candidate) => {
+          if (!candidate) return false;
+          return (
+            current === candidate ||
+            current.startsWith(`${candidate}/`) ||
+            current.startsWith(`${candidate}-`)
+          );
+        });
+      }
+
+      function resolveBottomNavActiveId(currentRoute, items) {
+        if (!Array.isArray(items) || items.length === 0) return "";
+
+        const byRoute = items.find((item) =>
+          itemMatchesBottomNavRoute(item, currentRoute),
+        );
+        if (byRoute) {
+          return String(
+            byRoute.id || normalizeBottomNavRoute(byRoute.path) || "",
+          );
+        }
+
+        if (
+          bottomNavLocalActiveId &&
+          items.some(
+            (item) =>
+              String(item.id || normalizeBottomNavRoute(item.path) || "") ===
+              bottomNavLocalActiveId,
+          )
+        ) {
+          return bottomNavLocalActiveId;
+        }
+
+        const homeItem =
+          items.find((item) => normalizeBottomNavRoute(item.path) === "home") ||
+          items[0];
+
+        return String(homeItem?.id || normalizeBottomNavRoute(homeItem?.path) || "");
+      }
+
+      function getBottomNavItemId(item, index) {
+        return String(
+          item?.id || normalizeBottomNavRoute(item?.path) || `item-${index}`,
+        );
+      }
+
+      function getBottomNavStructureKey(items) {
+        return items
+          .map((item, index) => {
+            const itemId = getBottomNavItemId(item, index);
+            return [
+              itemId,
+              String(item?.label || ""),
+              String(item?.icon || ""),
+              String(item?.path || ""),
+              item?.external ? "1" : "0",
+              item?.disabled ? "1" : "0",
+            ].join("::");
+          })
+          .join("|");
+      }
+
+      function createBottomNavButton(item, index) {
+        const itemId = getBottomNavItemId(item, index);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "nav-item";
+        button.dataset.navId = itemId;
+
+        const iconWrapper = document.createElement("span");
+        iconWrapper.className = "nav-icon-wrapper";
+
+        const icon = document.createElement("img");
+        icon.className = "nav-icon";
+        icon.alt = "";
+        icon.setAttribute("aria-hidden", "true");
+        iconWrapper.appendChild(icon);
+
+        const label = document.createElement("span");
+        label.className = "nav-text";
+
+        button.append(iconWrapper, label);
+        button.addEventListener("click", () => onBottomNavSelect(item));
+        return button;
+      }
+
+      function syncBottomNavButtonState(button, item, index, activeId) {
+        if (!button || !item) return;
+
+        const itemId = getBottomNavItemId(item, index);
+        const isActive = itemId === activeId;
+        const isDisabled = item.disabled === true;
+
+        button.dataset.navId = itemId;
+        button.dataset.page = normalizeBottomNavRoute(item.path || "");
+        button.dataset.external = item.external ? "true" : "false";
+        button.classList.toggle("active", isActive);
+        button.classList.toggle("is-disabled", isDisabled);
+        button.disabled = isDisabled;
+        button.setAttribute("aria-label", item.ariaLabel || item.label || itemId);
+
+        if (isActive) {
+          button.setAttribute("aria-current", "page");
+        } else {
+          button.removeAttribute("aria-current");
+        }
+
+        if (item.tooltip) {
+          button.setAttribute("title", item.tooltip);
+        } else {
+          button.removeAttribute("title");
+        }
+
+        const icon = button.querySelector(".nav-icon");
+        if (icon) {
+          icon.src = resolveBottomNavIcon(item.icon);
+        }
+
+        const label = button.querySelector(".nav-text");
+        if (label) {
+          label.textContent = String(item.label || itemId);
+        }
+
+        button.removeAttribute("style");
+        applyBottomNavItemStyleOverrides(button, item.styleOverrides);
+      }
+
+      function syncBottomNavButtons(nav, items, activeId) {
+        const buttons = Array.from(nav.querySelectorAll(".nav-item"));
+        buttons.forEach((button, index) => {
+          syncBottomNavButtonState(button, items[index], index, activeId);
+        });
+      }
+
+      function updateBottomNavActiveBubble(nav) {
+        if (!nav) return;
+
+        let bubble = nav.querySelector(".nav-active-bubble");
+        if (!bubble) {
+          bubble = document.createElement("span");
+          bubble.className = "nav-active-bubble";
+          bubble.setAttribute("aria-hidden", "true");
+          nav.insertBefore(bubble, nav.firstChild || null);
+        }
+
+        const activeItem = nav.querySelector(".nav-item.active");
+        if (!activeItem) return;
+
+        const navRect = nav.getBoundingClientRect();
+        const itemRect = activeItem.getBoundingClientRect();
+        const centerX = itemRect.left + itemRect.width / 2 - navRect.left;
+        nav.style.setProperty("--bottom-nav-active-left", `${centerX}px`);
+      }
+
+      function clearBottomNavBubbleSyncQueue() {
+        if (bottomNavBubbleSyncRaf) {
+          window.cancelAnimationFrame(bottomNavBubbleSyncRaf);
+          bottomNavBubbleSyncRaf = 0;
+        }
+
+        if (bottomNavBubbleSyncTimeouts.length > 0) {
+          bottomNavBubbleSyncTimeouts.forEach((timeoutId) =>
+            window.clearTimeout(timeoutId),
+          );
+          bottomNavBubbleSyncTimeouts = [];
+        }
+      }
+
+      function scheduleBottomNavBubbleSync(
+        nav,
+        config = getBottomNavConfigSafe(),
+      ) {
+        if (!nav) return;
+        clearBottomNavBubbleSyncQueue();
+
+        const transitionDuration = Number.parseInt(
+          config?.activeStyle?.transitionDuration,
+          10,
+        );
+        const safeDuration = Number.isFinite(transitionDuration)
+          ? Math.max(120, transitionDuration)
+          : 240;
+
+        const run = () => {
+          if (!nav || nav.classList.contains("is-hidden")) return;
+          updateBottomNavActiveBubble(nav);
+        };
+
+        bottomNavBubbleSyncRaf = window.requestAnimationFrame(() => {
+          bottomNavBubbleSyncRaf = 0;
+          run();
+        });
+
+        [Math.round(safeDuration * 0.5), safeDuration + 28].forEach((delay) => {
+          const timeoutId = window.setTimeout(run, delay);
+          bottomNavBubbleSyncTimeouts.push(timeoutId);
+        });
+      }
+
+      function onBottomNavSelect(item) {
+        if (!item || item.disabled) return;
+
+        const config = getBottomNavConfigSafe() || {};
+        const nav = document.getElementById("spa-navbar");
+        setBottomNavScrollHidden(nav, false);
+        bottomNavLastScrollAnchor = getBottomNavScrollY();
+        bottomNavLastScrollSource = window;
+
+        try {
+          if (typeof config.onNavigate === "function") {
+            const callbackResult = config.onNavigate(item);
+            if (callbackResult === false) return;
+          }
+        } catch (error) {
+          console.warn("BottomNav onNavigate callback falhou:", error);
+        }
+
+        const path = normalizeBottomNavRoute(item.path);
+        const activeId = String(item.id || path || "");
+
+        if (item.external) {
+          const href = String(item.path || "").trim();
+          if (href) {
+            const target = item.target || "_blank";
+            window.open(href, target, "noopener,noreferrer");
+          }
+          bottomNavLocalActiveId = activeId;
+          renderBottomNav(window.location.hash.replace("#", ""));
+          return;
+        }
+
+        if (!path) {
+          bottomNavLocalActiveId = activeId;
+          renderBottomNav(window.location.hash.replace("#", ""));
+          return;
+        }
+
+        bottomNavLocalActiveId = activeId;
+
+        if (typeof window.spaNavigate === "function") {
+          window.spaNavigate(path);
+          return;
+        }
+
+        if (window.location.hash.replace(/^#/, "") !== path) {
+          window.location.hash = path;
+          return;
+        }
+
+        renderBottomNav(path);
+      }
+
+      function renderBottomNav(currentRoute) {
+        const nav = document.getElementById("spa-navbar");
+        if (!nav) return;
+
+        const config = getBottomNavConfigSafe();
+        const allItems = getBottomNavItems(config);
+        const renderModel = resolveBottomNavRenderModel(
+          currentRoute,
+          allItems,
+          config,
+        );
+        const items = renderModel.items;
+        const isControlHomeMode = renderModel.mode === "control-home-shortcut";
+        const isVisible = shouldShowBottomNav(config) && items.length > 0;
+
+        nav.classList.toggle("is-hidden", !isVisible);
+        nav.classList.toggle("is-control-home-mode", isControlHomeMode);
+        nav.setAttribute("aria-hidden", isVisible ? "false" : "true");
+        nav.setAttribute(
+          "aria-label",
+          isControlHomeMode ? "Voltar para Home" : "Navegacao principal",
+        );
+        document.body.classList.toggle("bottom-nav-active", isVisible);
+
+        if (!isVisible) {
+          setBottomNavScrollHidden(nav, false);
+          nav.classList.remove("is-control-home-mode");
+          clearBottomNavBubbleSyncQueue();
+          nav.replaceChildren();
+          delete nav.dataset.bottomNavStructureKey;
+          delete nav.dataset.bottomNavMode;
+          bottomNavLastScrollAnchor = getBottomNavScrollY();
+          bottomNavLastScrollSource = window;
+          return;
+        }
+
+        ensureBottomNavScrollListener();
+        ensureBottomNavCollapsedClickListener(nav);
+        applyBottomNavContainerStyles(nav, config, currentRoute);
+
+        if (isControlHomeMode) {
+          setBottomNavScrollHidden(nav, false);
+        }
+
+        nav.dataset.bottomNavMode = renderModel.mode;
+
+        const activeId =
+          renderModel.forcedActiveId || resolveBottomNavActiveId(currentRoute, items);
+        bottomNavLocalActiveId = activeId || bottomNavLocalActiveId;
+
+        const structureKey = `${renderModel.mode}::${getBottomNavStructureKey(items)}`;
+        const hasSameStructure =
+          nav.dataset.bottomNavStructureKey === structureKey &&
+          nav.querySelectorAll(".nav-item").length === items.length;
+
+        if (!hasSameStructure) {
+          const fragment = document.createDocumentFragment();
+          items.forEach((item, index) => {
+            fragment.appendChild(createBottomNavButton(item, index));
+          });
+          nav.replaceChildren(fragment);
+          nav.dataset.bottomNavStructureKey = structureKey;
+
+          requestAnimationFrame(() => {
+            syncBottomNavButtons(nav, items, activeId);
+            scheduleBottomNavBubbleSync(nav, config);
+            syncBottomNavScrollState(config);
+          });
+          return;
+        }
+
+        syncBottomNavButtons(nav, items, activeId);
+        requestAnimationFrame(() => {
+          scheduleBottomNavBubbleSync(nav, config);
+          syncBottomNavScrollState(config);
+        });
       }
 
       const REMOTE_CONTROL_TYPES = new Set([
@@ -6262,41 +7165,8 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           preloadRoomBackground(baseAmbiente);
         })(page);
 
-        // Atualiza navbar (ativo + indicador)
-
-        const nav = document.getElementById("spa-navbar");
-
-        const items = nav.querySelectorAll(".nav-item");
-
-        const navPages = Array.from(items).map((i) =>
-          i.getAttribute("data-page"),
-        );
-
-        const navPage = navPages.includes(page) ? page : "home";
-
-        let activeIndex = navPages.indexOf(navPage);
-
-        if (activeIndex < 0) activeIndex = navPages.indexOf("home");
-
-        items.forEach((item, idx) =>
-          item.classList.toggle("active", idx === activeIndex),
-        );
-
-        const activeItem = items[activeIndex];
-
-        if (activeItem) {
-          // Usar setTimeout para garantir que o layout seja calculado após mudanças de DOM
-
-          setTimeout(() => {
-            const navRect = nav.getBoundingClientRect();
-
-            const itemRect = activeItem.getBoundingClientRect();
-
-            const center = itemRect.left + itemRect.width / 2 - navRect.left;
-
-            nav.style.setProperty("--indicator-left", `${center}px`);
-          }, 10);
-        }
+        // Atualiza BottomNav (config.js)
+        renderBottomNav(page);
 
         // Inicializa botões dos cômodos nas páginas internas
 
@@ -6455,21 +7325,9 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
       // Função para recalcular posição do page selector
 
       function updatePageSelectorPosition() {
-        const nav = document.getElementById("spa-navbar");
+        const currentRoute = window.location.hash.replace("#", "") || "home";
 
-        const activeItem = nav?.querySelector(".nav-item.active");
-
-        if (activeItem && nav) {
-          const navRect = nav.getBoundingClientRect();
-
-          const itemRect = activeItem.getBoundingClientRect();
-
-          const center = itemRect.left + itemRect.width / 2 - navRect.left;
-
-          nav.style.setProperty("--indicator-left", `${center}px`);
-
-          console.log("📍 Page selector reposicionado:", center + "px");
-        }
+        renderBottomNav(currentRoute);
       }
 
       // Navegação com transição (inclui back/forward do browser, que não passa por spaNavigate)
@@ -6550,19 +7408,6 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           }
         }, 800);
 
-        // Navbar SPA - listeners após DOM pronto
-
-        document.querySelectorAll(".nav-item").forEach((item) => {
-          item.addEventListener("click", function (e) {
-            const page = item.getAttribute("data-page");
-
-            if (page) {
-              e.preventDefault();
-
-              spaNavigate(page);
-            }
-          });
-        });
       });
 
       // Listeners para recalcular page selector ao rotacionar/redimensionar
