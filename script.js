@@ -712,6 +712,31 @@ const DEFAULT_DENON_COMMAND_DEVICE_ID = "354";
 const DENON_COMMAND_DEVICE_ID_BY_ENV = {
   ambiente3: "353",
 };
+const ENV_REMOTE_DEVICE_FIELDS = [
+  "music",
+  "tv",
+  "htv",
+  "bluray",
+  "appletv",
+  "clarotv",
+  "roku",
+  "games",
+  "hidromassagem",
+];
+const ROUTE_SUFFIX_TO_ENV_FIELD = {
+  luzes: "lights",
+  cortinas: "curtains",
+  conforto: "airConditioner",
+  musica: "music",
+  tv: "tv",
+  htv: "htv",
+  bluray: "bluray",
+  appletv: "appletv",
+  clarotv: "clarotv",
+  roku: "roku",
+  games: "games",
+  hidromassagem: "hidromassagem",
+};
 
 function getEnvironmentKeyFromRouteHash(hash = window.location.hash) {
   const route = (hash || "").replace("#", "");
@@ -731,20 +756,155 @@ function getDenonCommandDeviceIdForCurrentRoute(hash = window.location.hash) {
   return getDenonCommandDeviceIdForEnv(envKey);
 }
 
-function getPollingDeviceIds() {
-  const ids = Array.isArray(ALL_LIGHT_IDS) ? [...ALL_LIGHT_IDS] : [];
-  const denonId = String(getDenonCommandDeviceIdForCurrentRoute());
+function normalizeRouteForPolling(hash = window.location.hash) {
+  return String(hash || "")
+    .replace(/^#/, "")
+    .split("?")[0]
+    .trim()
+    .toLowerCase();
+}
 
-  if (denonId && denonId !== DEFAULT_DENON_COMMAND_DEVICE_ID) {
-    const filtered = ids.filter(
-      (id) => String(id) !== DEFAULT_DENON_COMMAND_DEVICE_ID
-    );
-    filtered.push(denonId);
-    return Array.from(new Set(filtered.map((id) => String(id))));
+function addPollingDeviceId(ids, value) {
+  if (value === null || value === undefined || value === "") return;
+  ids.add(String(value));
+}
+
+function addPollingDeviceList(ids, list) {
+  if (!Array.isArray(list)) return;
+
+  list.forEach((entry) => {
+    if (entry === null || entry === undefined) return;
+
+    if (
+      typeof entry === "string" ||
+      typeof entry === "number" ||
+      typeof entry === "bigint"
+    ) {
+      addPollingDeviceId(ids, entry);
+      return;
+    }
+
+    if (Array.isArray(entry.targets)) {
+      entry.targets.forEach((target) => {
+        if (target === null || target === undefined) return;
+        if (
+          typeof target === "string" ||
+          typeof target === "number" ||
+          typeof target === "bigint"
+        ) {
+          addPollingDeviceId(ids, target);
+          return;
+        }
+
+        if (typeof target === "object") {
+          addPollingDeviceId(ids, target.deviceId ?? target.id);
+        }
+      });
+    }
+
+    if (typeof entry === "object") {
+      addPollingDeviceId(ids, entry.deviceId ?? entry.id);
+    }
+  });
+}
+
+function addAirConditionerPollingIds(ids, acConfig) {
+  if (!acConfig || typeof acConfig !== "object") return;
+
+  addPollingDeviceId(ids, acConfig.deviceId);
+
+  const zones = Array.isArray(acConfig.zones) ? acConfig.zones : [];
+  zones.forEach((zone) => {
+    if (!zone || typeof zone !== "object") return;
+    addPollingDeviceId(ids, zone.deviceId);
+  });
+}
+
+function addEnvironmentDefaultPollingIds(ids, env) {
+  if (!env || typeof env !== "object") return;
+
+  addPollingDeviceList(ids, env.lights);
+  addPollingDeviceList(ids, env.curtains);
+  addAirConditionerPollingIds(ids, env.airConditioner);
+
+  ENV_REMOTE_DEVICE_FIELDS.forEach((field) => {
+    addPollingDeviceList(ids, env[field]);
+  });
+}
+
+function addEnvironmentPollingIds(ids, envKey, routeSuffix) {
+  if (!envKey || typeof getEnvironment !== "function") return;
+
+  const env = getEnvironment(envKey);
+  if (!env) return;
+
+  const normalizedSuffix = String(routeSuffix || "").toLowerCase();
+
+  if (!normalizedSuffix) {
+    addEnvironmentDefaultPollingIds(ids, env);
+    return;
   }
 
-  ids.push(denonId);
-  return Array.from(new Set(ids.map((id) => String(id))));
+  const suffixParts = normalizedSuffix.split("-").filter(Boolean);
+  const sectionKey = suffixParts[suffixParts.length - 1] || normalizedSuffix;
+  const field = ROUTE_SUFFIX_TO_ENV_FIELD[sectionKey];
+
+  if (!field) {
+    addEnvironmentDefaultPollingIds(ids, env);
+    return;
+  }
+
+  if (field === "airConditioner") {
+    addAirConditionerPollingIds(ids, env.airConditioner);
+    return;
+  }
+
+  addPollingDeviceList(ids, env[field]);
+}
+
+function getPollingDeviceIds(hash = window.location.hash) {
+  const ids = new Set();
+  const route = normalizeRouteForPolling(hash);
+  const envMatch = route.match(/^(ambiente\d+)(?:-(.+))?$/);
+
+  // Prioriza o que está visível na página atual.
+  deviceControlCache.forEach(function (_registry, cachedDeviceId) {
+    addPollingDeviceId(ids, cachedDeviceId);
+  });
+
+  if (envMatch) {
+    const envKey = envMatch[1];
+    const routeSuffix = envMatch[2] || "";
+    addEnvironmentPollingIds(ids, envKey, routeSuffix);
+  } else if (!route || route === "home") {
+    addPollingDeviceList(ids, ALL_LIGHT_IDS);
+  } else if (route === "ambientes") {
+    addPollingDeviceList(ids, ALL_LIGHT_IDS);
+  } else if (route === "curtains" || route === "cortinas") {
+    if (typeof getAllCurtainIds === "function") {
+      addPollingDeviceList(ids, getAllCurtainIds());
+    }
+  } else if (route === "scenes" || route === "cenarios") {
+    // Página de cenários não precisa polling completo por padrão.
+  }
+
+  const denonId = String(getDenonCommandDeviceIdForCurrentRoute(hash) || "");
+  if (denonId) {
+    if (
+      denonId !== DEFAULT_DENON_COMMAND_DEVICE_ID &&
+      ids.has(DEFAULT_DENON_COMMAND_DEVICE_ID)
+    ) {
+      ids.delete(DEFAULT_DENON_COMMAND_DEVICE_ID);
+    }
+    addPollingDeviceId(ids, denonId);
+  }
+
+  if (ids.size === 0) {
+    addPollingDeviceList(ids, ALL_LIGHT_IDS);
+    addPollingDeviceId(ids, denonId);
+  }
+
+  return Array.from(ids);
 }
 
 // ID do dispositivo de Ar Condicionado atual (será atualizado dinamicamente)
@@ -5287,6 +5447,47 @@ async function updateDeviceStatesFromServer(options = {}) {
   }
 }
 
+function escapeDeviceIdForSelector(deviceId) {
+  return String(deviceId).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+function getControlElementsForDevice(deviceId) {
+  const deviceKey = String(deviceId || "");
+  if (!deviceKey) return [];
+
+  const cachedRegistry = deviceControlCache.get(deviceKey);
+  let controls = [];
+
+  if (cachedRegistry && cachedRegistry.size > 0) {
+    cachedRegistry.forEach((el) => {
+      if (el?.isConnected) {
+        controls.push(el);
+      } else {
+        cachedRegistry.delete(el);
+      }
+    });
+
+    if (cachedRegistry.size === 0) {
+      deviceControlCache.delete(deviceKey);
+    }
+  }
+
+  if (controls.length > 0) {
+    return controls;
+  }
+
+  const selectorId = escapeDeviceIdForSelector(deviceKey);
+  const discovered = Array.from(
+    document.querySelectorAll(`[data-device-id="${selectorId}"]`)
+  );
+
+  if (discovered.length > 0) {
+    discovered.forEach((el) => registerControlElement(el));
+  }
+
+  return discovered;
+}
+
 function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
   // Verificar se o DOM está pronto
   if (document.readyState === "loading") {
@@ -5320,29 +5521,41 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
       ? "on"
       : "off"
   );
+  const normalizedDeviceId = String(deviceId);
 
   // Verificar se hÃƒÂ¡ comando recente que deve ser respeitado
   if (!forceUpdate) {
-    const lastCommand = recentCommands.get(deviceId);
+    const lastCommand =
+      recentCommands.get(normalizedDeviceId) || recentCommands.get(deviceId);
     if (lastCommand && Date.now() - lastCommand < COMMAND_PROTECTION_MS) {
       return;
     }
   }
 
-  // Atualizar controles de cÃƒÂ´modo (room-control E control-card)
-  const roomControls = document.querySelectorAll(
-    `[data-device-id="${deviceId}"]`
+  const previousStoredState = normalizeSwitchState(
+    getStoredState(normalizedDeviceId)
   );
+  if (previousStoredState !== normalizedState) {
+    setStoredState(normalizedDeviceId, normalizedState);
+  }
+
+  // Atualizar controles de cÃƒÂ´modo (room-control E control-card)
+  const roomControls = getControlElementsForDevice(normalizedDeviceId);
   debugLog(() => [
     "updateDeviceUI",
-    { deviceId, state, controls: roomControls.length, forceUpdate },
+    {
+      deviceId: normalizedDeviceId,
+      state,
+      controls: roomControls.length,
+      forceUpdate,
+    },
   ]);
 
   roomControls.forEach((el, index) => {
     debugLog(() => [
       "updateDeviceUI:control",
       {
-        deviceId,
+        deviceId: normalizedDeviceId,
         index: index + 1,
         classes: el.className,
         currentState: el.dataset.state,
@@ -5360,7 +5573,7 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
         debugLog(() => [
           "updateDeviceUI:apply",
           {
-            deviceId,
+            deviceId: normalizedDeviceId,
             from: currentState,
             to: normalizedState,
             forceUpdate,
@@ -5371,20 +5584,18 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
         if (level !== null) {
           applyDimmerLevelToControl(el, level);
         }
-        // Salvar o estado atualizado
-        setStoredState(deviceId, normalizedState);
       }
     } else {
       debugLog(() => [
         "updateDeviceUI:skip-unsupported",
-        { deviceId, classes: el.className },
+        { deviceId: normalizedDeviceId, classes: el.className },
       ]);
     }
   });
 
   // Atualizar botÃƒÂµes master da home apÃƒÂ³s qualquer mudanÃƒÂ§a de dispositivo
   const activeDenonDeviceId = String(getDenonCommandDeviceIdForCurrentRoute());
-  if (String(deviceId) === activeDenonDeviceId) {
+  if (normalizedDeviceId === activeDenonDeviceId) {
     applyDenonPowerState(state, activeDenonDeviceId);
   }
 

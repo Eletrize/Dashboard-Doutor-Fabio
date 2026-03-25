@@ -27,7 +27,6 @@ npm run build:assets
 
 Isso recompila os assets otimizados antes de publicar.
 
-
 ### 1. PersonalizaÃ§Ã£o BÃ¡sica
 
 #### 1.1 InformaÃ§Ãµes do Projeto
@@ -51,7 +50,7 @@ PROJECT_NAME = "Dashboard [Nome Cliente]"
 #### 1.2 Branding
 
 - **Logo**: Substitua `images/icons/Eletrize.svg` pelo logo do cliente
-- **Ãcone PWA**: Substitua os arquivos em `images/pwa/` com os Ã­cones do cliente
+- **Ãcone PWA**: Substitua os arquivos em `images/pwa/` com os ícones do cliente
 - **TÃ­tulo**: Edite `index.html` e atualize todas as ocorrÃªncias de "Dashboard Eletrize"
 
 #### 1.3 Fotos dos Ambientes
@@ -80,7 +79,7 @@ lights: [
     iconOn: "images/icons/icon-small-light-on.svg",
     iconOff: "images/icons/icon-small-light-off.svg",
   },
-]
+];
 ```
 
 #### 1.5 Ícones de Todos os Botões (Global)
@@ -119,7 +118,7 @@ const rooms = [
 
 #### 2.2 Dispositivos de Cada Ambiente
 
-Para cada ambiente, edite as pÃ¡ginas correspondentes em `index.html`:
+Para cada ambiente, edite as Páginas correspondentes em `index.html`:
 
 **Exemplo - Ambiente 1 (comeÃ§ando na linha ~1180):**
 
@@ -273,7 +272,7 @@ Veja `DEPLOY.md` para instruÃ§Ãµes completas.
 
 ```
 /
-â”œâ”€â”€ index.html              # PÃ¡gina principal (edite aqui os ambientes)
+â”œâ”€â”€ index.html              # Página principal (edite aqui os ambientes)
 â”œâ”€â”€ script.js              # LÃ³gica de controle (edite IDs de dispositivos)
 â”œâ”€â”€ scenes.js              # CenÃ¡rios (customize aqui)
 â”œâ”€â”€ styles.css             # Estilos (normalmente nÃ£o precisa editar)
@@ -300,7 +299,7 @@ Edite `styles.css` para alterar:
 
 ### Adicionar Mais Ambientes
 
-1. Duplique uma pÃ¡gina de ambiente em `index.html`
+1. Duplique uma Página de ambiente em `index.html`
 2. Renomeie as classes para `ambiente7-page`, `ambiente7-controls-wrapper`, etc.
 3. Adicione ao array `rooms`
 4. Adicione CSS para `.ambiente7-page` em `styles.css` (copie de outro ambiente)
@@ -308,14 +307,14 @@ Edite `styles.css` para alterar:
 ### Remover Ambientes
 
 1. Remova a entrada do array `rooms`
-2. Remova a pÃ¡gina correspondente de `index.html`
+2. Remova a Página correspondente de `index.html`
 3. Opcional: remova CSS especÃ­fico
 
 ### Controles Especiais
 
 Para adicionar tipos diferentes de controles (ventiladores, TVs, etc.):
 
-1. Adicione os Ã­cones SVG em `images/icons/`
+1. Adicione os ícones SVG em `images/icons/`
 2. Crie controle similar aos existentes
 3. Adicione handlers no `script.js`
 
@@ -340,16 +339,16 @@ if (deviceId === "40") {
 
 ### Caracteres especiais nÃ£o aparecem
 
-O dashboard jÃ¡ tem correÃ§Ã£o automÃ¡tica para caracteres com encoding incorreto.
-Edite `script.js` (linha ~717) se necessÃ¡rio adicionar mais correÃ§Ãµes.
+O dashboard já tem correção automÃ¡tica para caracteres com encoding incorreto.
+Edite `script.js` (linha ~717) se necessário adicionar mais correÃ§Ãµes.
 
 ## ðŸ“± PWA - App InstalÃ¡vel
 
 Para ativar a instalaÃ§Ã£o como app:
 
 1. Edite `manifest.json` com nome e descriÃ§Ã£o do cliente
-2. Substitua os Ã­cones em `images/pwa/`
-3. O service worker (`service-worker.js`) jÃ¡ estÃ¡ configurado
+2. Substitua os ícones em `images/pwa/`
+3. O service worker (`service-worker.js`) já estÃ¡ configurado
 
 ## ðŸ” SeguranÃ§a
 

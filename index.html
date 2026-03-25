@@ -198,7 +198,11 @@
           </button>
         </form>
 
-        <button id="auth-google-btn" type="button" class="auth-btn auth-btn--google">
+        <button
+          id="auth-google-btn"
+          type="button"
+          class="auth-btn auth-btn--google"
+        >
           Entrar com Google
         </button>
 
@@ -239,7 +243,7 @@
       <div class="loader-line" id="loader-line"></div>
     </div>
 
-    <!-- Elementos fixos (fora do fade das pÃ¡ginas) -->
+    <!-- Elementos fixos (fora do fade das Páginas) -->
     <div id="spa-static-topbar" class="top-bar-custom spa-static-chrome"></div>
     <h1
       id="spa-static-header"
@@ -434,7 +438,10 @@
         setConsoleState(window.__DASHBOARD_DEBUG__);
       })();
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+      defer
+    ></script>
     <script src="auth.js?v=1.0.0" defer></script>
     <script src="main-home.js?v=1.0.0" defer></script>
     <script src="script.js?v=1.0.26" defer></script>
@@ -635,8 +642,9 @@
               config.landscapeMaxWidth,
               10,
             );
-            const isLandscape = window.matchMedia("(orientation: landscape)")
-              .matches;
+            const isLandscape = window.matchMedia(
+              "(orientation: landscape)",
+            ).matches;
 
             const heightOk =
               !Number.isFinite(landscapeMaxHeight) ||
@@ -658,8 +666,14 @@
         }
 
         if (config.showOnLandscapeMobile !== false) {
-          const landscapeMaxHeight = Number.parseInt(config.landscapeMaxHeight, 10);
-          const landscapeMaxWidth = Number.parseInt(config.landscapeMaxWidth, 10);
+          const landscapeMaxHeight = Number.parseInt(
+            config.landscapeMaxHeight,
+            10,
+          );
+          const landscapeMaxWidth = Number.parseInt(
+            config.landscapeMaxWidth,
+            10,
+          );
           const isLandscape = window.innerWidth > window.innerHeight;
           const heightOk =
             !Number.isFinite(landscapeMaxHeight) ||
@@ -728,8 +742,14 @@
 
         return {
           autoHideOnScroll: behavior.autoHideOnScroll === true,
-          scrollDelta: Math.max(1, parsePositiveNumber(behavior.scrollDelta, 8)),
-          revealAtTop: Math.max(0, parsePositiveNumber(behavior.revealAtTop, 10)),
+          scrollDelta: Math.max(
+            1,
+            parsePositiveNumber(behavior.scrollDelta, 8),
+          ),
+          revealAtTop: Math.max(
+            0,
+            parsePositiveNumber(behavior.revealAtTop, 10),
+          ),
           controlHomeShortcutEnabled: controlHomeShortcut.enabled === true,
           controlHomeShortcutDisableAutoHide:
             controlHomeShortcut.disableAutoHide !== false,
@@ -772,7 +792,9 @@
         return {
           enabled: controlHomeShortcut.enabled === true,
           primaryRoutes,
-          homePath: normalizeBottomNavRoute(controlHomeShortcut.homePath || "home"),
+          homePath: normalizeBottomNavRoute(
+            controlHomeShortcut.homePath || "home",
+          ),
           homeId: String(controlHomeShortcut.homeId || "home"),
           onlyControlRoutes: controlHomeShortcut.onlyControlRoutes !== false,
           controlRoutePattern: String(
@@ -788,7 +810,8 @@
 
         const byId = items.find(
           (item, index) =>
-            getBottomNavItemId(item, index) === String(shortcutConfig.homeId || ""),
+            getBottomNavItemId(item, index) ===
+            String(shortcutConfig.homeId || ""),
         );
         if (byId) return byId;
 
@@ -819,7 +842,10 @@
       ) {
         const route = normalizeBottomNavRoute(currentRoute);
         const safeItems = Array.isArray(items) ? items : [];
-        const shortcutConfig = getBottomNavControlHomeShortcut(config, safeItems);
+        const shortcutConfig = getBottomNavControlHomeShortcut(
+          config,
+          safeItems,
+        );
         const homeItem = resolveBottomNavHomeItem(safeItems, shortcutConfig);
 
         const isPrimaryRoute =
@@ -827,8 +853,10 @@
           shortcutConfig.primaryRoutes.includes(route) ||
           route === shortcutConfig.homePath;
 
-        const isExplicitControlRoute = shortcutConfig.includeRoutes.includes(route);
-        const isExplicitExcludedRoute = shortcutConfig.excludeRoutes.includes(route);
+        const isExplicitControlRoute =
+          shortcutConfig.includeRoutes.includes(route);
+        const isExplicitExcludedRoute =
+          shortcutConfig.excludeRoutes.includes(route);
         let isControlRoute = isExplicitControlRoute;
 
         if (!isControlRoute && route) {
@@ -962,7 +990,9 @@
       }
 
       function onBottomNavAnyScroll(event) {
-        bottomNavPendingScrollSource = resolveBottomNavScrollSource(event?.target);
+        bottomNavPendingScrollSource = resolveBottomNavScrollSource(
+          event?.target,
+        );
         bottomNavPendingScrollY = getBottomNavSourceScrollY(
           bottomNavPendingScrollSource,
         );
@@ -1056,16 +1086,25 @@
         setNavVar("--bottom-nav-highlight-color", activeStyle.highlightColor);
         setNavVar("--bottom-nav-highlight-size", activeStyle.highlightSize);
         setNavVar("--bottom-nav-item-color", activeStyle.textColor);
-        setNavVar("--bottom-nav-item-color-active", activeStyle.textColorActive);
+        setNavVar(
+          "--bottom-nav-item-color-active",
+          activeStyle.textColorActive,
+        );
         setNavVar("--bottom-nav-item-icon", activeStyle.iconTint);
         setNavVar("--bottom-nav-item-icon-active", activeStyle.iconTintActive);
         setNavVar("--bottom-nav-label-weight", activeStyle.labelWeight);
-        setNavVar("--bottom-nav-label-weight-active", activeStyle.labelWeightActive);
+        setNavVar(
+          "--bottom-nav-label-weight-active",
+          activeStyle.labelWeightActive,
+        );
         setNavVar(
           "--bottom-nav-transition-duration",
           activeStyle.transitionDuration,
         );
-        setNavVar("--bottom-nav-transition-easing", activeStyle.transitionEasing);
+        setNavVar(
+          "--bottom-nav-transition-easing",
+          activeStyle.transitionEasing,
+        );
         setNavVar("--bottom-nav-icon-pop-scale", activeStyle.iconPopScale);
         setNavVar(
           "--bottom-nav-control-left-offset",
@@ -1081,19 +1120,24 @@
           "--bottom-nav-control-highlight-size",
           controlShortcutStyle.highlightSize,
         );
-        setNavVar("--bottom-nav-control-icon-size", controlShortcutStyle.iconSize);
+        setNavVar(
+          "--bottom-nav-control-icon-size",
+          controlShortcutStyle.iconSize,
+        );
         setNavVar("--bottom-nav-control-bg", controlShortcutStyle.background);
         setNavVar(
           "--bottom-nav-control-bg-fallback",
           controlShortcutStyle.fallbackBackground,
         );
-        setNavVar("--bottom-nav-control-border", controlShortcutStyle.borderColor);
+        setNavVar(
+          "--bottom-nav-control-border",
+          controlShortcutStyle.borderColor,
+        );
         setNavVar("--bottom-nav-control-blur", controlShortcutStyle.blur);
         setNavVar("--bottom-nav-control-shadow", controlShortcutStyle.shadow);
 
         const route = normalizeBottomNavRoute(currentRoute);
-        const isHomeRoute =
-          !route || route === "home" || route === "ambientes";
+        const isHomeRoute = !route || route === "home" || route === "ambientes";
 
         const root = document.documentElement;
         const contentPadding = isHomeRoute
@@ -1102,7 +1146,10 @@
         const dockSpace = isHomeRoute
           ? "0px"
           : String(containerStyle.dockSpaceBottom || "0px");
-        root.style.setProperty("--bottom-nav-content-padding-base", contentPadding);
+        root.style.setProperty(
+          "--bottom-nav-content-padding-base",
+          contentPadding,
+        );
         root.style.setProperty("--bottom-nav-dock-space-base", dockSpace);
       }
 
@@ -1121,13 +1168,22 @@
 
           switch (key) {
             case "highlightColor":
-              itemEl.style.setProperty("--bottom-nav-item-highlight", String(value));
+              itemEl.style.setProperty(
+                "--bottom-nav-item-highlight",
+                String(value),
+              );
               break;
             case "textColor":
-              itemEl.style.setProperty("--bottom-nav-item-color", String(value));
+              itemEl.style.setProperty(
+                "--bottom-nav-item-color",
+                String(value),
+              );
               break;
             case "activeTextColor":
-              itemEl.style.setProperty("--bottom-nav-item-color-active", String(value));
+              itemEl.style.setProperty(
+                "--bottom-nav-item-color-active",
+                String(value),
+              );
               break;
             case "iconTint":
               itemEl.style.setProperty("--bottom-nav-item-icon", String(value));
@@ -1197,7 +1253,9 @@
           ) ||
           items[0];
 
-        return String(homeItem?.id || normalizeBottomNavRoute(homeItem?.path) || "");
+        return String(
+          homeItem?.id || normalizeBottomNavRoute(homeItem?.path) || "",
+        );
       }
 
       function getBottomNavItemId(item, index) {
@@ -1259,7 +1317,10 @@
         button.classList.toggle("active", isActive);
         button.classList.toggle("is-disabled", isDisabled);
         button.disabled = isDisabled;
-        button.setAttribute("aria-label", item.ariaLabel || item.label || itemId);
+        button.setAttribute(
+          "aria-label",
+          item.ariaLabel || item.label || itemId,
+        );
 
         if (isActive) {
           button.setAttribute("aria-current", "page");
@@ -1462,7 +1523,8 @@
         nav.dataset.bottomNavMode = renderModel.mode;
 
         const activeId =
-          renderModel.forcedActiveId || resolveBottomNavActiveId(currentRoute, items);
+          renderModel.forcedActiveId ||
+          resolveBottomNavActiveId(currentRoute, items);
         bottomNavLocalActiveId = activeId || bottomNavLocalActiveId;
 
         const structureKey = `${renderModel.mode}::${getBottomNavStructureKey(items)}`;
@@ -1791,7 +1853,7 @@
         return devices.length > 0 ? devices[0] : null;
       }
 
-            function renderAppleTvControlPage(envKey, deviceId, title, typeKey) {
+      function renderAppleTvControlPage(envKey, deviceId, title, typeKey) {
         const applePortraitTopMarkup = `
     <div class="tv-portrait-top-actions">
       <button class="tv-btn tv-btn--power-on" onclick="tvCommand(this, 'on')" data-device-id="${deviceId}" aria-label="Ligar">
@@ -1933,7 +1995,7 @@
         `;
       }
 
-function renderTvControlPage(envKey, deviceType, headingLabel) {
+      function renderTvControlPage(envKey, deviceType, headingLabel) {
         const env =
           typeof getEnvironment === "function" ? getEnvironment(envKey) : null;
         const envName = env?.name || envKey;
@@ -1975,13 +2037,13 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         const powerOnCommand = useClaroLayout
           ? "on"
           : isTvControl
-          ? "powerOn"
-          : "on";
+            ? "powerOn"
+            : "on";
         const powerOffCommand = useClaroLayout
           ? "off"
           : isTvControl
-          ? "powerOff"
-          : "off";
+            ? "powerOff"
+            : "off";
         const tvCommandsMarkup = `
                     <button class="tv-btn tv-btn--icon-only tv-btn--voltar" onclick="tvCommand(this, 'voltar')" data-device-id="${deviceId}" aria-label="Voltar">
                         <img src="images/icons/arrow-left.svg" alt="Voltar">
@@ -2071,9 +2133,9 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
               </button>
             `
           : isRoku
-          ? rokuCommandsMarkup
-          : isClaroTv
-          ? `
+            ? rokuCommandsMarkup
+            : isClaroTv
+              ? `
                     <button class="tv-btn tv-btn--icon-only" data-claro-panel-btn="favorites" onclick="toggleClaroTvPanel(this, 'favorites'); tvCommand(this, 'favorites')" data-device-id="${deviceId}" aria-label="Favoritos" aria-pressed="false" type="button">
                         <img src="images/icons/icon-fav.svg" alt="Favoritos">
                     </button>
@@ -2099,11 +2161,11 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                         <img src="images/icons/arrow-left.svg" alt="Voltar">
                     </button>
                 `
-          : isBluray
-          ? blurayCommandsMarkup
-          : isTvControl
-          ? tvCommandsMarkup
-          : defaultCommandsMarkup;
+              : isBluray
+                ? blurayCommandsMarkup
+                : isTvControl
+                  ? tvCommandsMarkup
+                  : defaultCommandsMarkup;
         const numpadFooterMarkup = isClaroTv
           ? `
                         <button class="tv-numpad-btn tv-numpad-btn--icon" onclick="tvCommand(this, 'returnButton')" data-device-id="${deviceId}" aria-label="Voltar">
@@ -2123,7 +2185,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                             <img src="images/icons/icon-mouse.svg" alt="Mouse">
                         </button>
                 `;
-            const volumeControlMarkup = `
+        const volumeControlMarkup = `
                 <header class="tv-section-header">
                   <h3 class="tv-section-title">Volume</h3>
                   <span class="tv-volume-value" id="tv-volume-display">50</span>
@@ -2147,11 +2209,11 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                   <h3 class="tv-section-title">Comandos</h3>
                   <div class="tv-section-line"></div>
                 </header>
-                <div class="tv-control-group tv-commands-grid${isMusicPage ? ' tv-commands-grid--music' : ''}${!isMusicPage && !isClaroTv && (isTvControl || isBluray) ? ' tv-commands-grid--tv' : ''}">
+                <div class="tv-control-group tv-commands-grid${isMusicPage ? " tv-commands-grid--music" : ""}${!isMusicPage && !isClaroTv && (isTvControl || isBluray) ? " tv-commands-grid--tv" : ""}">
                   ${commandsMarkup}
                 </div>
             `;
-            const commandsSectionMarkup = `
+        const commandsSectionMarkup = `
                 <div class="tv-control-section tv-control-section--commands" data-portrait-section="commands">
                   ${commandsControlMarkup}
                 </div>
@@ -2224,7 +2286,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 </div>
                 `
           : isClaroTv
-          ? `
+            ? `
                 <div class="tv-control-section tv-control-section--media" data-portrait-section="media">
                     <header class="tv-section-header">
                         <h3 class="tv-section-title">M&iacute;dia</h3>
@@ -2246,9 +2308,9 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                     </div>
                 </div>
                 `
-          : isBluray
-          ? ""
-          : `
+            : isBluray
+              ? ""
+              : `
                 <div class="tv-control-section tv-control-section--media" data-portrait-section="media">
                     <header class="tv-section-header">
                         <h3 class="tv-section-title">M&iacute;dia</h3>
@@ -2348,7 +2410,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           </div>
           `
           : isRoku
-          ? `
+            ? `
             <div class="tv-control-section tv-control-section--claro-panel" data-claro-panel="numbers" data-portrait-section="numbers">
                 <div class="tv-claro-panel-fade" data-claro-fade>
                     <header class="tv-section-header">
@@ -2377,8 +2439,8 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 </div>
             </div>
           `
-          : isClaroTv
-          ? `
+            : isClaroTv
+              ? `
             <div class="tv-control-section tv-control-section--claro-panel" data-claro-panel="numbers" data-portrait-section="numbers">
                 <div class="tv-claro-panel-fade" data-claro-fade>
                     <header class="tv-section-header">
@@ -2405,7 +2467,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 </div>
             </div>
           `
-          : commandsSectionMarkup;
+              : commandsSectionMarkup;
         const claroFavoritesSectionMarkup = isClaroTv
           ? `
             <div class="tv-control-section tv-control-section--favorites" data-portrait-section="favorites">
@@ -2426,8 +2488,8 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             </div>
           `
           : useClaroLayout
-          ? commandsSectionMarkup
-          : "";
+            ? commandsSectionMarkup
+            : "";
         const portraitTopMarkup = isPortraitEnabled
           ? useClaroLayout
             ? `
@@ -2438,11 +2500,15 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
               <button class="tv-btn tv-btn--power-off" onclick="tvCommand(this, '${powerOffCommand}')" data-device-id="${deviceId}" aria-label="Desligar">
                 ${powerOffLabel}
               </button>
-              ${isClaroTv ? `
+              ${
+                isClaroTv
+                  ? `
               <button class="tv-btn tv-btn--icon-only tv-portrait-favorite" onclick="setTvPortraitPanel(this, 'favorites')" aria-label="Favoritos" type="button">
                 <img src="images/icons/icon-fav.svg" alt="Favoritos">
               </button>
-              ` : ""}
+              `
+                  : ""
+              }
             </div>
           `
             : `
@@ -2456,8 +2522,9 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             </div>
           `
           : "";
-        const rokuPortraitFixedCommandsMarkup = isRoku && isPortraitEnabled
-          ? `
+        const rokuPortraitFixedCommandsMarkup =
+          isRoku && isPortraitEnabled
+            ? `
             <div class="tv-roku-fixed-commands" aria-label="Comandos Roku" role="group">
               <button class="tv-btn tv-roku-fixed-command-btn" onclick="tvCommand(this, 'back')" data-device-id="${deviceId}" aria-label="Voltar" type="button">
                 <img src="images/icons/arrow-left.svg" alt="Voltar">
@@ -2470,7 +2537,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
               </button>
             </div>
           `
-          : "";
+            : "";
         const portraitTabsMarkup = isPortraitEnabled
           ? useClaroLayout
             ? `
@@ -2482,22 +2549,22 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             </div>
           `
             : isBluray
-            ? `
+              ? `
             <div class="tv-portrait-tabs" role="tablist" aria-label="SeÃ§Ãµes">
               <button class="tv-portrait-tab is-active" type="button" data-target="control" onclick="setTvPortraitPanel(this, 'control')" aria-pressed="true">Controle</button>
               <button class="tv-portrait-tab" type="button" data-target="commands" onclick="setTvPortraitPanel(this, 'commands')" aria-pressed="false">Comandos</button>
               <button class="tv-portrait-tab" type="button" data-target="media" onclick="setTvPortraitPanel(this, 'media')" aria-pressed="false">M&iacute;dia</button>
             </div>
           `
-            : isTvControl
-            ? `
+              : isTvControl
+                ? `
             <div class="tv-portrait-tabs" role="tablist" aria-label="SeÃ§Ãµes">
               <button class="tv-portrait-tab is-active" type="button" data-target="control" onclick="setTvPortraitPanel(this, 'control')" aria-pressed="true">Controle</button>
               <button class="tv-portrait-tab" type="button" data-target="commands" onclick="setTvPortraitPanel(this, 'commands')" aria-pressed="false">Comandos</button>
               <button class="tv-portrait-tab" type="button" data-target="media" onclick="setTvPortraitPanel(this, 'media')" aria-pressed="false">M&iacute;dia</button>
             </div>
           `
-            : `
+                : `
             <div class="tv-portrait-tabs" role="tablist" aria-label="SeÃ§Ãµes">
               <button class="tv-portrait-tab is-active" type="button" data-target="control" onclick="setTvPortraitPanel(this, 'control')" aria-pressed="true">Controle</button>
               <button class="tv-portrait-tab" type="button" data-target="commands" onclick="setTvPortraitPanel(this, 'commands')" aria-pressed="false">Comandos</button>
@@ -2557,7 +2624,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         <h1 class="page-title">${title}</h1>
     </div>
 
-    <div class="tv-control-wrapper" data-control-type="${layoutTypeKey}" data-device-type="${typeKey}"${isPortraitEnabled ? ' data-portrait-panel="control"' : ''}>
+    <div class="tv-control-wrapper" data-control-type="${layoutTypeKey}" data-device-type="${typeKey}"${isPortraitEnabled ? ' data-portrait-panel="control"' : ""}>
         ${portraitTopMarkup}
         ${rokuPortraitFixedCommandsMarkup}
         ${portraitTabsMarkup}
@@ -2565,7 +2632,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         <!-- COLUNA 1 -->
         <div class="tv-controls-col tv-col-1">
             <!-- BLOCO 1: ON/OFF -->
-            <div class="tv-control-section tv-control-section--power"${isPortraitEnabled ? ' data-portrait-section="power"' : ''}>
+            <div class="tv-control-section tv-control-section--power"${isPortraitEnabled ? ' data-portrait-section="power"' : ""}>
                 <header class="tv-section-header">
                     <h3 class="tv-section-title">On / Off</h3>
                     <div class="tv-section-line"></div>
@@ -2599,8 +2666,11 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             ${middleColumnTopMarkup}
 
             <!-- BLOCO 2: CONTROLE / MÃšSICA -->
-            ${isMusicPage ? musicInfoMarkup : `
-            <div class="tv-control-section tv-control-section--dpad" data-device-id="${deviceId}" data-control-mode="cursor"${isPortraitEnabled ? ' data-portrait-section="control"' : ''}>
+            ${
+              isMusicPage
+                ? musicInfoMarkup
+                : `
+            <div class="tv-control-section tv-control-section--dpad" data-device-id="${deviceId}" data-control-mode="cursor"${isPortraitEnabled ? ' data-portrait-section="control"' : ""}>
               <header class="tv-section-header">
                 <h3 class="tv-section-title">Controle</h3>
                 <div class="tv-section-line"></div>
@@ -2641,7 +2711,8 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 </div>
               </div>
             </div>
-            `}
+            `
+            }
         </div>
 
         <!-- COLUNA 3 -->
@@ -2651,12 +2722,16 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
 
             ${claroFavoritesSectionMarkup}
 
-            ${isMusicPage || isBluray || useClaroLayout ? "" : `
+            ${
+              isMusicPage || isBluray || useClaroLayout
+                ? ""
+                : `
             <!-- BLOCO 7: LOGO -->
             <div class="tv-control-section tv-logo-section">
               <img src="images/icons/eletrize.svg" alt="Eletrize" class="tv-eletrize-logo">
             </div>
-            `}
+            `
+            }
         </div>
 
         ${blurayMediaMarkup}
@@ -2680,7 +2755,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         `;
       }
 
-            function renderMusicPage(envKey) {
+      function renderMusicPage(envKey) {
         const env =
           typeof getEnvironment === "function" ? getEnvironment(envKey) : null;
         const envName = env?.name || envKey;
@@ -3090,7 +3165,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
 
         if (typeof pagesRef[pageKey] === "function") {
           console.log(
-            `[ensureConfigPage] PÃ¡gina ${pageKey} jÃ¡ existe, substituindo por config.js`,
+            `[ensureConfigPage] Página ${pageKey} já existe, substituindo por config.js`,
           );
         }
 
@@ -3326,7 +3401,11 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           pagesRef[pageKey] = () => {
             const env = getEnvironment(envKey);
             const envName = env?.name || envKey;
-            return renderTvControlPage(envKey, "clarotv", `${envName}, MÃºsica`);
+            return renderTvControlPage(
+              envKey,
+              "clarotv",
+              `${envName}, MÃºsica`,
+            );
           };
           return;
         }
@@ -3411,7 +3490,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 const total = routes.length;
 
                 if (typeof window.updateProgress === "function") {
-                  window.updateProgress(5, `Preparando ${total} pÃ¡ginas...`);
+                  window.updateProgress(5, `Preparando ${total} Páginas...`);
                 }
 
                 const processChunk = () => {
@@ -3452,7 +3531,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                     const progress = 5 + Math.round((processed / total) * 10);
                     window.updateProgress(
                       progress,
-                      `PÃ¡gina ${processed}/${total}`,
+                      `Página ${processed}/${total}`,
                     );
                   }
 
@@ -3460,7 +3539,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                     scheduleIdle(processChunk, { timeout: 100 });
                   } else {
                     if (typeof window.updateProgress === "function") {
-                      window.updateProgress(15, "PÃ¡ginas prontas!");
+                      window.updateProgress(15, "Páginas prontas!");
                     }
                     resolve();
                   }
@@ -6963,7 +7042,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         `,
       };
 
-      // Remover pÃ¡ginas estÃ¡ticas antigas para forÃ§ar geraÃ§Ã£o via config.js
+      // Remover Páginas estÃ¡ticas antigas para forÃ§ar geraÃ§Ã£o via config.js
       const LEGACY_CONFIG_ROUTES = [
         "ambiente1-musica",
         "ambiente2-musica",
@@ -7121,10 +7200,13 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
               if (value !== undefined && value !== null && value !== "") {
                 params.set("value", String(value));
               }
-              const response = await fetch(`/hubitat-proxy?${params.toString()}`, {
-                method: "GET",
-                cache: "no-store",
-              });
+              const response = await fetch(
+                `/hubitat-proxy?${params.toString()}`,
+                {
+                  method: "GET",
+                  cache: "no-store",
+                },
+              );
               if (!response.ok) {
                 throw new Error(`sendCommand HTTP ${response.status}`);
               }
@@ -7161,15 +7243,18 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                 typeof window.getEnvironmentPhotoMap === "function"
                   ? window.getEnvironmentPhotoMap()
                   : {};
-              return Object.entries(rawMap || {}).reduce((acc, [envKey, photo]) => {
-                const path = String(photo || "").trim();
-                if (!path) return acc;
-                acc[envKey] =
-                  path.includes("/") || path.includes("\\")
-                    ? path
-                    : `images/Images/${path}`;
-                return acc;
-              }, {});
+              return Object.entries(rawMap || {}).reduce(
+                (acc, [envKey, photo]) => {
+                  const path = String(photo || "").trim();
+                  if (!path) return acc;
+                  acc[envKey] =
+                    path.includes("/") || path.includes("\\")
+                      ? path
+                      : `images/Images/${path}`;
+                  return acc;
+                },
+                {},
+              );
             },
           },
         });
@@ -7237,7 +7322,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           return;
         }
 
-        // Fade-out da pÃ¡gina atual sem esconder instantaneamente
+        // Fade-out da Página atual sem esconder instantaneamente
         const activePage = document.querySelector(".page.active");
         if (activePage) {
           activePage.classList.add("page-leaving");
@@ -7357,7 +7442,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         rememberLastEnvironmentRoute(page);
 
         // Navbar pages: manter logo + linha branca estÃ¡ticos fora do fade.
-        // PÃ¡ginas internas: esconder para nÃ£o conflitar com headers/back buttons.
+        // Páginas internas: esconder para nÃ£o conflitar com headers/back buttons.
         try {
           const staticTopbar = document.getElementById("spa-static-topbar");
           const staticHeader = document.getElementById("spa-static-header");
@@ -7406,14 +7491,14 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         }
 
         // Clean any lingering leaving states on cached fragments
-        fragmentToRender.querySelectorAll?.(".page-leaving").forEach((el) =>
-          el.classList.remove("page-leaving")
-        );
+        fragmentToRender
+          .querySelectorAll?.(".page-leaving")
+          .forEach((el) => el.classList.remove("page-leaving"));
 
         spaRoot.appendChild(fragmentToRender);
         spaRoot.dataset.currentPage = page;
 
-        // Se a pÃ¡gina veio do cache, ela pode estar com page-ready ainda.
+        // Se a Página veio do cache, ela pode estar com page-ready ainda.
         // Remover imediatamente evita aparecer 1 frame (flash) antes do applyBackground rodar.
         try {
           const justRendered = spaRoot.querySelector(".page.active");
@@ -7441,7 +7526,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             }
           }
         } else {
-          // Para pÃ¡ginas nÃ£o-ambiente, tentar atualizar tÃ­tulo simples
+          // Para Páginas nÃ£o-ambiente, tentar atualizar tÃ­tulo simples
           const activePage = document.querySelector(".page.active");
           if (activePage) {
             const titleEl = activePage.querySelector(".page-title");
@@ -7465,7 +7550,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           }, 100);
         }
 
-        // ConstrÃ³i a lista de cÃ´modos na pÃ¡gina Ambientes
+        // ConstrÃ³i a lista de cÃ´modos na Página Ambientes
 
         if (page === "ambientes") {
           const list = document.querySelector(".rooms-list");
@@ -7579,10 +7664,9 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           if (typeof syncHomeLightButtons === "function") {
             syncHomeLightButtons();
           }
-
         }
 
-        // Define o fundo da pÃ¡gina interna com a mesma foto do card
+        // Define o fundo da Página interna com a mesma foto do card
 
         (function setPageBackground(route) {
           // Extrai o ambiente base (ex: "ambiente1" de "ambiente1-luzes")
@@ -7611,7 +7695,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         // Atualiza BottomNav (config.js)
         renderBottomNav(page);
 
-        // Inicializa botÃµes dos cÃ´modos nas pÃ¡ginas internas
+        // Inicializa botÃµes dos cÃ´modos nas Páginas internas
 
         if (
           [
@@ -7629,7 +7713,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           if (typeof initRoomPage === "function") initRoomPage();
         }
 
-        // Atualiza o botÃ£o master na pÃ¡gina de cenÃ¡rios
+        // Atualiza o botÃ£o master na Página de cenÃ¡rios
 
         if (page === "scenes") {
           ensureScenesScript()
@@ -7643,7 +7727,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
             );
         }
 
-        // Inicializa controlador de ar condicionado em pÃ¡ginas *-conforto
+        // Inicializa controlador de ar condicionado em Páginas *-conforto
         if (/^ambiente\d+-conforto$/.test(page)) {
           setTimeout(() => {
             if (typeof initAirConditionerControl === "function") {
@@ -7652,7 +7736,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           }, 100);
         }
 
-        // Inicializa player de mÃºsica em pÃ¡ginas *-musica geradas pelo config
+        // Inicializa player de mÃºsica em Páginas *-musica geradas pelo config
         if (/^ambiente\d+-musica$/.test(page)) {
           setTimeout(() => {
             if (typeof initMusicPlayerUI === "function") {
@@ -7673,10 +7757,10 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
 
         ev.preventDefault();
 
-        // Verificar se jÃ¡ tem comando pendente
+        // Verificar se já tem comando pendente
 
         if (btn.dataset.pending === "true") {
-          console.log("ðŸš« Comando master jÃ¡ em andamento");
+          console.log("ðŸš« Comando master já em andamento");
 
           return;
         }
@@ -7785,7 +7869,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           SPA_HASHCHANGE_TIMER = null;
         }
 
-        // Se a navegaÃ§Ã£o jÃ¡ fez fade antes (spaNavigate), renderiza direto.
+        // Se a navegaÃ§Ã£o já fez fade antes (spaNavigate), renderiza direto.
         if (window.__SPA_NAV_PREFADED__) {
           window.__SPA_NAV_PREFADED__ = false;
           renderSpa();
@@ -7839,7 +7923,9 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                   ) {
                     if (typeof window.hideLoader === "function") {
                       window.hideLoader();
-                    } else if (typeof window.startHomeAnimation === "function") {
+                    } else if (
+                      typeof window.startHomeAnimation === "function"
+                    ) {
                       window.startHomeAnimation();
                     } else {
                       loader.classList.add("hidden");
@@ -7897,8 +7983,3 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
     </script>
   </body>
 </html>
-
-
-
-
-
