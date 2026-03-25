@@ -9,7 +9,7 @@ const CLIENT_CONFIG = {
   // Modo de teste local: mantém estados no dashboard sem depender do Hubitat.
   // Use false para voltar ao comportamento normal.
   development: {
-    stateOnlyMode: true,
+    stateOnlyMode: false,
     mqtt: {
       enabled: false,
       brokerUrl: "",

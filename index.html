@@ -3389,8 +3389,21 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           return Promise.resolve();
         }
 
+        const scheduleIdle =
+          typeof window.requestIdleCallback === "function"
+            ? window.requestIdleCallback.bind(window)
+            : (callback, options) =>
+                window.setTimeout(
+                  () =>
+                    callback({
+                      didTimeout: false,
+                      timeRemaining: () => 0,
+                    }),
+                  Number(options?.timeout) || 1,
+                );
+
         return new Promise((resolve) => {
-          requestIdleCallback(
+          scheduleIdle(
             () => {
               try {
                 const routes = collectConfigDrivenRoutes();
@@ -3444,7 +3457,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
                   }
 
                   if (processed < routes.length) {
-                    requestIdleCallback(processChunk, { timeout: 100 });
+                    scheduleIdle(processChunk, { timeout: 100 });
                   } else {
                     if (typeof window.updateProgress === "function") {
                       window.updateProgress(15, "PÃ¡ginas prontas!");
@@ -6986,6 +6999,19 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         return prebuildPromise;
       }
 
+      function schedulePrebuild() {
+        const run = () => {
+          startPrebuild();
+        };
+
+        if (typeof window.requestIdleCallback === "function") {
+          window.requestIdleCallback(run, { timeout: 1800 });
+          return;
+        }
+
+        setTimeout(run, 1200);
+      }
+
       let mainHomeRuntime = null;
       let mainHomeRuntimeInitialized = false;
 
@@ -7165,6 +7191,11 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
           return;
         }
 
+        if (typeof mainHomeRuntime.resume === "function") {
+          mainHomeRuntime.resume();
+          return;
+        }
+
         if (typeof mainHomeRuntime.refreshAll === "function") {
           mainHomeRuntime.refreshAll(true).catch(() => {});
         }
@@ -7172,10 +7203,16 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
 
       function unmountMainHomeRuntime() {
         if (!mainHomeRuntime) return;
-        if (
-          mainHomeRuntimeInitialized &&
-          typeof mainHomeRuntime.destroy === "function"
-        ) {
+        if (!mainHomeRuntimeInitialized) return;
+
+        if (typeof mainHomeRuntime.suspend === "function") {
+          try {
+            mainHomeRuntime.suspend();
+          } catch (error) {}
+          return;
+        }
+
+        if (typeof mainHomeRuntime.destroy === "function") {
           try {
             mainHomeRuntime.destroy();
           } catch (error) {}
@@ -7185,10 +7222,12 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
       }
 
       let SPA_NAV_LOCK_UNTIL = 0;
+      const SPA_NAV_LOCK_MS = 140;
+      const SPA_NAV_TRANSITION_MS = 90;
       function spaNavigate(page) {
         const now = Date.now();
         if (now < SPA_NAV_LOCK_UNTIL) return;
-        SPA_NAV_LOCK_UNTIL = now + 250;
+        SPA_NAV_LOCK_UNTIL = now + SPA_NAV_LOCK_MS;
 
         const target = String(page || "");
         rememberLastEnvironmentRoute(target);
@@ -7208,7 +7247,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         setTimeout(() => {
           window.__SPA_NAV_PREFADED__ = true;
           window.location.hash = target;
-        }, 180);
+        }, SPA_NAV_TRANSITION_MS);
       }
 
       function getEnvironmentLabel(envKey) {
@@ -7761,7 +7800,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
         SPA_HASHCHANGE_TIMER = setTimeout(() => {
           renderSpa();
           SPA_HASHCHANGE_TIMER = null;
-        }, 180);
+        }, SPA_NAV_TRANSITION_MS);
       });
 
       window.addEventListener("DOMContentLoaded", () => {
@@ -7769,7 +7808,7 @@ function renderTvControlPage(envKey, deviceType, headingLabel) {
 
         const runSpaBootstrap = () => {
           renderSpa();
-          startPrebuild();
+          schedulePrebuild();
 
           // Fail-safe: se o script principal nao iniciar por algum motivo,
           // tenta inicializar e/ou remove o loader para nao travar a UI.

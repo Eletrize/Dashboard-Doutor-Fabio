@@ -4016,8 +4016,21 @@ const DEV_STATE_ONLY_MODE_STORAGE_KEY = "dashboard_dev_state_only_mode";
 const DEV_STATE_ONLY_MODE_DEFAULT = Boolean(
   typeof window !== "undefined" && window.CLIENT_CONFIG?.development?.stateOnlyMode === true
 );
+const DEV_STATE_ONLY_ALLOW_PRODUCTION = Boolean(
+  typeof window !== "undefined" &&
+    window.CLIENT_CONFIG?.development?.allowStateOnlyInProduction === true
+);
+
+function canUseStateOnlyDevMode() {
+  if (typeof window === "undefined") return false;
+  const host = String(window.location?.hostname || "").toLowerCase();
+  const isLocalHost = host === "localhost" || host === "127.0.0.1" || host === "::1";
+  return isLocalHost || DEV_STATE_ONLY_ALLOW_PRODUCTION;
+}
 
 function isStateOnlyDevMode() {
+  if (!canUseStateOnlyDevMode()) return false;
+
   try {
     const raw = localStorage.getItem(DEV_STATE_ONLY_MODE_STORAGE_KEY);
     if (raw === "1") return true;
@@ -4027,7 +4040,13 @@ function isStateOnlyDevMode() {
 }
 
 function setStateOnlyDevMode(enabled, persist = true) {
-  const next = Boolean(enabled);
+  const requested = Boolean(enabled);
+  const next = requested && canUseStateOnlyDevMode();
+
+  if (requested && !next) {
+    console.warn("[DEV] stateOnlyMode bloqueado fora de localhost");
+  }
+
   if (persist) {
     try {
       localStorage.setItem(DEV_STATE_ONLY_MODE_STORAGE_KEY, next ? "1" : "0");
@@ -4038,6 +4057,11 @@ function setStateOnlyDevMode(enabled, persist = true) {
 }
 
 if (typeof window !== "undefined") {
+  if (!canUseStateOnlyDevMode()) {
+    try {
+      localStorage.setItem(DEV_STATE_ONLY_MODE_STORAGE_KEY, "0");
+    } catch (_) {}
+  }
   window.isStateOnlyDevMode = isStateOnlyDevMode;
   window.setStateOnlyDevMode = setStateOnlyDevMode;
 }

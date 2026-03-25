@@ -110,10 +110,12 @@
       muted: false,
       nowPlayingDeviceId: "",
       activeDevices: [],
+      paused: false,
       destroyed: false,
     };
 
     const NOW_PLAYING_DEVICE_STORAGE_KEY = "mainHome:lastNowPlayingMusicDeviceId";
+    const NOW_PLAYING_REFRESH_MS = 8000;
 
     function byId(id) {
       return document.getElementById(id);
@@ -906,14 +908,23 @@
     }
 
     async function refreshAll(forceWeather) {
-      if (state.destroyed) return;
-      await refreshWeather(Boolean(forceWeather));
-      await refreshNowPlaying();
+      if (state.destroyed || state.paused) return;
+
+      // Renderiza o essencial imediatamente para evitar sensação de travamento na Home.
       renderLastEnvironmentCard();
+      renderActiveDevices();
+
+      await Promise.allSettled([
+        refreshWeather(Boolean(forceWeather)),
+        refreshNowPlaying(),
+      ]);
+
+      if (state.destroyed) return;
       renderActiveDevices();
     }
 
     function startTimers() {
+      if (state.destroyed || state.paused) return;
       const weatherMinutes = Math.max(1, Number(config.weather?.refreshMinutes) || 15);
       state.weatherTimer = setInterval(() => {
         refreshWeather(false).catch(console.warn);
@@ -922,7 +933,7 @@
       state.nowPlayingTimer = setInterval(() => {
         refreshNowPlaying().catch(console.warn);
         renderActiveDevices();
-      }, 5000);
+      }, NOW_PLAYING_REFRESH_MS);
     }
 
     function stopTimers() {
@@ -933,6 +944,8 @@
     }
 
     function init() {
+      if (state.destroyed) return;
+      state.paused = false;
       state.nowPlayingDeviceId = readRememberedNowPlayingDeviceId();
       bindNowPlayingControls();
       const offAllBtn = byId("main-active-devices-off-btn");
@@ -996,14 +1009,32 @@
       startTimers();
     }
 
+    function suspend() {
+      if (state.destroyed || state.paused) return;
+      state.paused = true;
+      stopTimers();
+      window.removeEventListener("resize", syncActiveDevicesCardSize);
+    }
+
+    function resume() {
+      if (state.destroyed || !state.paused) return;
+      state.paused = false;
+      window.addEventListener("resize", syncActiveDevicesCardSize);
+      refreshAll(false).catch(console.warn);
+      startTimers();
+    }
+
     function destroy() {
       state.destroyed = true;
+      state.paused = true;
       stopTimers();
       window.removeEventListener("resize", syncActiveDevicesCardSize);
     }
 
     return {
       init,
+      suspend,
+      resume,
       destroy,
       refreshAll,
       rememberLastEnvironmentRoute,
