@@ -1418,33 +1418,81 @@ function togglePoolControl(el, action) {
 
 let tvPowerState = "off"; // Estado inicial: desligado
 
-function updateTVPowerState(newState) {
-  tvPowerState = newState;
-  document.body.classList.toggle("tv-controls-on", newState === "on");
-  document.body.classList.toggle("tv-controls-off", newState !== "on");
-  const wrapper = document.querySelector(".tv-control-wrapper");
-  if (wrapper) {
-    wrapper.setAttribute("data-power-state", newState);
+function getActiveTvControlWrapper() {
+  const activePage = document.querySelector(".page.active");
+  if (activePage) {
+    const scoped = activePage.querySelector(".tv-control-wrapper");
+    if (scoped) {
+      return scoped;
+    }
+  }
+  return document.querySelector(".tv-control-wrapper");
+}
+
+function getActiveTvPowerDeviceId(wrapper = getActiveTvControlWrapper()) {
+  if (!wrapper) return null;
+
+  const powerButton = wrapper.querySelector(
+    ".tv-btn--power-on[data-device-id], .tv-btn--power-off[data-device-id]"
+  );
+  if (powerButton?.dataset?.deviceId) {
+    return String(powerButton.dataset.deviceId);
   }
 
+  const fallbackWithId = wrapper.querySelector("[data-device-id]");
+  return fallbackWithId?.dataset?.deviceId
+    ? String(fallbackWithId.dataset.deviceId)
+    : null;
+}
+
+function syncTVPowerStateFromStorage() {
+  if (!isOnTVControlPage()) return;
+
+  const wrapper = getActiveTvControlWrapper();
+  if (!wrapper) return;
+
+  const powerDeviceId = getActiveTvPowerDeviceId(wrapper);
+  const nextState = powerDeviceId
+    ? normalizeSwitchState(getStoredState(powerDeviceId), "off")
+    : "off";
+
+  updateTVPowerState(nextState, { wrapper });
+  debugLog(() => [
+    "syncTVPowerStateFromStorage",
+    { powerDeviceId, nextState },
+  ]);
+}
+
+function updateTVPowerState(newState, options = {}) {
+  const normalizedState = normalizeSwitchState(newState, "off");
+  tvPowerState = normalizedState;
+  document.body.classList.toggle("tv-controls-on", normalizedState === "on");
+  document.body.classList.toggle("tv-controls-off", normalizedState !== "on");
+  const wrapper = options?.wrapper || getActiveTvControlWrapper();
+  if (wrapper) {
+    wrapper.setAttribute("data-power-state", normalizedState);
+  }
+
+  if (!wrapper) return;
+
   // Selecionar botões ON e OFF
-  const btnOn = document.querySelector(".tv-btn--power-on");
-  const btnOff = document.querySelector(".tv-btn--power-off");
+  const btnOn = wrapper.querySelector(".tv-btn--power-on");
+  const btnOff = wrapper.querySelector(".tv-btn--power-off");
 
   // Selecionar todos os outros controles (incluindo música e volume)
-  const otherControls = document.querySelectorAll(
+  const otherControls = wrapper.querySelectorAll(
     ".tv-control-section:not(.tv-control-section--power), .tv-volume-canais-wrapper, .tv-commands-grid, .tv-directional-pad, .tv-numpad, .tv-favorites-list, .tv-logo-section, .tv-control-mode-toggle, .tv-control-section--music, .tv-control-section--dpad, .tv-control-section--volume, .tv-control-section--media, .music-now-content, .music-album-container, .music-info, .tv-volume-slider-container, .tv-volume-slider, .tv-volume-value, .tv-portrait-tabs, .tv-portrait-tab"
   );
-  const gestureIcons = document.querySelectorAll(".tv-gesture-icons");
-  const gestureSurface = document.querySelectorAll(".tv-gesture-surface");
+  const gestureIcons = wrapper.querySelectorAll(".tv-gesture-icons");
+  const gestureSurface = wrapper.querySelectorAll(".tv-gesture-surface");
 
   // Selecionar títulos das seções de controle
-  const titles = document.querySelectorAll(".tv-section-title, .tv-section-line");
+  const titles = wrapper.querySelectorAll(".tv-section-title, .tv-section-line");
   
   // Selecionar seção de volume separadamente (coluna 2)
-  const volumeSection = document.querySelectorAll(".tv-col-2 > .tv-control-section");
+  const volumeSection = wrapper.querySelectorAll(".tv-col-2 > .tv-control-section");
 
-  if (newState === "on") {
+  if (normalizedState === "on") {
     // TV ligada
     btnOn?.classList.add("active");
     btnOff?.classList.remove("active");
@@ -1509,6 +1557,7 @@ function updateTVPowerState(newState) {
 function tvCommand(el, command) {
   const deviceId = el.dataset.deviceId;
   if (!command || !deviceId) return;
+  const wrapper = el.closest?.(".tv-control-wrapper");
 
   if (command === "mute") {
     const slider = document.getElementById("tv-volume-slider");
@@ -1522,7 +1571,6 @@ function tvCommand(el, command) {
 
   // Alguns controles precisam disparar comando duplo (ex.: Claro TV: returnButton + voltar)
   const commandsToSend = [command];
-  const wrapper = el.closest?.(".tv-control-wrapper");
   const controlType = String(
     wrapper?.dataset?.deviceType || wrapper?.dataset?.controlType || "",
   ).toLowerCase();
@@ -1532,10 +1580,17 @@ function tvCommand(el, command) {
   }
 
   // Controlar estado de poder
+  let optimisticPowerState = null;
   if (command === "on" || command === "powerOn") {
-    updateTVPowerState("on");
+    optimisticPowerState = "on";
+    updateTVPowerState("on", { wrapper });
   } else if (command === "off" || command === "powerOff") {
-    updateTVPowerState("off");
+    optimisticPowerState = "off";
+    updateTVPowerState("off", { wrapper });
+  }
+
+  if (optimisticPowerState) {
+    setStoredState(deviceId, optimisticPowerState);
   }
 
   // Home Theater: ao ligar, chavear receiver e HDMI conforme controle
@@ -2643,20 +2698,20 @@ function applyDenonPowerState(
 }
 // Inicializar estado ao carregar
 document.addEventListener("DOMContentLoaded", () => {
-  updateTVPowerState("off");
+  syncRemoteControlDeviceIds();
+  syncTVPowerStateFromStorage();
   initVolumeSlider();
   initAppleTvGestureControls();
   ensureTopBarVisible();
-  syncRemoteControlDeviceIds();
 
   // Re-inicializar quando a página mudar (para SPAs)
   window.addEventListener("hashchange", () => {
     setTimeout(() => {
-      updateTVPowerState("off");
+      syncRemoteControlDeviceIds();
+      syncTVPowerStateFromStorage();
       initVolumeSlider();
       initAppleTvGestureControls();
       ensureTopBarVisible();
-      syncRemoteControlDeviceIds();
     }, 100);
   });
 
@@ -2840,25 +2895,28 @@ function getStoredState(deviceId) {
   }
 }
 
-function setStoredState(deviceId, state) {
-  deviceStateMemory.set(deviceId, state);
+function setStoredState(deviceId, state, options = {}) {
+  const normalizedDeviceId = String(deviceId);
+  const source = String(options?.source || "local");
 
-  if (deviceStateStorageDisabled) {
-    return;
-  }
+  deviceStateMemory.set(normalizedDeviceId, state);
 
-  const key = deviceStateKey(deviceId);
+  if (!deviceStateStorageDisabled) {
+    const key = deviceStateKey(normalizedDeviceId);
 
-  try {
-    localStorage.setItem(key, state);
-    deviceStateQuotaErrors = 0;
-  } catch (error) {
-    if (isQuotaExceededError(error)) {
-      handleDeviceStateQuotaError(deviceId, key, state, error);
-    } else {
-      console.warn(`Erro ao salvar estado ${deviceId}:`, error);
+    try {
+      localStorage.setItem(key, state);
+      deviceStateQuotaErrors = 0;
+    } catch (error) {
+      if (isQuotaExceededError(error)) {
+        handleDeviceStateQuotaError(normalizedDeviceId, key, state, error);
+      } else {
+        console.warn(`Erro ao salvar estado ${normalizedDeviceId}:`, error);
+      }
     }
   }
+
+  publishStoredStateToMqtt(normalizedDeviceId, state, { source });
 }
 
 function isQuotaExceededError(error) {
@@ -3262,6 +3320,39 @@ function initAirConditionerControl() {
     return getActiveZoneIds()[0] || "";
   }
 
+  function resolveStoredPowerState(deviceIds) {
+    const ids = Array.isArray(deviceIds) ? deviceIds : [];
+    let hasKnownState = false;
+
+    for (const id of ids) {
+      const raw = getStoredState(String(id));
+      if (raw === null || raw === undefined || String(raw).trim() === "") {
+        continue;
+      }
+
+      hasKnownState = true;
+      const normalized = normalizeSwitchState(raw, "off");
+      if (normalized === "on") {
+        return "on";
+      }
+    }
+
+    return hasKnownState ? "off" : null;
+  }
+
+  function applyStoredPowerStateToUI() {
+    const storedPowerState = resolveStoredPowerState(getActiveZoneIds());
+    if (storedPowerState !== "on" && storedPowerState !== "off") {
+      return false;
+    }
+
+    setPowerState(storedPowerState === "on", {
+      silent: true,
+      persist: false,
+    });
+    return true;
+  }
+
   function buildTempCommand(temp) {
     if (typeof acCommands.tempTemplate === "string") {
       return acCommands.tempTemplate.replace("{temp}", String(temp));
@@ -3374,6 +3465,16 @@ function initAirConditionerControl() {
       temperatureDebounceTimer = null;
     }
 
+    const shouldPersistState =
+      options.persist === true ||
+      (options.persist !== false && options.silent !== true);
+    if (shouldPersistState) {
+      const persistedState = isOn ? "on" : "off";
+      getActiveZoneIds().forEach((id) => {
+        setStoredState(String(id), persistedState);
+      });
+    }
+
     if (!options.silent) {
       const ids = getActiveZoneIds();
       const command = isOn
@@ -3422,6 +3523,7 @@ function initAirConditionerControl() {
   zoneButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       setZoneSelection(btn);
+      applyStoredPowerStateToUI();
       applyACFromPolling({ needPower: true, needTemp: true, needSwing: true });
     });
   });
@@ -3463,7 +3565,9 @@ function initAirConditionerControl() {
   }
 
   updateTemperature(state.temperature, { silent: true });
-  setPowerState(false, { silent: true });
+  if (!applyStoredPowerStateToUI()) {
+    setPowerState(false, { silent: true, persist: false });
+  }
   applyACFromPolling({ needPower: true, needTemp: true, needSwing: true });
 
   async function applyACFromPolling({
@@ -3498,7 +3602,7 @@ function initAirConditionerControl() {
       if (needPower) {
         const sw = String(attrsMap["switch"] ?? "").toLowerCase();
         if (sw) {
-          setPowerState(sw === "on", { silent: true });
+          setPowerState(sw === "on", { silent: true, persist: true });
         }
       }
 
@@ -3891,6 +3995,433 @@ function useHubitatCloud(deviceId) {
   return HUBITAT_CLOUD_DEVICE_IDS.has(String(deviceId));
 }
 
+function deriveSwitchStateFromCommand(command, value) {
+  const cmd = String(command || "").trim().toLowerCase();
+  if (!cmd) return null;
+
+  if (cmd === "on" || cmd === "poweron") return "on";
+  if (cmd === "off" || cmd === "poweroff") return "off";
+
+  if (cmd === "setlevel") {
+    const level = Number(value);
+    if (Number.isFinite(level)) {
+      return level > 0 ? "on" : "off";
+    }
+  }
+
+  return null;
+}
+
+const DEV_STATE_ONLY_MODE_STORAGE_KEY = "dashboard_dev_state_only_mode";
+const DEV_STATE_ONLY_MODE_DEFAULT = Boolean(
+  typeof window !== "undefined" && window.CLIENT_CONFIG?.development?.stateOnlyMode === true
+);
+
+function isStateOnlyDevMode() {
+  try {
+    const raw = localStorage.getItem(DEV_STATE_ONLY_MODE_STORAGE_KEY);
+    if (raw === "1") return true;
+    if (raw === "0") return false;
+  } catch (_) {}
+  return DEV_STATE_ONLY_MODE_DEFAULT;
+}
+
+function setStateOnlyDevMode(enabled, persist = true) {
+  const next = Boolean(enabled);
+  if (persist) {
+    try {
+      localStorage.setItem(DEV_STATE_ONLY_MODE_STORAGE_KEY, next ? "1" : "0");
+    } catch (_) {}
+  }
+  console.warn(`[DEV] stateOnlyMode ${next ? "ativado" : "desativado"}`);
+  return next;
+}
+
+if (typeof window !== "undefined") {
+  window.isStateOnlyDevMode = isStateOnlyDevMode;
+  window.setStateOnlyDevMode = setStateOnlyDevMode;
+}
+
+const DEFAULT_MQTT_STATE_CONFIG = {
+  enabled: false,
+  brokerUrl: "",
+  username: "",
+  password: "",
+  clientIdPrefix: "dashboard-eletrize",
+  stateTopicPrefix: "eletrize/devices",
+  qos: 0,
+  retain: true,
+  libraryUrl: "https://unpkg.com/mqtt/dist/mqtt.min.js",
+};
+
+const CLIENT_MQTT_STATE_CONFIG =
+  (typeof window !== "undefined" && window.CLIENT_CONFIG?.development?.mqtt) || {};
+const MQTT_STATE_TOPIC_SUFFIX = "state";
+const MQTT_PAYLOAD_DECODER =
+  typeof TextDecoder !== "undefined"
+    ? new TextDecoder("utf-8", { fatal: false })
+    : null;
+
+let mqttStateLibraryLoadPromise = null;
+let mqttStateBridgeInitPromise = null;
+let mqttStateClient = null;
+let mqttStateConnected = false;
+let mqttStateConfigCache = null;
+
+function normalizeTopicPath(path) {
+  return String(path || "")
+    .trim()
+    .replace(/^\/+/, "")
+    .replace(/\/+$/, "");
+}
+
+function normalizeMqttStateConfig() {
+  const merged = {
+    ...DEFAULT_MQTT_STATE_CONFIG,
+    ...CLIENT_MQTT_STATE_CONFIG,
+  };
+
+  const qosRaw = Number.parseInt(merged.qos, 10);
+
+  return {
+    enabled: Boolean(merged.enabled),
+    brokerUrl: String(merged.brokerUrl || "").trim(),
+    username: String(merged.username || "").trim(),
+    password: String(merged.password || ""),
+    clientIdPrefix:
+      String(merged.clientIdPrefix || DEFAULT_MQTT_STATE_CONFIG.clientIdPrefix).trim() ||
+      DEFAULT_MQTT_STATE_CONFIG.clientIdPrefix,
+    stateTopicPrefix: normalizeTopicPath(
+      merged.stateTopicPrefix || DEFAULT_MQTT_STATE_CONFIG.stateTopicPrefix
+    ),
+    qos: qosRaw === 1 || qosRaw === 2 ? qosRaw : 0,
+    retain: merged.retain !== false,
+    libraryUrl:
+      String(merged.libraryUrl || DEFAULT_MQTT_STATE_CONFIG.libraryUrl).trim() ||
+      DEFAULT_MQTT_STATE_CONFIG.libraryUrl,
+  };
+}
+
+function normalizeBooleanSwitchState(value) {
+  if (value === undefined || value === null) {
+    return null;
+  }
+
+  const normalized = String(value).trim().toLowerCase();
+  if (!normalized) return null;
+
+  if (normalized === "on" || normalized === "off") return normalized;
+  if (normalized === "1" || normalized === "true" || normalized === "ligado") {
+    return "on";
+  }
+  if (normalized === "0" || normalized === "false" || normalized === "desligado") {
+    return "off";
+  }
+
+  return null;
+}
+
+function parseMqttSwitchState(payloadText) {
+  const raw = String(payloadText || "").trim();
+  if (!raw) return null;
+
+  const direct = normalizeBooleanSwitchState(raw);
+  if (direct) return direct;
+
+  try {
+    const parsed = JSON.parse(raw);
+
+    if (
+      typeof parsed === "string" ||
+      typeof parsed === "number" ||
+      typeof parsed === "boolean"
+    ) {
+      return normalizeBooleanSwitchState(parsed);
+    }
+
+    if (parsed && typeof parsed === "object") {
+      return (
+        normalizeBooleanSwitchState(parsed.state) ||
+        normalizeBooleanSwitchState(parsed.switch) ||
+        normalizeBooleanSwitchState(parsed.value) ||
+        normalizeBooleanSwitchState(parsed.status)
+      );
+    }
+  } catch (_) {
+    return null;
+  }
+
+  return null;
+}
+
+function decodeMqttPayload(payload) {
+  if (payload === undefined || payload === null) return "";
+  if (typeof payload === "string") return payload;
+  if (typeof payload === "number" || typeof payload === "boolean") {
+    return String(payload);
+  }
+
+  if (MQTT_PAYLOAD_DECODER && typeof Uint8Array !== "undefined") {
+    if (payload instanceof Uint8Array) {
+      try {
+        return MQTT_PAYLOAD_DECODER.decode(payload);
+      } catch (_) {}
+    }
+    if (typeof ArrayBuffer !== "undefined" && payload instanceof ArrayBuffer) {
+      try {
+        return MQTT_PAYLOAD_DECODER.decode(new Uint8Array(payload));
+      } catch (_) {}
+    }
+  }
+
+  try {
+    return String(payload);
+  } catch (_) {
+    return "";
+  }
+}
+
+function buildMqttStateTopic(deviceId, config = mqttStateConfigCache || normalizeMqttStateConfig()) {
+  const id = String(deviceId || "").trim();
+  if (!id) return "";
+
+  const encodedId = encodeURIComponent(id);
+  const prefix = normalizeTopicPath(config?.stateTopicPrefix);
+  if (!prefix) {
+    return `${encodedId}/${MQTT_STATE_TOPIC_SUFFIX}`;
+  }
+  return `${prefix}/${encodedId}/${MQTT_STATE_TOPIC_SUFFIX}`;
+}
+
+function buildMqttStateSubscriptionTopic(config = mqttStateConfigCache || normalizeMqttStateConfig()) {
+  const prefix = normalizeTopicPath(config?.stateTopicPrefix);
+  if (!prefix) {
+    return `+/${MQTT_STATE_TOPIC_SUFFIX}`;
+  }
+  return `${prefix}/+/${MQTT_STATE_TOPIC_SUFFIX}`;
+}
+
+function extractDeviceIdFromMqttStateTopic(
+  topic,
+  config = mqttStateConfigCache || normalizeMqttStateConfig()
+) {
+  const rawTopic = String(topic || "").trim();
+  if (!rawTopic) return null;
+
+  const topicParts = rawTopic.split("/").filter((part) => part.length > 0);
+  if (topicParts.length < 2) return null;
+  if (topicParts[topicParts.length - 1] !== MQTT_STATE_TOPIC_SUFFIX) return null;
+
+  const prefixParts = normalizeTopicPath(config?.stateTopicPrefix)
+    .split("/")
+    .filter((part) => part.length > 0);
+
+  let encodedId = "";
+  if (prefixParts.length > 0) {
+    if (topicParts.length < prefixParts.length + 2) return null;
+
+    for (let i = 0; i < prefixParts.length; i += 1) {
+      if (topicParts[i] !== prefixParts[i]) {
+        return null;
+      }
+    }
+
+    encodedId = topicParts.slice(prefixParts.length, -1).join("/");
+  } else {
+    encodedId = topicParts.slice(0, -1).join("/");
+  }
+
+  if (!encodedId) return null;
+
+  try {
+    return decodeURIComponent(encodedId);
+  } catch (_) {
+    return encodedId;
+  }
+}
+
+async function ensureMqttLibraryLoaded(libraryUrl) {
+  if (typeof window === "undefined") {
+    throw new Error("MQTT indisponivel fora do browser");
+  }
+
+  if (window.mqtt?.connect) {
+    return window.mqtt;
+  }
+
+  if (mqttStateLibraryLoadPromise) {
+    return mqttStateLibraryLoadPromise;
+  }
+
+  mqttStateLibraryLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = libraryUrl;
+    script.onload = () => {
+      if (window.mqtt?.connect) {
+        resolve(window.mqtt);
+      } else {
+        reject(new Error("Biblioteca MQTT carregada sem window.mqtt.connect"));
+      }
+    };
+    script.onerror = () => {
+      reject(new Error(`Falha ao carregar biblioteca MQTT: ${libraryUrl}`));
+    };
+
+    const parent = document.head || document.body || document.documentElement;
+    if (!parent) {
+      reject(new Error("Nao foi possivel anexar script MQTT ao DOM"));
+      return;
+    }
+    parent.appendChild(script);
+  });
+
+  return mqttStateLibraryLoadPromise.catch((error) => {
+    mqttStateLibraryLoadPromise = null;
+    throw error;
+  });
+}
+
+function handleMqttStateMessage(topic, payload) {
+  const config = mqttStateConfigCache || normalizeMqttStateConfig();
+  const deviceId = extractDeviceIdFromMqttStateTopic(topic, config);
+  if (!deviceId) return;
+
+  const payloadText = decodeMqttPayload(payload);
+  const nextState = parseMqttSwitchState(payloadText);
+  if (!nextState) {
+    debugLog(() => ["MQTT payload ignorado", { topic, payloadText }]);
+    return;
+  }
+
+  setStoredState(deviceId, nextState, { source: "mqtt" });
+  updateDeviceUI(deviceId, nextState, true);
+  debugLog(() => ["MQTT state recebido", { topic, deviceId, nextState }]);
+}
+
+function publishStoredStateToMqtt(deviceId, state, options = {}) {
+  if (!mqttStateClient || !mqttStateConnected) return;
+  if (String(options?.source || "") === "mqtt") return;
+
+  const config = mqttStateConfigCache || normalizeMqttStateConfig();
+  if (!config.enabled) return;
+
+  const normalizedState = normalizeBooleanSwitchState(state);
+  if (!normalizedState) return;
+
+  const topic = buildMqttStateTopic(deviceId, config);
+  if (!topic) return;
+
+  try {
+    mqttStateClient.publish(
+      topic,
+      normalizedState,
+      { qos: config.qos, retain: config.retain },
+      (error) => {
+        if (error) {
+          console.warn(`MQTT publish falhou para ${topic}:`, error);
+        }
+      }
+    );
+  } catch (error) {
+    console.warn("Erro ao publicar estado no MQTT:", error);
+  }
+}
+
+async function initializeMqttStateBridge() {
+  if (mqttStateBridgeInitPromise) {
+    return mqttStateBridgeInitPromise;
+  }
+
+  mqttStateBridgeInitPromise = (async () => {
+    const config = normalizeMqttStateConfig();
+    mqttStateConfigCache = config;
+
+    if (!config.enabled) {
+      return { enabled: false, reason: "disabled" };
+    }
+
+    if (!config.brokerUrl) {
+      console.warn("MQTT habilitado, mas development.mqtt.brokerUrl está vazio");
+      return { enabled: false, reason: "missing-broker-url" };
+    }
+
+    if (mqttStateClient) {
+      return { enabled: true, connected: mqttStateConnected };
+    }
+
+    const mqttLib = await ensureMqttLibraryLoaded(config.libraryUrl);
+    const clientId = `${config.clientIdPrefix}-${Math.random()
+      .toString(16)
+      .slice(2, 10)}`;
+
+    const connectOptions = {
+      clientId,
+      clean: true,
+      reconnectPeriod: 3000,
+      connectTimeout: 10000,
+    };
+
+    if (config.username) {
+      connectOptions.username = config.username;
+    }
+    if (config.password) {
+      connectOptions.password = config.password;
+    }
+
+    mqttStateClient = mqttLib.connect(config.brokerUrl, connectOptions);
+
+    mqttStateClient.on("connect", () => {
+      mqttStateConnected = true;
+      const subscriptionTopic = buildMqttStateSubscriptionTopic(config);
+      mqttStateClient.subscribe(subscriptionTopic, { qos: config.qos }, (error) => {
+        if (error) {
+          console.error(`MQTT subscribe falhou (${subscriptionTopic}):`, error);
+          return;
+        }
+        console.log(`MQTT conectado e inscrito em ${subscriptionTopic}`);
+      });
+    });
+
+    mqttStateClient.on("message", (topic, payload) => {
+      handleMqttStateMessage(topic, payload);
+    });
+
+    mqttStateClient.on("reconnect", () => {
+      debugLog(() => ["MQTT reconectando..."]);
+    });
+
+    mqttStateClient.on("offline", () => {
+      mqttStateConnected = false;
+      debugLog(() => ["MQTT offline"]);
+    });
+
+    mqttStateClient.on("close", () => {
+      mqttStateConnected = false;
+      debugLog(() => ["MQTT fechado"]);
+    });
+
+    mqttStateClient.on("error", (error) => {
+      mqttStateConnected = false;
+      console.error("MQTT erro:", error);
+    });
+
+    return { enabled: true, connected: mqttStateConnected };
+  })();
+
+  try {
+    return await mqttStateBridgeInitPromise;
+  } catch (error) {
+    mqttStateBridgeInitPromise = null;
+    console.error("Falha ao inicializar bridge MQTT de estados:", error);
+    throw error;
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.initializeMqttStateBridge = initializeMqttStateBridge;
+}
+
 const TEXT_MOJIBAKE_REGEX = /[\u00C3\u00C2\u00E2\uFFFD]/;
 const TEXT_MOJIBAKE_REPLACEMENTS = [
   ["\u00e2\u0080\u0099", "Ã¢â‚¬â„¢"],
@@ -4142,8 +4673,28 @@ async function sendHubitatCommand(deviceId, command, value) {
         value !== undefined ? ` com valor ${value}` : ""
       }`
     );
+    const commandState = deriveSwitchStateFromCommand(command, value);
+    const normalizedDeviceId = String(deviceId);
 
     try {
+      if (isStateOnlyDevMode()) {
+        if (commandState !== null) {
+          setStoredState(normalizedDeviceId, commandState);
+        }
+        console.warn(
+          `🧪 [DEV state-only] Comando simulado: ${command} -> dispositivo ${deviceId}${
+            value !== undefined ? ` (valor ${value})` : ""
+          }`
+        );
+        return {
+          ok: true,
+          simulated: true,
+          deviceId: String(deviceId),
+          command: String(command),
+          value: value !== undefined ? value : null,
+        };
+      }
+
       // Segurança: comandos diretos no frontend continuam desativados.
       if (!isProduction && !useHubitatCloud(deviceId)) {
         throw new Error("Envio direto desativado no modo desenvolvimento");
@@ -4165,6 +4716,10 @@ async function sendHubitatCommand(deviceId, command, value) {
         `📡 [sendHubitatCommand] Resposta (status ${response.status}):`,
         String(text).substring(0, 200)
       );
+
+      if (commandState !== null) {
+        setStoredState(normalizedDeviceId, commandState);
+      }
 
       // Tenta parse JSON, mas aceita resposta vazia
       try {
@@ -4442,6 +4997,11 @@ function scheduleNextPollingRun(delay) {
 function startPolling() {
   if (pollingActive) return;
 
+  if (isStateOnlyDevMode()) {
+    debugLog(() => ["Polling desativado em modo DEV state-only"]);
+    return;
+  }
+
   if (!isProduction) {
     debugLog(() => ["Polling desativado em ambiente de desenvolvimento"]);
     return;
@@ -4497,6 +5057,11 @@ async function updateDeviceStatesFromServer(options = {}) {
 
   try {
     cleanupExpiredCommands();
+
+    if (isStateOnlyDevMode()) {
+      debugLog(() => ["Polling skipped (DEV state-only mode)"]);
+      return;
+    }
 
     if (!isProduction) {
       debugLog(() => ["Polling skipped (dev mode)"]);
@@ -5560,6 +6125,30 @@ async function loadAllDeviceStatesGlobally() {
   // Mobile e desktop usam EXATAMENTE o mesmo carregamento
   console.log("Ã°Å¸Å’Â Carregamento universal (desktop e mobile idênticos)");
 
+  if (isStateOnlyDevMode()) {
+    console.warn("🧪 [DEV state-only] Carregando estados apenas do storage local");
+    updateProgress(20, "Modo DEV local ativo...");
+
+    let loadedCount = 0;
+    ALL_LIGHT_IDS.forEach((deviceId, index) => {
+      const storedState = getStoredState(deviceId) || "off";
+      updateDeviceUI(deviceId, storedState, true);
+      loadedCount += 1;
+
+      const progress = 20 + ((index + 1) / ALL_LIGHT_IDS.length) * 80;
+      updateProgress(
+        progress,
+        `Dispositivo ${index + 1}/${ALL_LIGHT_IDS.length}...`
+      );
+    });
+
+    console.log(
+      `🧪 [DEV state-only] Estados carregados localmente: ${loadedCount}/${ALL_LIGHT_IDS.length}`
+    );
+    updateProgress(100, "Modo DEV local pronto!");
+    return true;
+  }
+
   if (!isProduction) {
     console.log(
       "Ã°Å¸â€™Â» MODO DESENVOLVIMENTO ATIVO - carregando do localStorage"
@@ -6334,6 +6923,18 @@ window.debugEletrize = {
     updateDeviceUI(deviceId, state, true);
     console.log(`Ã¢Å“â€¦ Teste completo`);
   },
+  mqttStatus: () => {
+    console.log("MQTT status:", {
+      enabled: mqttStateConfigCache?.enabled ?? normalizeMqttStateConfig().enabled,
+      connected: mqttStateConnected,
+      brokerUrl: mqttStateConfigCache?.brokerUrl || null,
+      stateTopicPrefix: mqttStateConfigCache?.stateTopicPrefix || null,
+    });
+  },
+  initMqtt: () =>
+    initializeMqttStateBridge().catch((error) => {
+      console.error("Falha ao iniciar MQTT manualmente:", error);
+    }),
   clearAllStates: () => {
     console.log("Limpando todos os estados salvos...");
     ALL_LIGHT_IDS.forEach((deviceId) => {
@@ -7710,6 +8311,9 @@ function initializeApp() {
   try {
     console.log("Iniciando carregamento (comportamento unificado)...");
     showLoader();
+    initializeMqttStateBridge().catch((error) => {
+      console.warn("Bridge MQTT indisponível na inicialização:", error);
+    });
 
     // Timeout padrÃƒÂ£o para desktop e mobile (comportamento idÃƒÂªntico)
     var initDelay = 500;

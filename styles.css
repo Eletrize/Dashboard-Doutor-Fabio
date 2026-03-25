@@ -69,8 +69,8 @@ textarea {
   left: 21px;
   right: 21px;
   transform-origin: center;
-  animation: top-bar-breathe 12s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-  will-change: transform, opacity;
+  animation: none;
+  will-change: auto;
 }
 
 .top-bar-custom:not(.spa-static-chrome) {
@@ -9008,4 +9008,45 @@ body.app-ready #spa-root {
   .acv2-btn--power {
     font-size: clamp(18px, 2.6vmin, 24px);
   }
+}
+
+/* ========================================
+   GLOBAL TOP SPACING NORMALIZATION
+======================================== */
+:root {
+  --uniform-top-content-offset: 108px;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --uniform-top-content-offset: 104px;
+  }
+}
+
+.rooms-frame {
+  top: var(--uniform-top-content-offset) !important;
+  height: calc(100vh - var(--uniform-top-content-offset)) !important;
+}
+
+.rooms-list,
+.under-construction,
+.controls-grid,
+.room-controls-list,
+.ac-page-wrapper,
+.music-control-wrapper,
+.curtain-layout,
+.tv-control-wrapper,
+.page [class*="ambiente"][class*="-controls-wrapper"].ambiente-grid {
+  top: var(--uniform-top-content-offset) !important;
+}
+
+[data-device="ipad-mini-6"] .tv-control-wrapper {
+  inset: var(--uniform-top-content-offset) 21px var(--bottom-nav-dock-space, 0px) !important;
+}
+
+.ambiente-grid,
+[class*="-luzes-wrapper"],
+[class*="-cortinas-wrapper"],
+[class*="-piscina-wrapper"] {
+  margin-top: 0 !important;
 }

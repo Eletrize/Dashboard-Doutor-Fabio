@@ -6,6 +6,23 @@
  */
 
 const CLIENT_CONFIG = {
+  // Modo de teste local: mantém estados no dashboard sem depender do Hubitat.
+  // Use false para voltar ao comportamento normal.
+  development: {
+    stateOnlyMode: true,
+    mqtt: {
+      enabled: false,
+      brokerUrl: "",
+      username: "",
+      password: "",
+      clientIdPrefix: "dashboard-eletrize",
+      stateTopicPrefix: "eletrize/devices",
+      qos: 0,
+      retain: true,
+      libraryUrl: "https://unpkg.com/mqtt/dist/mqtt.min.js",
+    },
+  },
+
   clientInfo: {
     name: "Doutor Fabio",
     projectName: "Dashboard Residencial",
@@ -605,14 +622,14 @@ const bottomNavConfig = {
   // Layout geral da barra
   containerStyle: {
     width: "fit-content",
-    maxWidth: "296px",
+    maxWidth: "360px",
     height: "80px",
     padding: "8px 4px",
     bottomOffset: "18px",
     itemGap: "0px",
     itemMinTouch: "44px",
     // Largura horizontal de cada item (aproxima/afasta os elementos)
-    itemSlotWidth: "80px",
+    itemSlotWidth: "68px",
     iconSize: "22px",
     labelSize: "11px",
     // Tamanho da barrinha (notch) quando a nav recolhe no scroll
@@ -664,10 +681,10 @@ const bottomNavConfig = {
       controlRoutePattern: "^ambiente\\d+-",
       // Rotas principais que mantêm a barra completa no centro.
       // Todas as demais rotas entram no modo compacto de retorno.
-      primaryRoutes: ["home", "curtains", "scenes"],
+      primaryRoutes: ["home", "ambientes", "curtains", "scenes"],
       // Como localizar o item de Home dentro de items[].
-      homePath: "home",
-      homeId: "home",
+      homePath: "ambientes",
+      homeId: "ambientes",
       // No modo compacto, mantém sempre visível (sem notch de scroll).
       disableAutoHide: true,
       // Ajustes visuais do botão recolhido no canto inferior esquerdo.
@@ -695,10 +712,23 @@ const bottomNavConfig = {
       visible: true,
       disabled: false,
       external: false,
-      order: 2,
+      order: 1,
       styleOverrides: {},
       ariaLabel: "Ir para Home",
       tooltip: "Home",
+    },
+    {
+      id: "ambientes",
+      label: "Ambientes",
+      path: "ambientes",
+      icon: "images/icons/icon-ambientes.svg",
+      visible: true,
+      disabled: false,
+      external: false,
+      order: 2,
+      styleOverrides: {},
+      ariaLabel: "Ir para Ambientes",
+      tooltip: "Ambientes",
     },
     {
       id: "curtains",
@@ -708,7 +738,7 @@ const bottomNavConfig = {
       visible: true,
       disabled: false,
       external: false,
-      order: 1,
+      order: 3,
       styleOverrides: {},
       ariaLabel: "Ir para Cortinas",
       tooltip: "Cortinas",
@@ -721,13 +751,84 @@ const bottomNavConfig = {
       visible: true,
       disabled: false,
       external: false,
-      order: 3,
+      order: 4,
       styleOverrides: {},
       ariaLabel: "Ir para Cenarios",
       tooltip: "Cenarios",
     },
   ],
 };
+
+const DEFAULT_WEATHER_CONFIG = {
+  city: "Ribeirao Preto",
+  latitude: -21.1775,
+  longitude: -47.8103,
+  timezone: "America/Sao_Paulo",
+  refreshMinutes: 15,
+};
+
+const DEFAULT_MAIN_DASHBOARD_CONFIG = {
+  nowPlayingDeviceId: "353",
+  controls: {
+    transportDeviceId: "353",
+    audioDeviceId: "353",
+    commands: {
+      play: "play",
+      pause: "pause",
+      next: "nextTrack",
+      previous: "previousTrack",
+      mute: "mute",
+      unmute: "unmute",
+    },
+  },
+  previewNowPlaying: {
+    enabled: false,
+    status: "playing",
+    track: "Blinding Lights",
+    artist: "The Weeknd",
+    album: "After Hours",
+    artwork: "assets/images/music-placeholder.png",
+    muted: false,
+  },
+};
+
+function cloneJson(value, fallback = {}) {
+  try {
+    return JSON.parse(JSON.stringify(value ?? fallback));
+  } catch (_) {
+    return JSON.parse(JSON.stringify(fallback));
+  }
+}
+
+function getWeatherConfig() {
+  const override = CLIENT_CONFIG?.weather || {};
+  return {
+    ...DEFAULT_WEATHER_CONFIG,
+    ...override,
+  };
+}
+
+function getMainDashboardConfig() {
+  const override = CLIENT_CONFIG?.mainDashboard || {};
+  const merged = {
+    ...DEFAULT_MAIN_DASHBOARD_CONFIG,
+    ...override,
+    controls: {
+      ...(DEFAULT_MAIN_DASHBOARD_CONFIG.controls || {}),
+      ...(override.controls || {}),
+      commands: {
+        ...((DEFAULT_MAIN_DASHBOARD_CONFIG.controls || {}).commands || {}),
+        ...((override.controls || {}).commands || {}),
+      },
+    },
+    previewNowPlaying: {
+      ...(DEFAULT_MAIN_DASHBOARD_CONFIG.previewNowPlaying || {}),
+      ...(override.previewNowPlaying || {}),
+    },
+  };
+
+  return cloneJson(merged, DEFAULT_MAIN_DASHBOARD_CONFIG);
+}
 
 // =========================
 // Helpers (API pública)
@@ -1149,6 +1250,8 @@ function getBottomNavConfig() {
 window.CLIENT_CONFIG = CLIENT_CONFIG;
 window.bottomNavConfig = bottomNavConfig;
 window.getBottomNavConfig = getBottomNavConfig;
+window.getWeatherConfig = getWeatherConfig;
+window.getMainDashboardConfig = getMainDashboardConfig;
 window.getVisibleEnvironments = getVisibleEnvironments;
 window.getEnvironment = getEnvironment;
 window.getEnvironmentLightIds = getEnvironmentLightIds;

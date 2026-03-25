@@ -65,6 +65,10 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  if (url.pathname.startsWith("/polling")) {
+    return;
+  }
+
   if (!isSameOrigin || isHubitat) {
     return;
   }
@@ -184,4 +188,3 @@ function cacheFirst(request) {
       });
   });
 }
-
