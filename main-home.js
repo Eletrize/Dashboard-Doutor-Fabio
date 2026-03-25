@@ -116,6 +116,7 @@
 
     const NOW_PLAYING_DEVICE_STORAGE_KEY = "mainHome:lastNowPlayingMusicDeviceId";
     const NOW_PLAYING_REFRESH_MS = 8000;
+    const ENABLE_HOME_NOW_PLAYING = false;
 
     function byId(id) {
       return document.getElementById(id);
@@ -780,6 +781,7 @@
     }
 
     async function refreshNowPlaying() {
+      if (!ENABLE_HOME_NOW_PLAYING) return;
       const card = byId("main-now-playing-card");
       const stateLabel = byId("main-now-playing-state");
       const track = byId("main-now-playing-track");
@@ -914,10 +916,12 @@
       renderLastEnvironmentCard();
       renderActiveDevices();
 
-      await Promise.allSettled([
-        refreshWeather(Boolean(forceWeather)),
-        refreshNowPlaying(),
-      ]);
+      const tasks = [refreshWeather(Boolean(forceWeather))];
+      if (ENABLE_HOME_NOW_PLAYING) {
+        tasks.push(refreshNowPlaying());
+      }
+
+      await Promise.allSettled(tasks);
 
       if (state.destroyed) return;
       renderActiveDevices();
@@ -930,10 +934,14 @@
         refreshWeather(false).catch(console.warn);
       }, weatherMinutes * 60 * 1000);
 
-      state.nowPlayingTimer = setInterval(() => {
-        refreshNowPlaying().catch(console.warn);
-        renderActiveDevices();
-      }, NOW_PLAYING_REFRESH_MS);
+      if (ENABLE_HOME_NOW_PLAYING) {
+        state.nowPlayingTimer = setInterval(() => {
+          refreshNowPlaying().catch(console.warn);
+          renderActiveDevices();
+        }, NOW_PLAYING_REFRESH_MS);
+      } else {
+        state.nowPlayingTimer = null;
+      }
     }
 
     function stopTimers() {
@@ -947,7 +955,9 @@
       if (state.destroyed) return;
       state.paused = false;
       state.nowPlayingDeviceId = readRememberedNowPlayingDeviceId();
-      bindNowPlayingControls();
+      if (ENABLE_HOME_NOW_PLAYING) {
+        bindNowPlayingControls();
+      }
       const offAllBtn = byId("main-active-devices-off-btn");
       if (offAllBtn) {
         offAllBtn.addEventListener("click", async () => {
