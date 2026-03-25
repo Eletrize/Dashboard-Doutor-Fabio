@@ -1,30 +1,17 @@
+import {
+  CORS_HEADERS,
+  getHubitatCredentials,
+  jsonResponse,
+  requireAuthenticatedUser,
+} from "./_auth.js";
+
 /**
  * Cloudflare Function: hubitat-proxy
  * Proxy para Maker API do Hubitat (resolve CORS e protege credenciais)
  */
-
-// Configuração da Maker API (pode vir de environment variables ou hardcoded)
-const HUBITAT_BASE_URL =
-  "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144";
-const HUBITAT_ACCESS_TOKEN = "94f13f9f-2842-48ea-a860-02eda566a02a";
-
-/**
- * CORS headers para permitir requisições do frontend
- */
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "*",
-  "Access-Control-Max-Age": "86400",
-};
-
-/**
- * Handler principal da Function
- */
 export async function onRequest(context) {
   const { request } = context;
 
-  // Handle preflight OPTIONS
   if (request.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
@@ -32,24 +19,30 @@ export async function onRequest(context) {
     });
   }
 
+  const auth = await requireAuthenticatedUser(context);
+  if (!auth.ok) {
+    return auth.response;
+  }
+
+  const hubitatCredentials = getHubitatCredentials(context.env);
+  if (!hubitatCredentials.ok) {
+    return hubitatCredentials.response;
+  }
+
+  const { baseUrl: hubitatBaseUrl, accessToken: hubitatAccessToken } =
+    hubitatCredentials;
+
   const url = new URL(request.url);
   const deviceId = url.searchParams.get("device");
   const command = url.searchParams.get("command");
   const value = url.searchParams.get("value");
 
   if (!deviceId) {
-    return new Response(
-      JSON.stringify({ error: "Missing device parameter" }),
-      {
-        status: 400,
-        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-      }
-    );
+    return jsonResponse({ error: "Missing device parameter" }, 400);
   }
 
   try {
-    // Construir URL do Hubitat
-    let hubitatUrl = `${HUBITAT_BASE_URL}/devices/${deviceId}`;
+    let hubitatUrl = `${hubitatBaseUrl}/devices/${deviceId}`;
 
     if (command) {
       hubitatUrl += `/${command}`;
@@ -58,9 +51,8 @@ export async function onRequest(context) {
       }
     }
 
-    hubitatUrl += `?access_token=${HUBITAT_ACCESS_TOKEN}`;
+    hubitatUrl += `?access_token=${hubitatAccessToken}`;
 
-    // Fazer request para Hubitat
     const hubitatResponse = await fetch(hubitatUrl, {
       method: "GET",
       headers: {
@@ -70,7 +62,6 @@ export async function onRequest(context) {
 
     const responseText = await hubitatResponse.text();
 
-    // Retornar resposta com CORS headers
     return new Response(responseText, {
       status: hubitatResponse.status,
       headers: {
@@ -79,15 +70,13 @@ export async function onRequest(context) {
       },
     });
   } catch (error) {
-    return new Response(
-      JSON.stringify({
+    return jsonResponse(
+      {
         error: "Proxy error",
         message: error.message,
-      }),
-      {
-        status: 500,
-        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-      }
+      },
+      500
     );
   }
 }
+

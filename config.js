@@ -23,6 +23,20 @@ const CLIENT_CONFIG = {
     },
   },
 
+  // Login do dashboard (Supabase Auth).
+  // Segredos e regras de allowlist ficam no backend (Cloudflare Functions),
+  // nunca neste arquivo público.
+  auth: {
+    enabled: false,
+    supabaseUrl: "",
+    supabaseAnonKey: "",
+    allowEmailSignUp: false,
+    allowGoogleLogin: true,
+    requireEmailConfirmation: true,
+    // Após OAuth (Google), o usuário volta para esta URL.
+    redirectTo: "",
+  },
+
   clientInfo: {
     name: "Doutor Fabio",
     projectName: "Dashboard Residencial",
@@ -1247,6 +1261,23 @@ function getBottomNavConfig() {
   return bottomNavConfig;
 }
 
+function getAuthConfig() {
+  const auth = CLIENT_CONFIG?.auth || {};
+
+  return {
+    enabled: auth.enabled === true,
+    supabaseUrl: typeof auth.supabaseUrl === "string" ? auth.supabaseUrl.trim() : "",
+    supabaseAnonKey:
+      typeof auth.supabaseAnonKey === "string"
+        ? auth.supabaseAnonKey.trim()
+        : "",
+    allowEmailSignUp: auth.allowEmailSignUp === true,
+    allowGoogleLogin: auth.allowGoogleLogin !== false,
+    requireEmailConfirmation: auth.requireEmailConfirmation !== false,
+    redirectTo: typeof auth.redirectTo === "string" ? auth.redirectTo.trim() : "",
+  };
+}
+
 window.CLIENT_CONFIG = CLIENT_CONFIG;
 window.bottomNavConfig = bottomNavConfig;
 window.getBottomNavConfig = getBottomNavConfig;
@@ -1269,5 +1300,6 @@ window.getUiActionIcon = getUiActionIcon;
 window.buildCurtainSectionsFromConfig = buildCurtainSectionsFromConfig;
 window.generateLightsControls = generateLightsControls;
 window.generateCurtainsControls = generateCurtainsControls;
+window.getAuthConfig = getAuthConfig;
 
 console.log("✅ CLIENT_CONFIG carregado:", CLIENT_CONFIG.clientInfo.name);

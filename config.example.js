@@ -8,6 +8,16 @@
  */
 
 const CLIENT_CONFIG = {
+  auth: {
+    enabled: false,
+    supabaseUrl: "",
+    supabaseAnonKey: "",
+    allowEmailSignUp: false,
+    allowGoogleLogin: true,
+    requireEmailConfirmation: true,
+    redirectTo: "",
+  },
+
   clientInfo: {
     name: "NOME DO CLIENTE",
     projectName: "Dashboard Cliente",
@@ -184,6 +194,22 @@ function getUiActionIcon(key) {
   return (CLIENT_CONFIG?.ui?.actions && CLIENT_CONFIG.ui.actions[key]) || null;
 }
 
+function getAuthConfig() {
+  const auth = CLIENT_CONFIG?.auth || {};
+  return {
+    enabled: auth.enabled === true,
+    supabaseUrl: typeof auth.supabaseUrl === "string" ? auth.supabaseUrl.trim() : "",
+    supabaseAnonKey:
+      typeof auth.supabaseAnonKey === "string"
+        ? auth.supabaseAnonKey.trim()
+        : "",
+    allowEmailSignUp: auth.allowEmailSignUp === true,
+    allowGoogleLogin: auth.allowGoogleLogin !== false,
+    requireEmailConfirmation: auth.requireEmailConfirmation !== false,
+    redirectTo: typeof auth.redirectTo === "string" ? auth.redirectTo.trim() : "",
+  };
+}
+
 function buildCurtainSectionsFromConfig() {
   return getVisibleEnvironments()
     .filter((env) => Array.isArray(env.curtains) && env.curtains.length > 0)
@@ -281,6 +307,7 @@ window.getUiItem = getUiItem;
 window.getUiToggle = getUiToggle;
 window.getUiToggleIcon = getUiToggleIcon;
 window.getUiActionIcon = getUiActionIcon;
+window.getAuthConfig = getAuthConfig;
 window.buildCurtainSectionsFromConfig = buildCurtainSectionsFromConfig;
 window.generateLightsControls = generateLightsControls;
 window.generateCurtainsControls = generateCurtainsControls;

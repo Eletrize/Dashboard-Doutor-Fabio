@@ -1,30 +1,17 @@
+import {
+  CORS_HEADERS,
+  getHubitatCredentials,
+  jsonResponse,
+  requireAuthenticatedUser,
+} from "./_auth.js";
+
 /**
  * Cloudflare Function: polling
  * Busca estados de múltiplos dispositivos do Hubitat
  */
-
-// Configuração da Maker API
-const HUBITAT_BASE_URL =
-  "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144";
-const HUBITAT_ACCESS_TOKEN = "94f13f9f-2842-48ea-a860-02eda566a02a";
-
-/**
- * CORS headers
- */
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "*",
-  "Access-Control-Max-Age": "86400",
-};
-
-/**
- * Handler principal
- */
 export async function onRequest(context) {
   const { request } = context;
 
-  // Handle preflight OPTIONS
   if (request.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
@@ -36,27 +23,29 @@ export async function onRequest(context) {
   const devicesParam = url.searchParams.get("devices");
   const healthCheck = url.searchParams.get("health");
 
-  // Health check
   if (healthCheck) {
-    return new Response(JSON.stringify({ status: "ok" }), {
-      status: 200,
-      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-    });
+    return jsonResponse({ status: "ok" }, 200);
   }
 
+  const auth = await requireAuthenticatedUser(context);
+  if (!auth.ok) {
+    return auth.response;
+  }
+
+  const hubitatCredentials = getHubitatCredentials(context.env);
+  if (!hubitatCredentials.ok) {
+    return hubitatCredentials.response;
+  }
+
+  const { baseUrl: hubitatBaseUrl, accessToken: hubitatAccessToken } =
+    hubitatCredentials;
+
   if (!devicesParam) {
-    return new Response(
-      JSON.stringify({ error: "Missing devices parameter" }),
-      {
-        status: 400,
-        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-      }
-    );
+    return jsonResponse({ error: "Missing devices parameter" }, 400);
   }
 
   try {
-    // Buscar todos os dispositivos do Hubitat
-    const hubitatUrl = `${HUBITAT_BASE_URL}/devices/all?access_token=${HUBITAT_ACCESS_TOKEN}`;
+    const hubitatUrl = `${hubitatBaseUrl}/devices/all?access_token=${hubitatAccessToken}`;
 
     const hubitatResponse = await fetch(hubitatUrl, {
       method: "GET",
@@ -71,7 +60,6 @@ export async function onRequest(context) {
 
     const allDevices = await hubitatResponse.json();
 
-    // Filtrar apenas os dispositivos solicitados
     const requestedIds = devicesParam.split(",").map((id) => id.trim());
     const devices = {};
 
@@ -83,25 +71,18 @@ export async function onRequest(context) {
       let level = null;
       let volume = null;
 
-      // Extrair atributos
       if (Array.isArray(device.attributes)) {
-        const switchAttr = device.attributes.find(
-          (attr) => attr.name === "switch"
-        );
+        const switchAttr = device.attributes.find((attr) => attr.name === "switch");
         if (switchAttr) {
           state = switchAttr.currentValue || switchAttr.value || state;
         }
 
-        const levelAttr = device.attributes.find(
-          (attr) => attr.name === "level"
-        );
+        const levelAttr = device.attributes.find((attr) => attr.name === "level");
         if (levelAttr) {
           level = levelAttr.currentValue ?? levelAttr.value ?? level;
         }
 
-        const volumeAttr = device.attributes.find(
-          (attr) => attr.name === "volume"
-        );
+        const volumeAttr = device.attributes.find((attr) => attr.name === "volume");
         if (volumeAttr) {
           volume = volumeAttr.currentValue ?? volumeAttr.value ?? volume;
         }
@@ -131,27 +112,23 @@ export async function onRequest(context) {
       }
     });
 
-    return new Response(
-      JSON.stringify({
+    return jsonResponse(
+      {
         success: true,
         devices,
         timestamp: new Date().toISOString(),
-      }),
-      {
-        status: 200,
-        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-      }
+      },
+      200
     );
   } catch (error) {
-    return new Response(
-      JSON.stringify({
+    return jsonResponse(
+      {
         error: "Polling error",
         message: error.message,
-      }),
-      {
-        status: 500,
-        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-      }
+      },
+      500
     );
   }
 }
+
+

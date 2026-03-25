@@ -8295,9 +8295,41 @@ document.addEventListener("DOMContentLoaded", () => {
   startKeepAliveVideo();
 });
 
+function canInitializeDashboardWithAuth() {
+  try {
+    if (
+      window.dashboardAuth &&
+      typeof window.dashboardAuth.canInitializeApp === "function"
+    ) {
+      return window.dashboardAuth.canInitializeApp();
+    }
+  } catch (error) {
+    console.warn("Falha ao verificar estado de autenticação:", error);
+  }
+
+  return true;
+}
+
+function waitForAuthThenInitialize() {
+  if (window.__dashboardAuthInitListenerBound) return;
+  window.__dashboardAuthInitListenerBound = true;
+
+  window.addEventListener("dashboard-authenticated", () => {
+    if (!window.initializationStarted) {
+      initializeApp();
+    }
+  });
+}
+
 // Função de inicialização unificada (mobile e desktop idênticos)
 // Função de inicialização unificada (mobile e desktop idênticos)
 function initializeApp() {
+  if (!canInitializeDashboardWithAuth()) {
+    console.log("Aguardando autenticação para inicializar o dashboard...");
+    waitForAuthThenInitialize();
+    return;
+  }
+
   console.log("DASHBOARD ELETRIZE INICIALIZANDO");
   console.log("Mobile detectado:", isMobile);
 
