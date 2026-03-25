@@ -8426,7 +8426,7 @@ body.auth-locked #spa-navbar {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: radial-gradient(circle at 20% 10%, #1a1f2e, #0a0b10 65%);
+  background: #101010;
 }
 
 body.auth-locked .auth-gate {
@@ -8441,7 +8441,7 @@ body.auth-locked .auth-gate {
   width: min(420px, 100%);
   border-radius: 20px;
   border: 1px solid var(--glass-border);
-  background: linear-gradient(150deg, #181b26cc, #0f1018d9);
+  background: #101010;
   box-shadow: 0 16px 40px #00000066;
   padding: 24px;
   display: flex;
@@ -8459,7 +8459,8 @@ body.auth-locked .auth-gate {
   margin: 0;
   text-align: center;
   font-size: 27px;
-  font-weight: 600;
+  font-family: Raleway, sans-serif;
+  font-weight: 400;
 }
 
 .auth-card__subtitle {
@@ -8522,6 +8523,17 @@ body.auth-locked .auth-gate {
 .auth-btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.auth-form #auth-signin-btn {
+  margin-top: 24px;
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #101010;
+}
+
+.auth-form #auth-signin-btn:hover:not(:disabled) {
+  background: #e8e8e8;
 }
 
 .auth-btn--secondary {

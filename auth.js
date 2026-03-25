@@ -196,7 +196,7 @@
 
     setGateLocked(true);
     if (!state.ready) {
-      setStatus("Faça login para acessar o dashboard.", "neutral");
+      setStatus("", "neutral");
     }
   }
 
@@ -490,7 +490,7 @@
       resolveReady();
 
       if (!state.authenticated) {
-        setStatus("Faça login para acessar o dashboard.", "neutral");
+        setStatus("", "neutral");
       }
     } catch (error) {
       setStatus(error?.message || "Falha ao inicializar login.", "error");

@@ -31,7 +31,7 @@ const CLIENT_CONFIG = {
     supabaseUrl: "https://ojuavodurcfndjuukvnj.supabase.co",
     supabaseAnonKey: "sb_publishable_ktCS7oV4-VVx8sPylYc6EQ_Nyk4lpab",
     allowEmailSignUp: false,
-    allowGoogleLogin: true,
+    allowGoogleLogin: false,
     requireEmailConfirmation: true,
     // Após OAuth (Google), o usuário volta para esta URL.
     redirectTo: "",
