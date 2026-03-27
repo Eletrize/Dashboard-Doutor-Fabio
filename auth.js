@@ -373,6 +373,9 @@
       getAccessToken: function () {
         return state.accessToken || "";
       },
+      getClient: function () {
+        return state.client;
+      },
       getUser: function () {
         return state.user;
       },

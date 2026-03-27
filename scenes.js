@@ -5,6 +5,7 @@
   const STORAGE_KEY = "eletrize:custom-scenes:v1";
   const EDITING_SCENE_STORAGE_KEY = "eletrize:custom-scenes:editing-scene-id";
   const FEEDBACK_STORAGE_KEY = "eletrize:custom-scenes:feedback";
+  const SCENES_TABLE = "user_scenes";
   const CUSTOM_COMMAND_TOKEN = "__custom__";
   const INTERNAL_COMMANDS = new Set([
     "configure",
@@ -120,6 +121,7 @@
     selectedDeviceRefId: "",
     selectedCommand: "",
     stepPickerTab: "",
+    storageMode: "local",
   };
   let activeSceneConfirmationResolver = null;
 
@@ -153,6 +155,24 @@
 
   function makeId(prefix) {
     return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function parseTimestampMs(value) {
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return value;
+    }
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : Date.now();
+  }
+
+  function sortScenesByRecent(values) {
+    return toArray(values)
+      .slice()
+      .sort((a, b) => {
+        const updatedDiff = Number(b?.updatedAt || 0) - Number(a?.updatedAt || 0);
+        if (updatedDiff !== 0) return updatedDiff;
+        return Number(b?.createdAt || 0) - Number(a?.createdAt || 0);
+      });
   }
 
   function escapeHtml(value) {
@@ -405,17 +425,18 @@
       if (!raw) return [];
       const parsed = JSON.parse(raw);
       if (!Array.isArray(parsed)) return [];
-      return parsed
-        .map(sanitizeScene)
-        .filter(Boolean);
+      return sortScenesByRecent(
+        parsed
+          .map(sanitizeScene)
+          .filter(Boolean),
+      );
     } catch (_error) {
       return [];
     }
   }
 
-  function purgeLegacyDemoScenes() {
-    const before = state.scenes.length;
-    state.scenes = state.scenes.filter((scene) => {
+  function removeLegacyDemoScenes(scenes) {
+    return toArray(scenes).filter((scene) => {
       const name = String(scene?.name || "").trim();
       const description = String(scene?.description || "").trim();
       return !(
@@ -423,8 +444,16 @@
         description === "Exemplo inicial. Você pode editar, duplicar ou excluir."
       );
     });
+  }
 
-    if (state.scenes.length !== before) {
+  function purgeLegacyDemoScenes() {
+    const filtered = removeLegacyDemoScenes(state.scenes);
+    if (filtered.length === state.scenes.length) {
+      return;
+    }
+
+    state.scenes = filtered;
+    if (state.storageMode === "local") {
       writeScenesToStorage(state.scenes);
     }
   }
@@ -435,6 +464,231 @@
     } catch (error) {
       console.warn("Falha ao salvar cenários", error);
     }
+  }
+
+  function getDashboardAuthApi() {
+    return global.dashboardAuth || null;
+  }
+
+  async function waitForScenesAuthReady() {
+    const authApi = getDashboardAuthApi();
+    if (!authApi?.waitUntilReady) return;
+    try {
+      await authApi.waitUntilReady();
+    } catch (_error) {
+      // noop
+    }
+  }
+
+  function getScenesStorageContext() {
+    const authApi = getDashboardAuthApi();
+    const client = authApi?.getClient ? authApi.getClient() : null;
+    const user = authApi?.getUser ? authApi.getUser() : null;
+    return {
+      authApi,
+      client,
+      user,
+      isRemoteReady: Boolean(client && user?.id),
+    };
+  }
+
+  function buildSceneStepsPayload(steps) {
+    return toArray(steps)
+      .map(sanitizeStep)
+      .filter(Boolean)
+      .map((step) => ({
+        id: step.id,
+        refId: step.refId,
+        deviceId: step.deviceId,
+        deviceType: step.deviceType,
+        deviceName: step.deviceName,
+        envName: step.envName,
+        command: step.command,
+        value: step.value,
+        delayMs: 0,
+      }));
+  }
+
+  function serializeSceneForRemote(scene, userId) {
+    return {
+      user_id: String(userId || "").trim(),
+      name: String(scene?.name || "").trim(),
+      description: String(scene?.description || "").trim(),
+      steps: buildSceneStepsPayload(scene?.steps),
+      created_at: new Date(parseTimestampMs(scene?.createdAt)).toISOString(),
+      updated_at: new Date(parseTimestampMs(scene?.updatedAt)).toISOString(),
+    };
+  }
+
+  function deserializeRemoteScene(row) {
+    return sanitizeScene({
+      id: row?.id,
+      name: row?.name,
+      description: row?.description,
+      steps: row?.steps,
+      createdAt: row?.created_at,
+      updatedAt: row?.updated_at,
+    });
+  }
+
+  async function fetchScenesFromRemote(client, userId) {
+    const { data, error } = await client
+      .from(SCENES_TABLE)
+      .select("id, user_id, name, description, steps, created_at, updated_at")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return sortScenesByRecent(
+      toArray(data)
+        .map(deserializeRemoteScene)
+        .filter(Boolean),
+    );
+  }
+
+  async function migrateLocalScenesToRemote(client, userId, localScenes) {
+    const payload = sortScenesByRecent(localScenes).map((scene) =>
+      serializeSceneForRemote(scene, userId),
+    );
+
+    if (!payload.length) {
+      return [];
+    }
+
+    const { error } = await client
+      .from(SCENES_TABLE)
+      .insert(payload);
+
+    if (error) {
+      throw error;
+    }
+
+    writeScenesToStorage([]);
+    return fetchScenesFromRemote(client, userId);
+  }
+
+  async function loadScenesCollection() {
+    const localScenes = removeLegacyDemoScenes(readScenesFromStorage());
+
+    await waitForScenesAuthReady();
+    const { client, user, isRemoteReady } = getScenesStorageContext();
+
+    if (!isRemoteReady) {
+      state.storageMode = "local";
+      return sortScenesByRecent(localScenes);
+    }
+
+    try {
+      let remoteScenes = removeLegacyDemoScenes(
+        await fetchScenesFromRemote(client, user.id),
+      );
+
+      if (!remoteScenes.length && localScenes.length) {
+        remoteScenes = removeLegacyDemoScenes(
+          await migrateLocalScenesToRemote(client, user.id, localScenes),
+        );
+      }
+
+      state.storageMode = "remote";
+      return sortScenesByRecent(remoteScenes);
+    } catch (error) {
+      console.warn("Falha ao carregar cenários no Supabase. Usando localStorage.", error);
+      state.storageMode = "local";
+      return sortScenesByRecent(localScenes);
+    }
+  }
+
+  async function createSceneRecord(scene) {
+    const sanitized = sanitizeScene(scene);
+    if (!sanitized) {
+      throw new Error("Cenário inválido.");
+    }
+
+    const { client, user, isRemoteReady } = getScenesStorageContext();
+    if (state.storageMode !== "remote" || !isRemoteReady) {
+      const localScene = {
+        ...sanitized,
+        id: makeId("scene"),
+      };
+      state.storageMode = "local";
+      return localScene;
+    }
+
+    const payload = serializeSceneForRemote(sanitized, user.id);
+    const { data, error } = await client
+      .from(SCENES_TABLE)
+      .insert(payload)
+      .select("id, user_id, name, description, steps, created_at, updated_at")
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    state.storageMode = "remote";
+    return deserializeRemoteScene(data);
+  }
+
+  async function updateSceneRecord(sceneId, scene) {
+    const sanitized = sanitizeScene({
+      ...scene,
+      id: sceneId,
+    });
+    if (!sanitized) {
+      throw new Error("Cenário inválido.");
+    }
+
+    const { client, user, isRemoteReady } = getScenesStorageContext();
+    if (state.storageMode !== "remote" || !isRemoteReady) {
+      state.storageMode = "local";
+      return sanitized;
+    }
+
+    const payload = {
+      user_id: String(user.id || "").trim(),
+      name: sanitized.name,
+      description: sanitized.description,
+      steps: buildSceneStepsPayload(sanitized.steps),
+      updated_at: new Date(parseTimestampMs(sanitized.updatedAt)).toISOString(),
+    };
+    const { data, error } = await client
+      .from(SCENES_TABLE)
+      .update(payload)
+      .eq("id", sceneId)
+      .eq("user_id", user.id)
+      .select("id, user_id, name, description, steps, created_at, updated_at")
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    state.storageMode = "remote";
+    return deserializeRemoteScene(data);
+  }
+
+  async function deleteSceneRecord(sceneId) {
+    const { client, user, isRemoteReady } = getScenesStorageContext();
+    if (state.storageMode !== "remote" || !isRemoteReady) {
+      state.storageMode = "local";
+      return;
+    }
+
+    const { error } = await client
+      .from(SCENES_TABLE)
+      .delete()
+      .eq("id", sceneId)
+      .eq("user_id", user.id);
+
+    if (error) {
+      throw error;
+    }
+
+    state.storageMode = "remote";
   }
 
   function sanitizeStep(rawStep) {
@@ -479,8 +733,8 @@
       name,
       description: String(rawScene.description || "").trim(),
       steps,
-      createdAt: Number(rawScene.createdAt || Date.now()),
-      updatedAt: Number(rawScene.updatedAt || Date.now()),
+      createdAt: parseTimestampMs(rawScene.createdAt),
+      updatedAt: parseTimestampMs(rawScene.updatedAt),
     };
   }
 
@@ -1045,10 +1299,11 @@
     clearFeedback();
   }
 
-  function saveSceneFromForm() {
+  async function saveSceneFromForm() {
     const nameInput = getEl("scene-name-input");
     const descriptionInput = getEl("scene-description-input");
     const cancelBtn = getEl("scene-cancel-edit-btn");
+    const saveButton = getEl("scene-save-btn");
 
     const name = String(nameInput?.value || "").trim();
     const description = String(descriptionInput?.value || "").trim();
@@ -1067,33 +1322,61 @@
 
     const now = Date.now();
     let successMessage = "";
+    const originalLabel = saveButton?.textContent || "Salvar";
 
-    if (state.editingSceneId) {
-      const index = state.scenes.findIndex((scene) => scene.id === state.editingSceneId);
-      if (index >= 0) {
+    if (saveButton) {
+      saveButton.disabled = true;
+      saveButton.textContent = "Salvando...";
+    }
+
+    try {
+      if (state.editingSceneId) {
+        const index = state.scenes.findIndex((scene) => scene.id === state.editingSceneId);
+        if (index < 0) {
+          throw new Error("Cenário em edição não encontrado.");
+        }
+
         const current = state.scenes[index];
-        state.scenes[index] = {
+        const savedScene = await updateSceneRecord(state.editingSceneId, {
           ...current,
           name,
           description,
           steps: state.draftSteps.map((step) => ({ ...step })),
+          createdAt: current.createdAt,
           updatedAt: now,
-        };
+        });
+
+        state.scenes[index] = savedScene;
         successMessage = "Cenário atualizado.";
+      } else {
+        const savedScene = await createSceneRecord({
+          name,
+          description,
+          steps: state.draftSteps.map((step) => ({ ...step })),
+          createdAt: now,
+          updatedAt: now,
+        });
+        state.scenes.unshift(savedScene);
+        successMessage = "Cenário criado com sucesso.";
       }
-    } else {
-      state.scenes.unshift({
-        id: makeId("scene"),
-        name,
-        description,
-        steps: state.draftSteps.map((step) => ({ ...step })),
-        createdAt: now,
-        updatedAt: now,
-      });
-      successMessage = "Cenário criado com sucesso.";
+    } catch (error) {
+      console.error("Falha ao salvar cenário", error);
+      setFeedback(
+        `Falha ao salvar cenário: ${error?.message || error}`,
+        true,
+      );
+      return;
+    } finally {
+      if (saveButton) {
+        saveButton.disabled = false;
+        saveButton.textContent = originalLabel;
+      }
     }
 
-    writeScenesToStorage(state.scenes);
+    state.scenes = sortScenesByRecent(state.scenes);
+    if (state.storageMode === "local") {
+      writeScenesToStorage(state.scenes);
+    }
     renderScenesList();
 
     const isBuilderPage = Boolean(document.querySelector(".scenes-builder-page"));
@@ -1441,8 +1724,21 @@
         { confirmLabel: "Excluir", destructive: true },
       );
       if (!confirmed) return;
+      try {
+        await deleteSceneRecord(scene.id);
+      } catch (error) {
+        console.error("Falha ao excluir cenário", error);
+        setFeedback(
+          `Falha ao excluir cenário: ${error?.message || error}`,
+          true,
+        );
+        return;
+      }
+
       state.scenes = state.scenes.filter((item) => item.id !== scene.id);
-      writeScenesToStorage(state.scenes);
+      if (state.storageMode === "local") {
+        writeScenesToStorage(state.scenes);
+      }
       renderScenesList();
       if (state.editingSceneId === scene.id) {
         resetBuilder();
@@ -1513,7 +1809,13 @@
 
     if (saveButton) {
       saveButton.onclick = function () {
-        saveSceneFromForm();
+        saveSceneFromForm().catch((error) => {
+          console.error("Erro inesperado ao salvar cenário", error);
+          setFeedback(
+            `Falha ao salvar cenário: ${error?.message || error}`,
+            true,
+          );
+        });
       };
     }
 
@@ -1558,7 +1860,7 @@
     });
   }
 
-  function initScenesPage() {
+  async function initScenesPage() {
     const listPage = document.querySelector('.scenes-page[data-page="scenes"]');
     const builderPage = document.querySelector(".scenes-builder-page");
     if (!listPage && !builderPage) return;
@@ -1566,7 +1868,9 @@
     state.devices = buildDeviceCatalog();
     buildDeviceMap();
 
-    state.scenes = readScenesFromStorage();
+    setFeedback("Carregando cenários...", false);
+
+    state.scenes = await loadScenesCollection();
     purgeLegacyDemoScenes();
 
     if (listPage) {
@@ -1607,7 +1911,15 @@
     }
   }
 
-  global.initScenesPage = initScenesPage;
+  global.initScenesPage = function () {
+    return initScenesPage().catch((error) => {
+      console.error("Erro ao inicializar cenários", error);
+      setFeedback(
+        `Falha ao carregar cenários: ${error?.message || error}`,
+        true,
+      );
+    });
+  };
 
   // Compatibilidade com template legado.
   global.handleCenarioDormir = function () {
