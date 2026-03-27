@@ -121,6 +121,7 @@
     selectedCommand: "",
     stepPickerTab: "",
   };
+  let activeSceneConfirmationResolver = null;
 
   function normalizeText(value) {
     return String(value || "").trim().toLowerCase();
@@ -508,6 +509,71 @@
 
   function clearFeedback() {
     setFeedback("", false);
+  }
+
+  function requestSceneConfirmation(message, options = {}) {
+    const overlay = getEl("confirmation-popup");
+    const messageEl = getEl("popup-message");
+    const confirmBtn = getEl("popup-confirm");
+    const cancelBtn = getEl("popup-cancel");
+
+    if (!overlay || !messageEl || !confirmBtn || !cancelBtn) {
+      return Promise.resolve(global.confirm(String(message || "")));
+    }
+
+    if (activeSceneConfirmationResolver) {
+      activeSceneConfirmationResolver(false);
+      activeSceneConfirmationResolver = null;
+    }
+
+    const confirmLabel = String(options.confirmLabel || "Confirmar").trim() || "Confirmar";
+    const destructive = Boolean(options.destructive);
+
+    return new Promise((resolve) => {
+      const finish = (confirmed) => {
+        overlay.style.display = "none";
+        overlay.setAttribute("aria-hidden", "true");
+        messageEl.textContent = "";
+        confirmBtn.textContent = "Confirmar";
+        confirmBtn.classList.toggle("is-danger", false);
+        confirmBtn.onclick = null;
+        cancelBtn.onclick = null;
+        overlay.onclick = null;
+        document.removeEventListener("keydown", handleKeyDown);
+        if (activeSceneConfirmationResolver === finish) {
+          activeSceneConfirmationResolver = null;
+        }
+        resolve(Boolean(confirmed));
+      };
+
+      const handleKeyDown = (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          finish(false);
+          return;
+        }
+        if (event.key === "Enter") {
+          event.preventDefault();
+          finish(true);
+        }
+      };
+
+      activeSceneConfirmationResolver = finish;
+      messageEl.textContent = String(message || "").trim();
+      confirmBtn.textContent = confirmLabel;
+      confirmBtn.classList.toggle("is-danger", destructive);
+      overlay.style.display = "flex";
+      overlay.setAttribute("aria-hidden", "false");
+      confirmBtn.onclick = () => finish(true);
+      cancelBtn.onclick = () => finish(false);
+      overlay.onclick = (event) => {
+        if (event.target === overlay) {
+          finish(false);
+        }
+      };
+      document.addEventListener("keydown", handleKeyDown);
+      confirmBtn.focus?.();
+    });
   }
 
   function isBuilderPageActive() {
@@ -1303,9 +1369,6 @@
 
     list.innerHTML = state.scenes
       .map((scene) => {
-        const previewSteps = toArray(scene.steps).slice(0, 4);
-        const remaining = Math.max(0, toArray(scene.steps).length - previewSteps.length);
-
         return `
           <article class="scene-user-card" data-scene-id="${escapeHtml(scene.id)}">
             <div class="scene-user-head">
@@ -1316,15 +1379,6 @@
                 ? `<p class="scene-user-desc">${escapeHtml(scene.description)}</p>`
                 : ""
             }
-            <ul class="scene-user-preview">
-              ${previewSteps
-                .map(
-                  (step) =>
-                    `<li>${escapeHtml(`${step.deviceName}: ${formatCommandLabel(step.command)}${step.value ? ` (${step.value})` : ""}`)}</li>`
-                )
-                .join("")}
-              ${remaining > 0 ? `<li>+ ${remaining} ações</li>` : ""}
-            </ul>
             <div class="scene-user-actions">
               <button type="button" class="scenes-btn scenes-btn--primary" data-scene-action="run" data-scene-id="${escapeHtml(scene.id)}">Executar</button>
               <button type="button" class="scenes-btn scenes-btn--secondary" data-scene-action="edit" data-scene-id="${escapeHtml(scene.id)}">Editar</button>
@@ -1349,7 +1403,7 @@
     }
   }
 
-  function handleSceneListClick(event) {
+  async function handleSceneListClick(event) {
     const button = event.target.closest("[data-scene-action]");
     if (!button) return;
 
@@ -1364,6 +1418,11 @@
     }
 
     if (action === "run") {
+      const confirmed = await requestSceneConfirmation(
+        `Executar o cenário "${scene.name}"?`,
+        { confirmLabel: "Executar" },
+      );
+      if (!confirmed) return;
       executeScene(sceneId, button).catch((error) => {
         setFeedback(`Falha ao executar: ${error?.message || error}`, true);
       });
@@ -1377,6 +1436,11 @@
     }
 
     if (action === "delete") {
+      const confirmed = await requestSceneConfirmation(
+        `Excluir o cenário "${scene.name}"?`,
+        { confirmLabel: "Excluir", destructive: true },
+      );
+      if (!confirmed) return;
       state.scenes = state.scenes.filter((item) => item.id !== scene.id);
       writeScenesToStorage(state.scenes);
       renderScenesList();

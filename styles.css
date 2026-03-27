@@ -4109,6 +4109,9 @@ body.bottom-nav-active {
   color: #fff;
   background-color: #8a38f5;
 }
+.popup-btn.confirm.is-danger {
+  background-color: #b43b3b;
+}
 .popup-btn.cancel {
   color: #fff;
   background-color: #fff3;
