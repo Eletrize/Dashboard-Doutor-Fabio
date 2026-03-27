@@ -4161,26 +4161,146 @@
     `,
 
         scenes: () => `
-             <main class="container">
+             <main class="container scenes-page-container">
+                <div class="page active scenes-page" data-page="scenes">
+                    <div class="scenes-shell scenes-shell--list">
+                        <section class="scenes-create-section">
+                            <button type="button" id="scene-new-btn" class="control-card large scene-control-card scene-control-card--create">
+                                <div class="control-label">Criar cenário</div>
+                            </button>
+                        </section>
 
-                <div class="page active">
+                        <div class="scenes-divider" aria-hidden="true"></div>
 
-                    <div class="controls-grid" style="top: 130px; grid-template-columns: 1fr; grid-auto-rows: min-content; gap: 15px;">
+                        <section class="scenes-list-card">
+                            <div id="scenes-feedback" class="scenes-feedback" aria-live="polite"></div>
+                            <div id="scenes-user-list" class="scenes-user-list"></div>
+                        </section>
+                    </div>
+                </div>
+            </main>
+        `,
 
-                        <div class="control-card large scene-control-card" id="cenario-dormir-btn" onclick="handleCenarioDormir()">
-
-                            <img class="control-icon" src="images/icons/Encerrar-expediente.svg" alt="Dormir">
-
-                            <div class="control-label">Dormir</div>
-
-                        </div>
-
+        "scenes-criar": () => `
+             <main class="container scenes-page-container">
+                <div class="page active scenes-builder-page" data-page="scenes-builder">
+                    <div class="page-header">
+                        <button class="back-btn" onclick="spaNavigate('scenes')">
+                            <img src="images/icons/back-button.svg" alt="Voltar">
+                        </button>
+                        <h1 class="page-title">Criar cenário</h1>
                     </div>
 
+                    <div class="scenes-shell scenes-shell--builder">
+                        <section class="scenes-builder-card">
+                            <div class="scenes-card-head">
+                                <h2 class="scenes-card-title">Editor de cenário</h2>
+                                <p class="scenes-card-subtitle">Monte ações por dispositivo, em ordem.</p>
+                            </div>
+
+                            <div class="scenes-builder-grid">
+                                <label class="scenes-field">
+                                    <span class="scenes-field-label">Nome</span>
+                                    <input
+                                      id="scene-name-input"
+                                      class="scenes-input"
+                                      type="text"
+                                      maxlength="64"
+                                      placeholder="Ex: Filme, Dormir, Chegada"
+                                    />
+                                </label>
+
+                                <label class="scenes-field">
+                                    <span class="scenes-field-label">Descrição</span>
+                                    <input
+                                      id="scene-description-input"
+                                      class="scenes-input"
+                                      type="text"
+                                      maxlength="120"
+                                      placeholder="Opcional"
+                                    />
+                                </label>
+                            </div>
+
+                            <div class="scenes-step-builder">
+                                <div class="scenes-step-flow">
+                                    <div class="scenes-step-flow-head">
+                                        <button
+                                          type="button"
+                                          id="scene-step-tab-devices"
+                                          class="scenes-step-tab is-active"
+                                          data-scene-step-tab="devices"
+                                        >
+                                          Dispositivos
+                                        </button>
+                                        <button
+                                          type="button"
+                                          id="scene-step-tab-commands"
+                                          class="scenes-step-tab"
+                                          data-scene-step-tab="commands"
+                                          disabled
+                                        >
+                                          Comandos
+                                        </button>
+                                    </div>
+
+                                    <div id="scene-step-selection" class="scenes-step-selection" hidden></div>
+
+                                    <div id="scene-step-devices-panel" class="scenes-step-panel"></div>
+                                    <div id="scene-step-commands-panel" class="scenes-step-panel" hidden></div>
+                                </div>
+
+                                <label class="scenes-field" id="scene-step-custom-command-wrap" hidden>
+                                    <span class="scenes-field-label">Comando personalizado</span>
+                                    <input
+                                      id="scene-step-custom-command"
+                                      class="scenes-input"
+                                      type="text"
+                                      maxlength="48"
+                                      placeholder="Ex: push, setVolume, menu"
+                                    />
+                                </label>
+
+                                <label class="scenes-field">
+                                    <span class="scenes-field-label">Valor (opcional)</span>
+                                    <input
+                                      id="scene-step-value"
+                                      class="scenes-input"
+                                      type="text"
+                                      maxlength="32"
+                                      placeholder="Ex: 50"
+                                    />
+                                </label>
+
+                                <button type="button" id="scene-step-add-btn" class="scenes-btn scenes-btn--secondary">
+                                    Adicionar ação
+                                </button>
+                            </div>
+
+                            <div class="scenes-steps-card">
+                                <div class="scenes-steps-head">
+                                    <span class="scenes-field-label">Ações do cenário</span>
+                                </div>
+                                <ul id="scene-steps-preview" class="scene-steps-preview"></ul>
+                            </div>
+
+                            <div class="scenes-builder-actions">
+                                <button type="button" id="scene-save-btn" class="scenes-btn scenes-btn--primary">
+                                    Salvar
+                                </button>
+                                <button type="button" id="scene-cancel-edit-btn" class="scenes-btn scenes-btn--ghost" hidden>
+                                    Cancelar edição
+                                </button>
+                                <button type="button" id="scene-back-btn" class="scenes-btn scenes-btn--secondary">
+                                    Voltar para cenários
+                                </button>
+                            </div>
+
+                            <div id="scenes-feedback" class="scenes-feedback" aria-live="polite"></div>
+                        </section>
+                    </div>
                 </div>
-
             </main>
-
         `,
 
         home: () => `
@@ -7644,7 +7764,7 @@
 
         // Atualiza o botÃ£o master na Página de cenÃ¡rios
 
-        if (page === "scenes") {
+        if (page === "scenes" || page === "scenes-criar") {
           ensureScenesScript()
             .then(() => {
               if (typeof initScenesPage === "function") {
