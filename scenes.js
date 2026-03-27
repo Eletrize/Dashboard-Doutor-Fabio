@@ -299,7 +299,11 @@
 
   function buildDeviceCatalog() {
     const visibleEnvironments =
-      typeof getVisibleEnvironments === "function" ? getVisibleEnvironments() : [];
+      typeof getVisibleEnvironments === "function"
+        ? getVisibleEnvironments().filter((env) =>
+            canCreateScenesForEnvironment(env?.key),
+          )
+        : [];
 
     const controlCommandMap = getControlCommandMap();
     const acBrandProfiles = getAcBrandProfiles();
@@ -470,6 +474,10 @@
     return global.dashboardAuth || null;
   }
 
+  function getDashboardAccessApi() {
+    return global.dashboardAccess || null;
+  }
+
   async function waitForScenesAuthReady() {
     const authApi = getDashboardAuthApi();
     if (!authApi?.waitUntilReady) return;
@@ -490,6 +498,33 @@
       user,
       isRemoteReady: Boolean(client && user?.id),
     };
+  }
+
+  function canCreateScenesForEnvironment(envKey) {
+    const accessApi = getDashboardAccessApi();
+    if (!accessApi || typeof accessApi.canCreateScenesForEnvironment !== "function") {
+      return true;
+    }
+    return accessApi.canCreateScenesForEnvironment(envKey);
+  }
+
+  function canUseSceneStep(step, purpose) {
+    const accessApi = getDashboardAccessApi();
+    if (!accessApi || typeof accessApi.isDeviceAllowed !== "function") {
+      return true;
+    }
+
+    const deviceId = String(step?.deviceId || "").trim();
+    if (!deviceId) return false;
+    return accessApi.isDeviceAllowed(deviceId, purpose || "control");
+  }
+
+  function filterScenesByAccess(scenes) {
+    return sortScenesByRecent(
+      toArray(scenes).filter((scene) =>
+        toArray(scene?.steps).every((step) => canUseSceneStep(step, "control")),
+      ),
+    );
   }
 
   function buildSceneStepsPayload(steps) {
@@ -579,7 +614,7 @@
 
     if (!isRemoteReady) {
       state.storageMode = "local";
-      return sortScenesByRecent(localScenes);
+      return filterScenesByAccess(localScenes);
     }
 
     try {
@@ -594,11 +629,11 @@
       }
 
       state.storageMode = "remote";
-      return sortScenesByRecent(remoteScenes);
+      return filterScenesByAccess(remoteScenes);
     } catch (error) {
       console.warn("Falha ao carregar cenários no Supabase. Usando localStorage.", error);
       state.storageMode = "local";
-      return sortScenesByRecent(localScenes);
+      return filterScenesByAccess(localScenes);
     }
   }
 
@@ -1604,6 +1639,11 @@
 
     if (typeof sendHubitatCommand !== "function") {
       setFeedback("sendHubitatCommand indisponível.", true);
+      return;
+    }
+
+    if (!toArray(scene.steps).every((step) => canUseSceneStep(step, "control"))) {
+      setFeedback("Este cenário possui dispositivos fora da sua permissão.", true);
       return;
     }
 

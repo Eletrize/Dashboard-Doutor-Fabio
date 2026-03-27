@@ -3,6 +3,7 @@ import {
   getHubitatCredentials,
   jsonResponse,
   requireAuthenticatedUser,
+  resolveUserAccessPolicy,
 } from "./_auth.js";
 
 /**
@@ -24,6 +25,11 @@ export async function onRequest(context) {
     return auth.response;
   }
 
+  const accessPolicy = await resolveUserAccessPolicy(context, auth);
+  if (!accessPolicy.ok) {
+    return accessPolicy.response;
+  }
+
   const hubitatCredentials = getHubitatCredentials(context.env);
   if (!hubitatCredentials.ok) {
     return hubitatCredentials.response;
@@ -39,6 +45,19 @@ export async function onRequest(context) {
 
   if (!deviceId) {
     return jsonResponse({ error: "Missing device parameter" }, 400);
+  }
+
+  if (
+    !accessPolicy.unrestricted &&
+    !accessPolicy.controlDeviceIds.has(String(deviceId).trim())
+  ) {
+    return jsonResponse(
+      {
+        error: "Access denied for this device",
+        device: String(deviceId),
+      },
+      403,
+    );
   }
 
   try {

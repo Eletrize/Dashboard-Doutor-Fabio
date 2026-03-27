@@ -3,6 +3,7 @@ import {
   getHubitatCredentials,
   jsonResponse,
   requireAuthenticatedUser,
+  resolveUserAccessPolicy,
 } from "./_auth.js";
 
 /**
@@ -30,6 +31,11 @@ export async function onRequest(context) {
   const auth = await requireAuthenticatedUser(context);
   if (!auth.ok) {
     return auth.response;
+  }
+
+  const accessPolicy = await resolveUserAccessPolicy(context, auth);
+  if (!accessPolicy.ok) {
+    return accessPolicy.response;
   }
 
   const hubitatCredentials = getHubitatCredentials(context.env);
@@ -60,12 +66,30 @@ export async function onRequest(context) {
 
     const allDevices = await hubitatResponse.json();
 
-    const requestedIds = devicesParam.split(",").map((id) => id.trim());
+    const requestedIds = devicesParam
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    const allowedRequestedIds = accessPolicy.unrestricted
+      ? requestedIds
+      : requestedIds.filter((id) => accessPolicy.viewDeviceIds.has(id));
     const devices = {};
+
+    if (!allowedRequestedIds.length) {
+      return jsonResponse(
+        {
+          success: true,
+          devices: {},
+          filtered: true,
+          timestamp: new Date().toISOString(),
+        },
+        200,
+      );
+    }
 
     allDevices.forEach((device) => {
       const deviceId = String(device.id);
-      if (!requestedIds.includes(deviceId)) return;
+      if (!allowedRequestedIds.includes(deviceId)) return;
 
       let state = "off";
       let level = null;

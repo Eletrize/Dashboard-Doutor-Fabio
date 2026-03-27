@@ -443,6 +443,7 @@
       defer
     ></script>
     <script src="auth.js?v=1.0.0" defer></script>
+    <script src="access-control.js?v=1.0.0" defer></script>
     <script src="main-home.js?v=1.0.0" defer></script>
     <script src="script.js?v=1.0.26" defer></script>
     <script>
@@ -7358,12 +7359,26 @@
       let SPA_NAV_LOCK_UNTIL = 0;
       const SPA_NAV_LOCK_MS = 140;
       const SPA_NAV_TRANSITION_MS = 90;
+
+      function resolveAccessibleSpaRoute(route) {
+        try {
+          const accessApi = window.dashboardAccess;
+          if (
+            accessApi &&
+            typeof accessApi.resolveAccessibleRoute === "function"
+          ) {
+            return accessApi.resolveAccessibleRoute(route);
+          }
+        } catch (error) {}
+        return String(route || "").trim();
+      }
+
       function spaNavigate(page) {
         const now = Date.now();
         if (now < SPA_NAV_LOCK_UNTIL) return;
         SPA_NAV_LOCK_UNTIL = now + SPA_NAV_LOCK_MS;
 
-        const target = String(page || "");
+        const target = resolveAccessibleSpaRoute(page);
         rememberLastEnvironmentRoute(target);
         const current = (window.location.hash || "").replace("#", "");
         if (!target || target === current) {
@@ -7482,12 +7497,20 @@
 
       function renderSpa() {
         let page = window.location.hash.replace("#", "") || "home";
+        const resolvedPage = resolveAccessibleSpaRoute(page || "home");
+        if (resolvedPage && resolvedPage !== page) {
+          window.location.hash = resolvedPage;
+          return;
+        }
+        page = resolvedPage || page;
 
         if (!pages[page] && typeof ensureConfigPage === "function") {
           ensureConfigPage(page, pages);
         }
 
-        if (!pages[page]) page = "home";
+        if (!pages[page]) {
+          page = resolveAccessibleSpaRoute("home") || "home";
+        }
         rememberLastEnvironmentRoute(page);
 
         // Navbar pages: manter logo + linha branca estÃ¡ticos fora do fade.
@@ -7992,6 +8015,7 @@
         };
 
         const authApi = window.dashboardAuth;
+        const accessApi = window.dashboardAccess;
         const authEnabled =
           authApi && typeof authApi.isEnabled === "function"
             ? authApi.isEnabled()
@@ -8008,6 +8032,16 @@
           typeof authApi.onAuthenticated === "function"
         ) {
           authApi.onAuthenticated(runSpaBootstrap);
+          return;
+        }
+
+        if (
+          accessApi &&
+          typeof accessApi.canInitializeApp === "function" &&
+          !accessApi.canInitializeApp() &&
+          typeof accessApi.waitUntilReady === "function"
+        ) {
+          accessApi.waitUntilReady().then(runSpaBootstrap);
           return;
         }
 

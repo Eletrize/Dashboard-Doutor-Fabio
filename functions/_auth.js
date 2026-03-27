@@ -143,6 +143,244 @@ async function getSupabaseUserFromToken(accessToken, env) {
   };
 }
 
+function getSupabaseRestConfig(env) {
+  const supabaseUrl = String(env?.SUPABASE_URL || "").trim().replace(/\/$/, "");
+  const supabaseAnonKey = String(env?.SUPABASE_ANON_KEY || "").trim();
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return null;
+  }
+
+  return {
+    supabaseUrl,
+    supabaseAnonKey,
+  };
+}
+
+function buildSupabaseHeaders(accessToken, anonKey) {
+  return {
+    Authorization: `Bearer ${accessToken}`,
+    apikey: anonKey,
+    Accept: "application/json",
+  };
+}
+
+async function fetchSupabaseRows(tableName, queryParams, accessToken, env) {
+  const restConfig = getSupabaseRestConfig(env);
+  if (!restConfig) {
+    throw new Error("Supabase REST is not configured on server");
+  }
+
+  const url = new URL(`${restConfig.supabaseUrl}/rest/v1/${tableName}`);
+  Object.entries(queryParams || {}).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") return;
+    url.searchParams.set(key, String(value));
+  });
+
+  const response = await fetch(url.toString(), {
+    method: "GET",
+    headers: buildSupabaseHeaders(accessToken, restConfig.supabaseAnonKey),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(
+      `Supabase query failed for ${tableName} (${response.status}): ${text}`,
+    );
+  }
+
+  const payload = await response.json();
+  return Array.isArray(payload) ? payload : [];
+}
+
+function normalizeAccessValue(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function buildInFilter(values) {
+  const normalized = Array.from(
+    new Set(
+      (Array.isArray(values) ? values : [])
+        .map((value) => normalizeAccessValue(value))
+        .filter(Boolean),
+    ),
+  );
+
+  if (normalized.length === 0) {
+    return "";
+  }
+
+  return `in.(${normalized.map((value) => `"${value}"`).join(",")})`;
+}
+
+async function fetchUserAccessProfile(userId, accessToken, env) {
+  const rows = await fetchSupabaseRows(
+    "user_access_profiles",
+    {
+      select: "user_id,role,display_name,is_admin",
+      user_id: `eq.${userId}`,
+    },
+    accessToken,
+    env,
+  );
+
+  return rows[0] || null;
+}
+
+async function fetchUserEnvironmentAccess(userId, accessToken, env) {
+  return fetchSupabaseRows(
+    "user_environment_access",
+    {
+      select: "environment_key,can_view,can_control,can_create_scenes",
+      user_id: `eq.${userId}`,
+    },
+    accessToken,
+    env,
+  );
+}
+
+async function fetchEnvironmentDeviceRegistry(environmentKeys, accessToken, env) {
+  const inFilter = buildInFilter(environmentKeys);
+  if (!inFilter) return [];
+
+  return fetchSupabaseRows(
+    "environment_device_registry",
+    {
+      select: "environment_key,device_id",
+      environment_key: inFilter,
+    },
+    accessToken,
+    env,
+  );
+}
+
+function isAdminProfile(profile) {
+  if (!profile || typeof profile !== "object") return false;
+  if (profile.is_admin === true) return true;
+  return normalizeAccessValue(profile.role) === "admin";
+}
+
+export async function resolveUserAccessPolicy(context, authResult) {
+  if (!authResult?.ok) {
+    return {
+      ok: false,
+      response: jsonResponse({ error: "Authentication required" }, 401),
+    };
+  }
+
+  if (authResult.authSkipped || !authResult.user?.id || !authResult.accessToken) {
+    return {
+      ok: true,
+      unrestricted: true,
+      profile: null,
+      viewDeviceIds: new Set(),
+      controlDeviceIds: new Set(),
+      viewEnvironmentKeys: new Set(),
+      controlEnvironmentKeys: new Set(),
+      sceneEnvironmentKeys: new Set(),
+    };
+  }
+
+  try {
+    const profile = await fetchUserAccessProfile(
+      authResult.user.id,
+      authResult.accessToken,
+      context.env,
+    );
+
+    if (!profile || isAdminProfile(profile)) {
+      return {
+        ok: true,
+        unrestricted: true,
+        profile: profile || null,
+        viewDeviceIds: new Set(),
+        controlDeviceIds: new Set(),
+        viewEnvironmentKeys: new Set(),
+        controlEnvironmentKeys: new Set(),
+        sceneEnvironmentKeys: new Set(),
+      };
+    }
+
+    const rows = await fetchUserEnvironmentAccess(
+      authResult.user.id,
+      authResult.accessToken,
+      context.env,
+    );
+
+    const viewEnvironmentKeys = new Set();
+    const controlEnvironmentKeys = new Set();
+    const sceneEnvironmentKeys = new Set();
+
+    rows.forEach((row) => {
+      const envKey = normalizeAccessValue(row?.environment_key);
+      if (!envKey) return;
+
+      const canControl = row?.can_control === true;
+      const canView = row?.can_view === true || canControl;
+      const canCreateScenes = row?.can_create_scenes === true;
+
+      if (canView) {
+        viewEnvironmentKeys.add(envKey);
+      }
+      if (canControl) {
+        controlEnvironmentKeys.add(envKey);
+      }
+      if (canCreateScenes) {
+        sceneEnvironmentKeys.add(envKey);
+      }
+    });
+
+    const registryRows = await fetchEnvironmentDeviceRegistry(
+      Array.from(
+        new Set([
+          ...Array.from(viewEnvironmentKeys),
+          ...Array.from(controlEnvironmentKeys),
+        ]),
+      ),
+      authResult.accessToken,
+      context.env,
+    );
+
+    const viewDeviceIds = new Set();
+    const controlDeviceIds = new Set();
+
+    registryRows.forEach((row) => {
+      const envKey = normalizeAccessValue(row?.environment_key);
+      const deviceId = String(row?.device_id || "").trim();
+      if (!envKey || !deviceId) return;
+
+      if (viewEnvironmentKeys.has(envKey) || controlEnvironmentKeys.has(envKey)) {
+        viewDeviceIds.add(deviceId);
+      }
+      if (controlEnvironmentKeys.has(envKey)) {
+        controlDeviceIds.add(deviceId);
+      }
+    });
+
+    return {
+      ok: true,
+      unrestricted: false,
+      profile,
+      viewDeviceIds,
+      controlDeviceIds,
+      viewEnvironmentKeys,
+      controlEnvironmentKeys,
+      sceneEnvironmentKeys,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      response: jsonResponse(
+        {
+          error: "Failed to resolve access policy",
+          message: error?.message || "Unexpected access control error",
+        },
+        500,
+      ),
+    };
+  }
+}
+
 export async function requireAuthenticatedUser(context) {
   const { request, env } = context;
 
@@ -151,6 +389,7 @@ export async function requireAuthenticatedUser(context) {
       ok: true,
       authSkipped: true,
       user: null,
+      accessToken: "",
     };
   }
 
@@ -220,6 +459,7 @@ export async function requireAuthenticatedUser(context) {
       ok: true,
       authSkipped: false,
       user,
+      accessToken,
     };
   } catch (error) {
     return {

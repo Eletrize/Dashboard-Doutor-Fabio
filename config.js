@@ -849,15 +849,46 @@ function getMainDashboardConfig() {
 // Helpers (API pública)
 // =========================
 
+function getDashboardAccessApi() {
+  return window.dashboardAccess || null;
+}
+
+function hasAnyEnvironmentAccess(envKey) {
+  const accessApi = getDashboardAccessApi();
+  if (!accessApi || typeof accessApi.hasAnyEnvironmentAccess !== "function") {
+    return true;
+  }
+  return accessApi.hasAnyEnvironmentAccess(envKey);
+}
+
+function canViewEnvironment(envKey) {
+  const accessApi = getDashboardAccessApi();
+  if (!accessApi || typeof accessApi.canViewEnvironment !== "function") {
+    return true;
+  }
+  return accessApi.canViewEnvironment(envKey);
+}
+
+function canUseDeviceIdForView(deviceId) {
+  const accessApi = getDashboardAccessApi();
+  if (!accessApi || typeof accessApi.isDeviceAllowed !== "function") {
+    return true;
+  }
+  return accessApi.isDeviceAllowed(deviceId, "view");
+}
+
 function getVisibleEnvironments() {
   if (!CLIENT_CONFIG?.environments) return [];
   return Object.entries(CLIENT_CONFIG.environments)
-    .filter(([_, env]) => env && env.visible === true)
+    .filter(([key, env]) => env && env.visible === true && canViewEnvironment(key))
     .sort((a, b) => (a[1].order || 0) - (b[1].order || 0))
     .map(([key, env]) => ({ key, ...env }));
 }
 
 function getEnvironment(envKey) {
+  if (!hasAnyEnvironmentAccess(envKey)) {
+    return null;
+  }
   return (
     (CLIENT_CONFIG?.environments && CLIENT_CONFIG.environments[envKey]) || null
   );
@@ -1014,9 +1045,11 @@ function getAllLightIds() {
   getVisibleEnvironments().forEach((env) => {
     (env.lights || []).forEach((light) => ids.push(String(light.id)));
   });
-  (CLIENT_CONFIG?.devices?.extraPollingDevices || []).forEach((id) =>
-    ids.push(String(id)),
-  );
+  (CLIENT_CONFIG?.devices?.extraPollingDevices || []).forEach((id) => {
+    if (canUseDeviceIdForView(id)) {
+      ids.push(String(id));
+    }
+  });
   return Array.from(new Set(ids));
 }
 
@@ -1259,7 +1292,15 @@ function generateCurtainsControls(envKey) {
 }
 
 function getBottomNavConfig() {
-  return bottomNavConfig;
+  const accessApi = getDashboardAccessApi();
+  if (!accessApi || typeof accessApi.filterNavItems !== "function") {
+    return bottomNavConfig;
+  }
+
+  return {
+    ...bottomNavConfig,
+    items: accessApi.filterNavItems(bottomNavConfig.items || []),
+  };
 }
 
 function getAuthConfig() {

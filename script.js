@@ -904,11 +904,53 @@ function getPollingDeviceIds(hash = window.location.hash) {
     addPollingDeviceId(ids, denonId);
   }
 
-  return Array.from(ids);
+  return filterAccessibleDeviceIds(Array.from(ids), "view");
 }
 
 // ID do dispositivo de Ar Condicionado atual (será atualizado dinamicamente)
 let AC_DEVICE_ID = getACDeviceIdForCurrentRoute(); // Atualizado dinamicamente
+
+function getDashboardAccessApi() {
+  return window.dashboardAccess || null;
+}
+
+function canViewDeviceId(deviceId) {
+  const accessApi = getDashboardAccessApi();
+  if (!accessApi || typeof accessApi.isDeviceAllowed !== "function") {
+    return true;
+  }
+  return accessApi.isDeviceAllowed(deviceId, "view");
+}
+
+function canControlDeviceId(deviceId) {
+  const accessApi = getDashboardAccessApi();
+  if (!accessApi || typeof accessApi.isDeviceAllowed !== "function") {
+    return true;
+  }
+  return accessApi.isDeviceAllowed(deviceId, "control");
+}
+
+function filterAccessibleDeviceIds(deviceIds, purpose) {
+  const checker = purpose === "control" ? canControlDeviceId : canViewDeviceId;
+  return (Array.isArray(deviceIds) ? deviceIds : [])
+    .map((deviceId) => String(deviceId || "").trim())
+    .filter((deviceId) => deviceId && checker(deviceId));
+}
+
+function refreshConfiguredDeviceCaches() {
+  try {
+    ALL_LIGHT_IDS =
+      typeof getAllLightIds === "function" ? getAllLightIds() : ALL_LIGHT_IDS;
+  } catch (error) {
+    console.warn("Falha ao atualizar ALL_LIGHT_IDS:", error);
+  }
+
+  try {
+    AC_DEVICE_ID = getACDeviceIdForCurrentRoute();
+  } catch (error) {
+    console.warn("Falha ao atualizar AC_DEVICE_ID:", error);
+  }
+}
 
 // Função para obter o ID do AC baseado na rota atual
 function getACDeviceIdForCurrentRoute() {
@@ -4861,6 +4903,10 @@ async function sendHubitatCommand(deviceId, command, value) {
     const normalizedDeviceId = String(deviceId);
 
     try {
+      if (!canControlDeviceId(normalizedDeviceId)) {
+        throw new Error("Acesso negado para este dispositivo");
+      }
+
       if (isStateOnlyDevMode()) {
         if (commandState !== null) {
           setStoredState(normalizedDeviceId, commandState);
@@ -8531,25 +8577,47 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function canInitializeDashboardWithAuth() {
+  let authReady = true;
   try {
     if (
       window.dashboardAuth &&
       typeof window.dashboardAuth.canInitializeApp === "function"
     ) {
-      return window.dashboardAuth.canInitializeApp();
+      authReady = window.dashboardAuth.canInitializeApp();
     }
   } catch (error) {
     console.warn("Falha ao verificar estado de autenticação:", error);
+  }
+
+  if (!authReady) {
+    return false;
+  }
+
+  try {
+    if (
+      window.dashboardAccess &&
+      typeof window.dashboardAccess.canInitializeApp === "function"
+    ) {
+      return window.dashboardAccess.canInitializeApp();
+    }
+  } catch (error) {
+    console.warn("Falha ao verificar permissões de acesso:", error);
   }
 
   return true;
 }
 
 function waitForAuthThenInitialize() {
-  if (window.__dashboardAuthInitListenerBound) return;
-  window.__dashboardAuthInitListenerBound = true;
+  if (window.__dashboardAccessInitListenerBound) return;
+  window.__dashboardAccessInitListenerBound = true;
 
   window.addEventListener("dashboard-authenticated", () => {
+    if (!window.initializationStarted) {
+      initializeApp();
+    }
+  });
+
+  window.addEventListener("dashboard-access-ready", () => {
     if (!window.initializationStarted) {
       initializeApp();
     }
@@ -8567,6 +8635,8 @@ function initializeApp() {
 
   console.log("DASHBOARD ELETRIZE INICIALIZANDO");
   console.log("Mobile detectado:", isMobile);
+
+  refreshConfiguredDeviceCaches();
 
   // Marcar que a inicialização foi iniciada
   window.initializationStarted = true;
