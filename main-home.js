@@ -421,8 +421,8 @@
       if (!card || !nav) return;
       const cardRect = card.getBoundingClientRect();
       const navRect = nav.getBoundingClientRect();
-      const gap = 20;
-      const minHeight = 200;
+      const gap = 24;
+      const minHeight = 176;
       const available = Math.floor(navRect.top - cardRect.top - gap);
       if (!Number.isFinite(available)) return;
       const h = Math.max(minHeight, available);

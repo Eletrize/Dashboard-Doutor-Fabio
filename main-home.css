@@ -169,7 +169,7 @@
 }
 
 .main-last-room-card {
-  min-height: 126px;
+  min-height: 150px;
 }
 
 .main-last-room-photo {
@@ -194,7 +194,7 @@
 .main-last-room-content {
   position: relative;
   z-index: 1;
-  padding: 14px;
+  padding: 18px 16px;
 }
 
 .main-last-room-eyebrow {
@@ -224,7 +224,7 @@
 
 .main-active-devices-card {
   height: auto;
-  min-height: 240px;
+  min-height: 210px;
   display: flex;
   flex-direction: column;
 }

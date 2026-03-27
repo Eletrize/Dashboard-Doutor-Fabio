@@ -691,6 +691,7 @@ const bottomNavConfig = {
       enabled: true,
       // Aplicar atalho somente em páginas de controle (não em qualquer rota).
       onlyControlRoutes: true,
+      includeRoutes: ["scenes-criar"],
       // Rotas de controle seguem o padrão: ambiente{n}-{controle}
       controlRoutePattern: "^ambiente\\d+-",
       // Rotas principais que mantêm a barra completa no centro.
