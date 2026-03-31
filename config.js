@@ -771,6 +771,20 @@ const bottomNavConfig = {
       ariaLabel: "Ir para Cenarios",
       tooltip: "Cenarios",
     },
+    {
+      id: "admin-permissoes",
+      label: "Permissoes",
+      path: "admin-permissoes",
+      icon: "images/icons/icon-settings.svg",
+      visible: true,
+      disabled: false,
+      external: false,
+      order: 5,
+      styleOverrides: {},
+      ariaLabel: "Ir para Permissoes",
+      tooltip: "Permissoes",
+      adminOnly: true,
+    },
   ],
 };
 

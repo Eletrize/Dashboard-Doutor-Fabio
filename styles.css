@@ -4982,6 +4982,348 @@ body.app-info-open {
   display: none !important;
 }
 
+.admin-permissions-page-container {
+  max-width: 100% !important;
+  padding: 0;
+}
+
+.admin-permissions-page {
+  min-height: 100dvh;
+  overflow-y: auto;
+}
+
+.admin-permissions-shell {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 100px 8px calc(var(--bottom-nav-dock-space, 0px) + 20px);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.admin-permissions-hero,
+.admin-permissions-users-card,
+.admin-permissions-detail-card {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  background: linear-gradient(
+    180deg,
+    rgba(34, 34, 38, 0.84),
+    rgba(20, 20, 24, 0.82)
+  );
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.26);
+  padding: 14px;
+}
+
+.admin-permissions-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-permissions-title {
+  margin: 0;
+  color: #fff;
+  font-family: Raleway, Arial, sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.admin-permissions-subtitle,
+.admin-permissions-section-subtitle,
+.admin-permissions-user-email,
+.admin-permissions-detail-email,
+.admin-permissions-env-key,
+.admin-permissions-mode-note {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.66);
+  font-family: Raleway, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.admin-permissions-toolbar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.admin-permissions-search-field {
+  margin: 0;
+}
+
+.admin-permissions-feedback {
+  min-height: 18px;
+  color: rgba(255, 255, 255, 0.78);
+  font-family: Raleway, Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.admin-permissions-feedback[data-state="error"] {
+  color: rgba(255, 116, 116, 0.96);
+}
+
+.admin-permissions-feedback[data-state="success"] {
+  color: rgba(156, 255, 181, 0.96);
+}
+
+.admin-permissions-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.admin-permissions-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.admin-permissions-section-title {
+  color: rgba(255, 255, 255, 0.86);
+  font-family: Raleway, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.admin-permissions-users {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-permissions-user-btn {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.admin-permissions-user-btn:hover,
+.admin-permissions-user-btn.is-active {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.admin-permissions-user-main,
+.admin-permissions-user-meta,
+.admin-permissions-detail-inner,
+.admin-permissions-detail-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-permissions-user-meta {
+  align-items: flex-end;
+}
+
+.admin-permissions-user-name,
+.admin-permissions-detail-title,
+.admin-permissions-env-title {
+  margin: 0;
+  color: #fff;
+  font-family: Raleway, Arial, sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.admin-permissions-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.94);
+  font-family: Raleway, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.admin-permissions-chip--muted {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.admin-permissions-empty {
+  color: rgba(255, 255, 255, 0.72);
+  font-family: Raleway, Arial, sans-serif;
+  font-size: 14px;
+  text-align: center;
+  padding: 24px 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
+}
+
+.admin-permissions-detail-head {
+  gap: 10px;
+}
+
+.admin-permissions-detail-chips,
+.admin-permissions-bulk-actions,
+.admin-permissions-actions,
+.admin-permissions-env-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-permissions-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.admin-permissions-summary-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-permissions-summary-label {
+  color: rgba(255, 255, 255, 0.62);
+  font-family: Raleway, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-permissions-summary-value {
+  color: #fff;
+  font-family: Raleway, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.admin-permissions-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-permissions-mode-option {
+  position: relative;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.88);
+  font-family: Raleway, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease,
+    opacity 160ms ease;
+}
+
+.admin-permissions-mode-option input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.admin-permissions-mode-option.is-active {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.admin-permissions-mode-option.is-disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.admin-permissions-environments-head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-permissions-env-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.admin-permissions-env-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: opacity 160ms ease, border-color 160ms ease,
+    background 160ms ease;
+}
+
+.admin-permissions-env-card.is-disabled {
+  opacity: 0.5;
+}
+
+.admin-permissions-toggle {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.9);
+  font-family: Raleway, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.admin-permissions-toggle input {
+  margin: 0;
+}
+
+.admin-permissions-actions {
+  margin-top: 6px;
+}
+
+.admin-permissions-actions .scenes-btn--primary {
+  width: 100%;
+  min-height: 48px;
+}
+
 @media (width >= 1024px) {
   .scenes-shell {
     align-items: start;
@@ -5015,6 +5357,36 @@ body.app-info-open {
   .scenes-builder-page .scenes-shell--builder {
     padding-left: 40px;
     padding-right: 40px;
+  }
+
+  .admin-permissions-shell {
+    align-items: start;
+    padding-left: 32px;
+    padding-right: 32px;
+    gap: 14px;
+  }
+
+  .admin-permissions-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .admin-permissions-layout {
+    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .admin-permissions-users-card {
+    position: sticky;
+    top: 100px;
+  }
+
+  .admin-permissions-summary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .admin-permissions-env-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 #home-page .rooms-list:after {

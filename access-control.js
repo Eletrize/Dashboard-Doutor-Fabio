@@ -343,6 +343,14 @@
     return state.sceneEnvKeys.size > 0;
   }
 
+  function isAdmin() {
+    return isAdminProfile(state.profile);
+  }
+
+  function canAccessAdminPanel() {
+    return isAdmin();
+  }
+
   function isDeviceAllowed(deviceId, purpose) {
     const normalizedDeviceId = normalizeValue(deviceId);
     if (!normalizedDeviceId) return false;
@@ -383,6 +391,14 @@
   function canUseRoute(route) {
     const normalizedRoute = normalizeValue(route);
     if (!normalizedRoute) return true;
+
+    if (
+      normalizedRoute === "admin-permissoes" ||
+      normalizedRoute === "admin-permissions"
+    ) {
+      return canAccessAdminPanel();
+    }
+
     if (state.unrestricted) return true;
 
     if (normalizedRoute === "home" || normalizedRoute === "ambientes") {
@@ -436,7 +452,12 @@
 
   function filterNavItems(items) {
     if (!Array.isArray(items)) return [];
-    return items.filter((item) => canUseRoute(item?.path || item?.id || ""));
+    return items.filter((item) => {
+      if (item?.adminOnly === true) {
+        return canAccessAdminPanel();
+      }
+      return canUseRoute(item?.path || item?.id || "");
+    });
   }
 
   function publishApi() {
@@ -451,6 +472,8 @@
       isUnrestricted() {
         return state.unrestricted;
       },
+      isAdmin,
+      canAccessAdminPanel,
       getProfile() {
         return state.profile ? { ...state.profile } : null;
       },

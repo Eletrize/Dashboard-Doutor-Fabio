@@ -2,6 +2,8 @@
 
 This project now supports per-user access by environment.
 
+It also includes an admin-only permissions panel in the app at `#admin-permissoes`.
+
 ## How it works
 
 There are 2 layers:
@@ -25,6 +27,12 @@ This creates:
 - `user_environment_access`
 - `environment_device_registry`
 
+## Required Cloudflare variable for admin panel
+
+Set this in Cloudflare Pages > Settings > Variables and Secrets:
+
+- `SUPABASE_SERVICE_ROLE_KEY`
+
 ## Access model
 
 If a user has:
@@ -32,6 +40,23 @@ If a user has:
 - no row in `user_access_profiles`
 
 the app keeps that user unrestricted.
+
+Important:
+
+- users without profile row are unrestricted, but they do **not** gain access to the admin panel
+- the admin panel requires an explicit admin row (`is_admin = true` or `role = 'admin'`)
+
+Example explicit admin:
+
+```sql
+insert into public.user_access_profiles (user_id, role, display_name, is_admin)
+values ('USER_UUID_HERE', 'admin', 'Administrador', true)
+on conflict (user_id) do update
+set
+  role = excluded.role,
+  display_name = excluded.display_name,
+  is_admin = excluded.is_admin;
+```
 
 If a user has a row and:
 
@@ -72,5 +97,6 @@ set
 - `can_view`: user can see the environment
 - `can_control`: user can send commands to devices in that environment
 - `can_create_scenes`: user can use that environment inside the scenes builder
+- inside the admin panel, `can_create_scenes` implies `can_control`, and `can_control` implies `can_view`
 
 If you change device IDs in `config.js`, rerun the seed part of `SUPABASE_ACCESS_CONTROL.sql` so the backend registry stays in sync.

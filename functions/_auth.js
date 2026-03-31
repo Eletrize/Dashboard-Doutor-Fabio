@@ -260,6 +260,10 @@ function isAdminProfile(profile) {
   return normalizeAccessValue(profile.role) === "admin";
 }
 
+export function isExplicitAdminProfile(profile) {
+  return isAdminProfile(profile);
+}
+
 export async function resolveUserAccessPolicy(context, authResult) {
   if (!authResult?.ok) {
     return {
@@ -470,6 +474,62 @@ export async function requireAuthenticatedUser(context) {
           message: error?.message || "Unexpected auth error",
         },
         500
+      ),
+    };
+  }
+}
+
+export async function requireAdminUser(context) {
+  const auth = await requireAuthenticatedUser(context);
+  if (!auth.ok) {
+    return auth;
+  }
+
+  if (auth.authSkipped || !auth.user?.id || !auth.accessToken) {
+    return {
+      ok: false,
+      response: jsonResponse(
+        {
+          error: "Admin authentication required",
+        },
+        403,
+      ),
+    };
+  }
+
+  try {
+    const profile = await fetchUserAccessProfile(
+      auth.user.id,
+      auth.accessToken,
+      context.env,
+    );
+
+    if (!isAdminProfile(profile)) {
+      return {
+        ok: false,
+        response: jsonResponse(
+          {
+            error: "Admin access required",
+          },
+          403,
+        ),
+      };
+    }
+
+    return {
+      ok: true,
+      auth,
+      profile,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      response: jsonResponse(
+        {
+          error: "Admin validation failed",
+          message: error?.message || "Unexpected admin validation error",
+        },
+        500,
       ),
     };
   }

@@ -1,6 +1,10 @@
 (function () {
   const AUTH_GATE_CLASS = "auth-locked";
-  const PROTECTED_PATHS = new Set(["/polling", "/hubitat-proxy"]);
+  const PROTECTED_PATHS = new Set([
+    "/polling",
+    "/hubitat-proxy",
+    "/admin-access",
+  ]);
 
   const state = {
     enabled: false,
