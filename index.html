@@ -4330,17 +4330,6 @@
                             </div>
 
                             <div class="admin-permissions-toolbar">
-                                <label class="scenes-field admin-permissions-search-field">
-                                    <span class="scenes-field-label">Buscar usuario</span>
-                                    <input
-                                      id="admin-permissions-search"
-                                      class="scenes-input"
-                                      type="search"
-                                      maxlength="80"
-                                      placeholder="Email ou nome"
-                                    />
-                                </label>
-
                                 <button type="button" id="admin-permissions-refresh" class="scenes-btn scenes-btn--secondary">
                                     Atualizar
                                 </button>
@@ -4353,6 +4342,7 @@
                             <aside class="admin-permissions-users-card">
                                 <div class="admin-permissions-section-head">
                                     <span class="admin-permissions-section-title">Usuarios</span>
+                                    <span id="admin-permissions-users-count" class="admin-permissions-chip admin-permissions-chip--muted">0</span>
                                 </div>
                                 <div id="admin-permissions-users" class="admin-permissions-users"></div>
                             </aside>

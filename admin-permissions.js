@@ -8,7 +8,6 @@
     currentUserId: "",
     loading: false,
     saving: false,
-    searchTerm: "",
   };
 
   function normalizeText(value) {
@@ -99,26 +98,6 @@
     feedback.dataset.state = type || "neutral";
   }
 
-  function getFilteredUsers() {
-    const normalizedSearch = normalizeText(state.searchTerm);
-    if (!normalizedSearch) {
-      return state.users.slice();
-    }
-
-    return state.users.filter((user) => {
-      const haystack = [
-        user?.email,
-        user?.displayName,
-        user?.profile?.displayName,
-        user?.profile?.role,
-        user?.accessMode,
-      ]
-        .map((value) => normalizeText(value))
-        .join(" ");
-      return haystack.includes(normalizedSearch);
-    });
-  }
-
   async function fetchAdminData() {
     const response = await fetch("/admin-access", {
       method: "GET",
@@ -150,14 +129,20 @@
 
   function renderUserList() {
     const listEl = getEl("admin-permissions-users");
+    const countEl = getEl("admin-permissions-users-count");
     if (!listEl) return;
 
     if (state.loading) {
+      if (countEl) countEl.textContent = "...";
       listEl.innerHTML = '<div class="admin-permissions-empty">Carregando usuarios...</div>';
       return;
     }
 
-    const users = getFilteredUsers();
+    const users = state.users.slice();
+    if (countEl) {
+      countEl.textContent = String(users.length);
+    }
+
     if (!users.length) {
       listEl.innerHTML = '<div class="admin-permissions-empty">Nenhum usuario encontrado.</div>';
       return;
@@ -583,11 +568,10 @@
       state.currentUserId = String(payload?.currentUserId || "").trim();
 
       const preferredId = String(preferredUserId || state.selectedUserId || "").trim();
-      const availableUsers = getFilteredUsers();
       const hasPreferred = state.users.some((user) => user.id === preferredId);
       state.selectedUserId = hasPreferred
         ? preferredId
-        : availableUsers[0]?.id || state.users[0]?.id || "";
+        : state.users[0]?.id || "";
 
       renderUserList();
       renderUserDetail();
@@ -609,19 +593,6 @@
   }
 
   function bindListEvents() {
-    const searchInput = getEl("admin-permissions-search");
-    if (searchInput) {
-      searchInput.addEventListener("input", (event) => {
-        state.searchTerm = String(event.target?.value || "");
-        const filteredUsers = getFilteredUsers();
-        if (!filteredUsers.some((user) => user.id === state.selectedUserId)) {
-          state.selectedUserId = filteredUsers[0]?.id || "";
-        }
-        renderUserList();
-        renderUserDetail();
-      });
-    }
-
     const refreshBtn = getEl("admin-permissions-refresh");
     if (refreshBtn) {
       refreshBtn.addEventListener("click", () => {
@@ -667,8 +638,6 @@
       pageRoot.dataset.adminPermissionsBound = "true";
     }
 
-    const searchInput = getEl("admin-permissions-search");
-    state.searchTerm = String(searchInput?.value || "");
     await loadAdminPermissions(state.selectedUserId);
   }
 

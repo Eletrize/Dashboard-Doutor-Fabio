@@ -5047,14 +5047,9 @@ body.app-info-open {
 }
 
 .admin-permissions-toolbar {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
+  display: flex;
+  justify-content: flex-end;
   margin-top: 12px;
-}
-
-.admin-permissions-search-field {
-  margin: 0;
 }
 
 .admin-permissions-feedback {
@@ -5367,8 +5362,7 @@ body.app-info-open {
   }
 
   .admin-permissions-toolbar {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
+    justify-content: flex-end;
   }
 
   .admin-permissions-layout {
