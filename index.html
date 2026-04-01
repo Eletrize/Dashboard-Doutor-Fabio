@@ -7411,6 +7411,29 @@
         mainHomeRuntimeInitialized = false;
       }
 
+      window.refreshMainHomeRuntime = function (forceWeather) {
+        if (!mainHomeRuntime) {
+          return Promise.resolve(false);
+        }
+
+        if (typeof mainHomeRuntime.refreshAll === "function") {
+          return Promise.resolve(mainHomeRuntime.refreshAll(forceWeather === true))
+            .then(() => true)
+            .catch(() => false);
+        }
+
+        if (typeof mainHomeRuntime.resume === "function") {
+          try {
+            mainHomeRuntime.resume();
+            return Promise.resolve(true);
+          } catch (error) {
+            return Promise.resolve(false);
+          }
+        }
+
+        return Promise.resolve(false);
+      };
+
       let SPA_NAV_LOCK_UNTIL = 0;
       const SPA_NAV_LOCK_MS = 140;
       const SPA_NAV_TRANSITION_MS = 90;

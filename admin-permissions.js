@@ -8,6 +8,7 @@
     currentUserId: "",
     loading: false,
     saving: false,
+    hasLoaded: false,
   };
 
   function normalizeText(value) {
@@ -234,6 +235,11 @@
 
   function getSelectedUser() {
     return state.users.find((user) => user.id === state.selectedUserId) || null;
+  }
+
+  function renderAdminPermissionsView() {
+    renderUserList();
+    renderUserDetail();
   }
 
   function renderUserDetail() {
@@ -507,7 +513,7 @@
       }
 
       setFeedback("Permissoes atualizadas com sucesso.", "success");
-      await loadAdminPermissions(user.id);
+      await loadAdminPermissions(user.id, { force: true });
     } catch (error) {
       setFeedback(error?.message || "Falha ao salvar permissoes.", "error");
     } finally {
@@ -558,15 +564,27 @@
     }
   }
 
-  async function loadAdminPermissions(preferredUserId) {
+  async function loadAdminPermissions(preferredUserId, options = {}) {
+    const force = options?.force === true;
+
+    if (!force && state.hasLoaded) {
+      const preferredId = String(preferredUserId || state.selectedUserId || "").trim();
+      const hasPreferred = state.users.some((user) => user.id === preferredId);
+      state.selectedUserId = hasPreferred
+        ? preferredId
+        : state.users[0]?.id || "";
+      renderAdminPermissionsView();
+      return;
+    }
+
     state.loading = true;
-    renderUserList();
-    renderUserDetail();
+    renderAdminPermissionsView();
 
     try {
       const payload = await fetchAdminData();
       state.users = toArray(payload?.users);
       state.currentUserId = String(payload?.currentUserId || "").trim();
+      state.hasLoaded = true;
 
       const preferredId = String(preferredUserId || state.selectedUserId || "").trim();
       const hasPreferred = state.users.some((user) => user.id === preferredId);
@@ -574,15 +592,14 @@
         ? preferredId
         : state.users[0]?.id || "";
 
-      renderUserList();
-      renderUserDetail();
+      renderAdminPermissionsView();
       setFeedback("", "neutral");
     } catch (error) {
       console.error("Falha ao carregar painel de permissoes:", error);
       state.users = [];
       state.selectedUserId = "";
-      renderUserList();
-      renderUserDetail();
+      state.hasLoaded = false;
+      renderAdminPermissionsView();
       setFeedback(
         error?.message || "Falha ao carregar permissoes administrativas.",
         "error",
@@ -597,7 +614,7 @@
     const refreshBtn = getEl("admin-permissions-refresh");
     if (refreshBtn) {
       refreshBtn.addEventListener("click", () => {
-        loadAdminPermissions(state.selectedUserId).catch((error) => {
+        loadAdminPermissions(state.selectedUserId, { force: true }).catch((error) => {
           console.error("Falha ao atualizar painel de permissoes:", error);
         });
       });
@@ -639,7 +656,12 @@
       pageRoot.dataset.adminPermissionsBound = "true";
     }
 
+    if (pageRoot.dataset.adminPermissionsHydrated === "true" && state.hasLoaded) {
+      return;
+    }
+
     await loadAdminPermissions(state.selectedUserId);
+    pageRoot.dataset.adminPermissionsHydrated = "true";
   }
 
   global.initAdminPermissionsPage = function () {

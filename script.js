@@ -8452,6 +8452,7 @@ console.log("Script carregado, configurando DOMContentLoaded...");
 let screenWakeLock = null;
 let lastHiddenAt = 0;
 let keepAliveVideoStarted = false;
+let appResumeRefreshInFlight = null;
 
 async function requestScreenWakeLock() {
   if (!("wakeLock" in navigator)) {
@@ -8476,6 +8477,45 @@ async function requestScreenWakeLock() {
   }
 }
 
+async function softRefreshAfterResume(trigger, hiddenDurationMs) {
+  if (appResumeRefreshInFlight) {
+    return appResumeRefreshInFlight;
+  }
+
+  if (!window.initializationStarted) {
+    return null;
+  }
+
+  appResumeRefreshInFlight = (async () => {
+    try {
+      console.log("🔄 Retomando app sem reload...", {
+        trigger,
+        hiddenDurationMs,
+      });
+
+      refreshConfiguredDeviceCaches();
+
+      if (typeof scheduleControlSync === "function") {
+        scheduleControlSync(true);
+      }
+
+      if (typeof syncHomeLightButtons === "function") {
+        syncHomeLightButtons();
+      }
+
+      if (typeof window.refreshMainHomeRuntime === "function") {
+        await window.refreshMainHomeRuntime(false);
+      }
+    } catch (error) {
+      console.warn("⚠️ Falha ao atualizar app apos retomar:", error);
+    } finally {
+      appResumeRefreshInFlight = null;
+    }
+  })();
+
+  return appResumeRefreshInFlight;
+}
+
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") {
     lastHiddenAt = Date.now();
@@ -8485,26 +8525,14 @@ document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") {
     requestScreenWakeLock();
 
-    if (lastHiddenAt && Date.now() - lastHiddenAt > 10000) {
+    const hiddenDurationMs = lastHiddenAt ? Date.now() - lastHiddenAt : 0;
+    lastHiddenAt = 0;
+
+    if (hiddenDurationMs > 10000) {
       setTimeout(() => {
-        console.log("🔁 Retomou do descanso, recarregando...");
-        window.location.reload();
-      }, 800);
+        softRefreshAfterResume("visibilitychange", hiddenDurationMs);
+      }, 300);
     }
-  }
-});
-
-window.addEventListener("pageshow", (event) => {
-  if (event.persisted || (lastHiddenAt && Date.now() - lastHiddenAt > 10000)) {
-    console.log("🔁 pageshow detectado, recarregando...");
-    window.location.reload();
-  }
-});
-
-window.addEventListener("focus", () => {
-  if (lastHiddenAt && Date.now() - lastHiddenAt > 10000) {
-    console.log("🔁 Foco após descanso, recarregando...");
-    window.location.reload();
   }
 });
 
