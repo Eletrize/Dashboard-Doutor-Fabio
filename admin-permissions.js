@@ -99,7 +99,8 @@
   }
 
   async function fetchAdminData() {
-    const response = await fetch("/admin-access", {
+    const url = `/admin-access?_=${Date.now()}`;
+    const response = await fetch(url, {
       method: "GET",
       cache: "no-store",
     });

@@ -35,6 +35,15 @@ function sanitizeDisplayName(value) {
   return String(value || "").trim().slice(0, 80);
 }
 
+function adminJsonResponse(payload, status) {
+  const response = jsonResponse(payload, status);
+  response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+  response.headers.set("Pragma", "no-cache");
+  response.headers.set("Expires", "0");
+  response.headers.set("Vary", "Authorization");
+  return response;
+}
+
 function resolveAccessMode(profile) {
   if (!profile || typeof profile !== "object") {
     return "full";
@@ -196,7 +205,23 @@ async function fetchAuthUsersPage(env, page, perPage) {
     },
   });
 
-  return Array.isArray(payload?.users) ? payload.users : [];
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  if (Array.isArray(payload?.users)) {
+    return payload.users;
+  }
+
+  if (Array.isArray(payload?.data?.users)) {
+    return payload.data.users;
+  }
+
+  if (Array.isArray(payload?.data)) {
+    return payload.data;
+  }
+
+  return [];
 }
 
 async function fetchAllAuthUsers(env) {
@@ -442,7 +467,7 @@ export async function onRequest(context) {
   }
 
   if (!getSupabaseServiceConfig(env)) {
-    return jsonResponse(
+    return adminJsonResponse(
       {
         error: "SUPABASE_SERVICE_ROLE_KEY is not configured",
       },
@@ -468,7 +493,7 @@ export async function onRequest(context) {
         searchTerm,
       );
 
-      return jsonResponse(
+      return adminJsonResponse(
         {
           success: true,
           currentUserId: adminResult.auth.user.id,
@@ -477,7 +502,7 @@ export async function onRequest(context) {
         200,
       );
     } catch (error) {
-      return jsonResponse(
+      return adminJsonResponse(
         {
           error: "Failed to load admin access data",
           message: error?.message || "Unexpected admin access error",
@@ -492,7 +517,7 @@ export async function onRequest(context) {
       const body = await request.json();
       const targetUserId = normalizeUuid(body?.userId);
       if (!targetUserId) {
-        return jsonResponse({ error: "Invalid user id" }, 400);
+        return adminJsonResponse({ error: "Invalid user id" }, 400);
       }
 
       const requestedMode = sanitizeAccessMode(body?.accessMode);
@@ -500,7 +525,7 @@ export async function onRequest(context) {
         normalizeUuid(adminResult.auth.user.id) === targetUserId &&
         requestedMode !== "admin"
       ) {
-        return jsonResponse(
+        return adminJsonResponse(
           {
             error: "Current admin cannot remove admin access from self",
           },
@@ -509,7 +534,7 @@ export async function onRequest(context) {
       }
 
       const saved = await persistUserAccess(env, body);
-      return jsonResponse(
+      return adminJsonResponse(
         {
           success: true,
           saved,
@@ -517,7 +542,7 @@ export async function onRequest(context) {
         200,
       );
     } catch (error) {
-      return jsonResponse(
+      return adminJsonResponse(
         {
           error: "Failed to save user access",
           message: error?.message || "Unexpected save error",
@@ -527,7 +552,7 @@ export async function onRequest(context) {
     }
   }
 
-  return jsonResponse(
+  return adminJsonResponse(
     {
       error: "Method not allowed",
     },

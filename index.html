@@ -33,10 +33,10 @@
         src: url("fonts/raleway/Raleway-latin-700.woff2") format("woff2");
       }
     </style>
-    <link rel="preload" href="styles.css?v=1.0.35" as="style" />
-    <link rel="stylesheet" href="styles.css?v=1.0.35" />
+    <link rel="preload" href="styles.css?v=1.0.41" as="style" />
+    <link rel="stylesheet" href="styles.css?v=1.0.41" />
     <link rel="stylesheet" href="main-home.css?v=1.0.0" />
-    <script src="config.js?v=1.0.15"></script>
+    <script src="config.js?v=1.0.21"></script>
     <link rel="icon" href="images/pwa/app-icon-192.png" type="image/png" />
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#1C1C1C" />
@@ -443,7 +443,7 @@
       defer
     ></script>
     <script src="auth.js?v=1.0.0" defer></script>
-    <script src="access-control.js?v=1.0.0" defer></script>
+    <script src="access-control.js?v=1.0.1" defer></script>
     <script src="main-home.js?v=1.0.0" defer></script>
     <script src="script.js?v=1.0.26" defer></script>
     <script>
@@ -1798,7 +1798,7 @@
         if (adminPermissionsScriptPromise) return adminPermissionsScriptPromise;
         adminPermissionsScriptPromise = new Promise((resolve, reject) => {
           const script = document.createElement("script");
-          script.src = "admin-permissions.js?v=1.0.0";
+          script.src = "admin-permissions.js?v=1.0.1";
           script.async = true;
           script.onload = resolve;
           script.onerror = () =>

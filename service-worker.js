@@ -1,12 +1,14 @@
-const CACHE_VERSION = "v1.3.41";
+const CACHE_VERSION = "v1.3.42";
 const CACHE_NAME = `eletrize-${CACHE_VERSION}`;
 const PRECACHE_ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=1.0.40",
+  "/styles.css?v=1.0.41",
   "/script.js?v=1.0.26",
   "/auth.js?v=1.0.0",
-  "/config.js?v=1.0.20",
+  "/access-control.js?v=1.0.1",
+  "/config.js?v=1.0.21",
+  "/admin-permissions.js?v=1.0.1",
   "/fonts-raleway.css",
   "/manifest.json",
   "/images/pwa/app-icon-192.png",
@@ -67,6 +69,10 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (url.pathname.startsWith("/polling")) {
+    return;
+  }
+
+  if (url.pathname.startsWith("/admin-access")) {
     return;
   }
 
