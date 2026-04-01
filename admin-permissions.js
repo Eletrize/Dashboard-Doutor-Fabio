@@ -593,7 +593,11 @@
         : state.users[0]?.id || "";
 
       renderAdminPermissionsView();
-      setFeedback("", "neutral");
+      if (payload?.warning) {
+        setFeedback(String(payload.warning), "neutral");
+      } else {
+        setFeedback("", "neutral");
+      }
     } catch (error) {
       console.error("Falha ao carregar painel de permissoes:", error);
       state.users = [];

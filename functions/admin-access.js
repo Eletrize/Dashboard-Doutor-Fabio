@@ -224,6 +224,39 @@ async function fetchAuthUsersPage(env, page, perPage) {
   return [];
 }
 
+function normalizeAuthUserPayload(payload) {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  if (payload.id && payload.email) {
+    return payload;
+  }
+
+  if (payload.user && typeof payload.user === "object") {
+    return payload.user;
+  }
+
+  if (payload.data && typeof payload.data === "object") {
+    if (payload.data.id && payload.data.email) {
+      return payload.data;
+    }
+    if (payload.data.user && typeof payload.data.user === "object") {
+      return payload.data.user;
+    }
+  }
+
+  return null;
+}
+
+async function fetchAuthUserById(env, userId) {
+  const payload = await serviceRequest(
+    env,
+    `/auth/v1/admin/users/${encodeURIComponent(userId)}`,
+  );
+  return normalizeAuthUserPayload(payload);
+}
+
 async function fetchAllAuthUsers(env) {
   const users = [];
 
@@ -241,6 +274,41 @@ async function fetchAllAuthUsers(env) {
   }
 
   return users;
+}
+
+function collectFallbackUserIds(profiles, accessRows, currentUserId) {
+  const ids = new Set();
+
+  const registerId = (value) => {
+    const normalized = normalizeUuid(value);
+    if (!normalized) return;
+    ids.add(normalized);
+  };
+
+  registerId(currentUserId);
+  toArray(profiles).forEach((profile) => registerId(profile?.user_id));
+  toArray(accessRows).forEach((row) => registerId(row?.user_id));
+
+  return Array.from(ids);
+}
+
+async function fetchFallbackAuthUsers(env, profiles, accessRows, currentUserId) {
+  const userIds = collectFallbackUserIds(profiles, accessRows, currentUserId);
+  if (!userIds.length) {
+    return [];
+  }
+
+  const users = await Promise.all(
+    userIds.map(async (userId) => {
+      try {
+        return await fetchAuthUserById(env, userId);
+      } catch (_error) {
+        return null;
+      }
+    }),
+  );
+
+  return users.filter((user) => user && user.id && user.email);
 }
 
 async function fetchAllProfiles(env) {
@@ -479,11 +547,29 @@ export async function onRequest(context) {
     try {
       const url = new URL(request.url);
       const searchTerm = url.searchParams.get("q") || "";
-      const [authUsers, profiles, environmentAccess] = await Promise.all([
+      const [authUsersRaw, profiles, environmentAccess] = await Promise.all([
         fetchAllAuthUsers(env),
         fetchAllProfiles(env),
         fetchAllEnvironmentAccess(env),
       ]);
+
+      let authUsers = Array.isArray(authUsersRaw) ? authUsersRaw : [];
+      let warning = "";
+
+      if (authUsers.length === 0) {
+        const fallbackUsers = await fetchFallbackAuthUsers(
+          env,
+          profiles,
+          environmentAccess,
+          adminResult.auth.user.id,
+        );
+
+        if (fallbackUsers.length > 0) {
+          authUsers = fallbackUsers;
+          warning =
+            "A listagem principal de usuarios do Auth veio vazia; o painel usou a recuperacao por IDs ja conhecidos.";
+        }
+      }
 
       const users = mergeUserRecords(
         authUsers,
@@ -498,6 +584,7 @@ export async function onRequest(context) {
           success: true,
           currentUserId: adminResult.auth.user.id,
           users,
+          warning,
         },
         200,
       );
