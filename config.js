@@ -585,6 +585,7 @@ const CLIENT_CONFIG = {
             close: [{ id: "12647", command: "on" }],
           },
         },
+        { id: "12674", name: "Cortina Banheiro" },
       ],
       airConditioner: {
         deviceId: "12638",
