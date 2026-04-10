@@ -1860,10 +1860,11 @@ function tvCommand(el, command) {
   if (command === "on" || command === "powerOn") {
     const route = (window.location.hash || "").replace("#", "");
     const envKey = route.split("-")[0] || "";
-    if (envKey === "ambiente1" && controlType) {
+    const mediaControlTypes = ["tv", "appletv", "clarotv", "bluray"];
+    if (envKey === "ambiente1" && mediaControlTypes.includes(controlType)) {
       const receiverId =
         getConfiguredEnvironmentBinding(envKey, controlType, "receiver") ||
-        getConfiguredEnvironmentControlId(envKey, "receiver", "354");
+        getConfiguredEnvironmentControlId(envKey, "receiver", "3");
       const tvId =
         getConfiguredEnvironmentBinding(envKey, controlType, "display") ||
         getConfiguredEnvironmentBinding(envKey, "tv", "display", "362");
@@ -1874,8 +1875,16 @@ function tvCommand(el, command) {
         tv: "TV",
       };
       const input = inputByType[controlType];
-      if (input) {
-        sendHubitatCommand(receiverId, "setInputSource", input).catch(() => {});
+
+      // Macro Home Theater: ligar Denon junto com qualquer mídia.
+      if (receiverId) {
+        sendHubitatCommand(receiverId, "on").catch(() => {});
+      }
+
+      if (input && receiverId) {
+        window.setTimeout(() => {
+          sendHubitatCommand(receiverId, "setInputSource", input).catch(() => {});
+        }, 350);
         if (controlType !== "tv") {
           sendHubitatCommand(tvId, "hdmi3").catch(() => {});
         }
