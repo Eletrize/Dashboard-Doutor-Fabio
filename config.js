@@ -104,7 +104,7 @@ const CLIENT_CONFIG = {
         icon: "images/icons/ar-condicionado.svg",
       },
       music: { label: "MÃºsica", icon: "images/icons/icon-musica.svg" },
-      tv: { label: "TelevisÃ£o", icon: "images/icons/icon-tv.svg" },
+      tv: { label: "Televisão", icon: "images/icons/icon-tv.svg" },
       htv: { label: "HTV", icon: "images/icons/icon-htv.svg" },
       home: { label: "Home", icon: "images/icons/icon-home.svg" },
       scenes: { label: "CenÃ¡rios", icon: "images/icons/icon-scenes.svg" },
@@ -311,7 +311,7 @@ const CLIENT_CONFIG = {
       tv: [
         {
           id: "4",
-          name: "TelevisÃ£o",
+          name: "Televisão",
           controlDeviceId: "4",
           powerDeviceId: "4",
           volumeDeviceId: "12409",
@@ -493,7 +493,7 @@ const CLIENT_CONFIG = {
           powerDeviceId: "353",
         },
       ],
-      tv: [{ id: "363", name: "TelevisÃ£o" }],
+      tv: [{ id: "363", name: "Televisão" }],
     },
 
     ambiente4: {
@@ -552,7 +552,7 @@ const CLIENT_CONFIG = {
       photo: "photo-brinquedoteca.webp",
       visible: true,
       order: 7,
-      tv: [{ id: "382", name: "TelevisÃ£o" }],
+      tv: [{ id: "382", name: "Televisão" }],
       airConditioner: {
         deviceId: "379",
         brand: "samsung",
@@ -575,7 +575,7 @@ const CLIENT_CONFIG = {
         controls: { zoneSelector: false, aletas: true, windfree: false },
         temperature: { min: 18, max: 25, default: 22 },
       },
-      tv: [{ id: "53", name: "TelevisÃ£o" }],
+      tv: [{ id: "53", name: "Televisão" }],
       music: [{ id: "54", name: "MÃºsica" }],
       clarotv: [{ id: "55", name: "Claro TV" }],
     },
@@ -805,8 +805,7 @@ const bottomNavConfig = {
       fallbackBackground: "rgba(8, 8, 8, 0.95)",
       borderColor: "rgba(255, 255, 255, 0.08)",
       blur: "16px",
-      shadow:
-        "0 8px 16px rgba(0, 0, 0, 0.34), 0 16px 26px rgba(0, 0, 0, 0.24)",
+      shadow: "0 8px 16px rgba(0, 0, 0, 0.34), 0 16px 26px rgba(0, 0, 0, 0.24)",
     },
   },
 
@@ -986,7 +985,9 @@ function canUseDeviceIdForView(deviceId) {
 function getVisibleEnvironments() {
   if (!CLIENT_CONFIG?.environments) return [];
   return Object.entries(CLIENT_CONFIG.environments)
-    .filter(([key, env]) => env && env.visible === true && canViewEnvironment(key))
+    .filter(
+      ([key, env]) => env && env.visible === true && canViewEnvironment(key),
+    )
     .sort((a, b) => (a[1].order || 0) - (b[1].order || 0))
     .map(([key, env]) => ({ key, ...env }));
 }
@@ -1029,23 +1030,14 @@ function normalizeEnvironmentDevice(device) {
       device.volumeDeviceId || device.volumeId,
       baseId,
     ),
-    powerId: normalizeConfigId(
-      device.powerDeviceId || device.powerId,
-      baseId,
-    ),
+    powerId: normalizeConfigId(device.powerDeviceId || device.powerId, baseId),
     controlId: normalizeConfigId(
       device.controlDeviceId || device.controlId,
       baseId,
     ),
-    receiverId: normalizeConfigId(
-      device.receiverDeviceId || device.receiverId,
-    ),
-    displayId: normalizeConfigId(
-      device.displayDeviceId || device.displayId,
-    ),
-    inputId: normalizeConfigId(
-      device.inputDeviceId || device.inputId,
-    ),
+    receiverId: normalizeConfigId(device.receiverDeviceId || device.receiverId),
+    displayId: normalizeConfigId(device.displayDeviceId || device.displayId),
+    inputId: normalizeConfigId(device.inputDeviceId || device.inputId),
   };
 }
 
@@ -1054,7 +1046,9 @@ function getEnvironmentDeviceList(envKey, field) {
   if (!env) return [];
 
   const list = Array.isArray(env?.[field]) ? env[field] : [];
-  return list.map((device) => normalizeEnvironmentDevice(device)).filter(Boolean);
+  return list
+    .map((device) => normalizeEnvironmentDevice(device))
+    .filter(Boolean);
 }
 
 function getEnvironmentPrimaryDevice(envKey, field, index = 0) {
@@ -1072,7 +1066,9 @@ function getEnvironmentDeviceBinding(envKey, field, bindingKey, index = 0) {
   const device = getEnvironmentPrimaryDevice(envKey, field, index);
   if (!device) return "";
 
-  const key = String(bindingKey || "").trim().toLowerCase();
+  const key = String(bindingKey || "")
+    .trim()
+    .toLowerCase();
 
   if (!key || key === "id" || key === "device" || key === "deviceid") {
     return device.id;
@@ -1525,7 +1521,8 @@ function getAuthConfig() {
 
   return {
     enabled: auth.enabled === true,
-    supabaseUrl: typeof auth.supabaseUrl === "string" ? auth.supabaseUrl.trim() : "",
+    supabaseUrl:
+      typeof auth.supabaseUrl === "string" ? auth.supabaseUrl.trim() : "",
     supabaseAnonKey:
       typeof auth.supabaseAnonKey === "string"
         ? auth.supabaseAnonKey.trim()
@@ -1533,7 +1530,8 @@ function getAuthConfig() {
     allowEmailSignUp: auth.allowEmailSignUp === true,
     allowGoogleLogin: auth.allowGoogleLogin !== false,
     requireEmailConfirmation: auth.requireEmailConfirmation !== false,
-    redirectTo: typeof auth.redirectTo === "string" ? auth.redirectTo.trim() : "",
+    redirectTo:
+      typeof auth.redirectTo === "string" ? auth.redirectTo.trim() : "",
   };
 }
 
@@ -1568,4 +1566,3 @@ window.generateCurtainsControls = generateCurtainsControls;
 window.getAuthConfig = getAuthConfig;
 
 console.log("âœ… CLIENT_CONFIG carregado:", CLIENT_CONFIG.clientInfo.name);
-

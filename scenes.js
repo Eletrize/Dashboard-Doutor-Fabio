@@ -352,6 +352,8 @@
         transportId: String(extra.transportId || "").trim(),
         volumeId: String(extra.volumeId || "").trim(),
         powerId: String(extra.powerId || "").trim(),
+        receiverId: String(extra.receiverId || "").trim(),
+        displayId: String(extra.displayId || "").trim(),
       });
     }
 
@@ -389,17 +391,26 @@
         toArray(env?.[type]).forEach((device, index) => {
           const label = device?.name || `${DEVICE_TYPE_LABELS[type] || type} ${index + 1}`;
           const commands = resolveRemoteCommands(type, controlCommandMap);
-          const extraIds =
-            type === "music"
-              ? {
-                  metadataId:
-                    device?.metadataDeviceId || device?.metadataId || device?.id || device?.deviceId,
-                  transportId:
-                    device?.transportDeviceId || device?.transportId || device?.id || device?.deviceId,
-                  volumeId: device?.volumeDeviceId || device?.volumeId || "",
-                  powerId: device?.powerDeviceId || device?.powerId || "",
-                }
-              : {};
+          const extraIds = {
+            metadataId:
+              type === "music"
+                ? device?.metadataDeviceId ||
+                  device?.metadataId ||
+                  device?.id ||
+                  device?.deviceId
+                : "",
+            transportId:
+              type === "music"
+                ? device?.transportDeviceId ||
+                  device?.transportId ||
+                  device?.id ||
+                  device?.deviceId
+                : "",
+            volumeId: device?.volumeDeviceId || device?.volumeId || "",
+            powerId: device?.powerDeviceId || device?.powerId || "",
+            receiverId: device?.receiverDeviceId || device?.receiverId || "",
+            displayId: device?.displayDeviceId || device?.displayId || "",
+          };
           registerDevice(
             env,
             type,
@@ -1570,6 +1581,18 @@
       envKey === "ambiente1" &&
       (normalizedCommand === "on" || normalizedCommand === "poweron")
     ) {
+      const receiverId = String(
+        device?.receiverId ||
+          (typeof getEnvironmentControlId === "function"
+            ? getEnvironmentControlId(envKey, "receiver")
+            : ""),
+      ).trim();
+      const displayId = String(
+        device?.displayId ||
+          (typeof getEnvironmentDeviceBinding === "function"
+            ? getEnvironmentDeviceBinding(envKey, "tv", "display")
+            : ""),
+      ).trim();
       const inputByType = {
         clarotv: "DVD",
         appletv: "GAME",
@@ -1578,13 +1601,13 @@
       };
       const input = inputByType[deviceType];
 
-      if (input) {
+      if (input && receiverId) {
         const auxiliaryCommands = [
-          sendHubitatCommand("354", "setInputSource", input),
+          sendHubitatCommand(receiverId, "setInputSource", input),
         ];
 
-        if (deviceType !== "tv") {
-          auxiliaryCommands.push(sendHubitatCommand("362", "hdmi3"));
+        if (deviceType !== "tv" && displayId) {
+          auxiliaryCommands.push(sendHubitatCommand(displayId, "hdmi3"));
         }
 
         await Promise.allSettled(auxiliaryCommands);

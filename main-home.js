@@ -378,20 +378,24 @@
           ? adapters.getVisibleEnvironments()
           : [];
 
+      const MEDIA_TYPES_THAT_IMPLY_TV = new Set(["clarotv", "appletv", "bluray"]);
+
       return envs
         .map((env) => {
           const entries = [];
-          const pushDevice = (type, item, fallbackName) => {
+          const pushDevice = (type, item, fallbackName, options = {}) => {
             const id = String(item?.id || item?.deviceId || "").trim();
             if (!id) return;
             const name = String(item?.name || fallbackName || id).trim();
             const state = normalizeState(getStoredState(id));
-            if (!isActiveState(state)) return;
+            const forceActive = options?.forceActive === true;
+            if (!forceActive && !isActiveState(state)) return;
+            const effectiveState = forceActive ? "on" : state;
             entries.push({
               id,
               type,
               name,
-              icon: iconForDevice(type, state),
+              icon: iconForDevice(type, effectiveState),
               commandOff: offCommandByType(type),
               offState: offStateByType(type),
             });
@@ -400,6 +404,23 @@
           (env?.lights || []).forEach((d) => pushDevice("lights", d, "Luz"));
           (env?.curtains || []).forEach((d) => pushDevice("curtains", d, "Cortina"));
           ACTIVE_DEVICE_TYPES.forEach((type) => (env?.[type] || []).forEach((d) => pushDevice(type, d, type)));
+
+          // Se uma fonte de mídia estiver ligada, assumir a TV como ligada no card da Home.
+          const hasActiveMediaThatImpliesTv = entries.some((entry) =>
+            MEDIA_TYPES_THAT_IMPLY_TV.has(normalizeState(entry.type)),
+          );
+
+          if (hasActiveMediaThatImpliesTv) {
+            (env?.tv || []).forEach((tvDevice) => {
+              const tvId = String(tvDevice?.id || tvDevice?.deviceId || "").trim();
+              if (!tvId) return;
+              const alreadyListed = entries.some(
+                (entry) => entry.id === tvId && normalizeState(entry.type) === "tv",
+              );
+              if (alreadyListed) return;
+              pushDevice("tv", tvDevice, "TV", { forceActive: true });
+            });
+          }
 
           if (env?.airConditioner?.deviceId) {
             pushDevice("comfort", { id: env.airConditioner.deviceId, name: "Ar Condicionado" }, "Ar Condicionado");
