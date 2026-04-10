@@ -3199,6 +3199,7 @@
               env?.airConditioner !== null && env?.airConditioner !== undefined;
             const hasMusic =
               envKey !== "ambiente1" &&
+              envKey !== "ambiente3" &&
               Array.isArray(env?.music) &&
               env.music.length > 0;
             const hasTV = Array.isArray(env?.tv) && env.tv.length > 0;
@@ -3210,7 +3211,10 @@
             const hasClaroTV =
               Array.isArray(env?.clarotv) && env.clarotv.length > 0;
             const hasRoku = Array.isArray(env?.roku) && env.roku.length > 0;
-            const hasGames = Array.isArray(env?.games) && env.games.length > 0;
+            const hasGames =
+              envKey !== "ambiente3" &&
+              Array.isArray(env?.games) &&
+              env.games.length > 0;
             const hasHidro =
               Array.isArray(env?.hidromassagem) && env.hidromassagem.length > 0;
 

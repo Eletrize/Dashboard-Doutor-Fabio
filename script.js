@@ -1935,6 +1935,33 @@ function tvCommand(el, command) {
         }
       }
     }
+
+    // Varanda: macros específicas ao ligar TV/Roku.
+    if (envKey === "ambiente3" && (controlType === "tv" || controlType === "roku")) {
+      const varandaTvId =
+        getConfiguredEnvironmentBinding(envKey, "tv", "power", "19") ||
+        getConfiguredEnvironmentBinding(envKey, "tv", "id", "19");
+      const varandaDenonId =
+        getConfiguredEnvironmentBinding(envKey, "music", "power", "18") ||
+        getConfiguredEnvironmentControlId(envKey, "screenReceiver", "18");
+
+      if (varandaTvId) {
+        sendHubitatCommand(varandaTvId, "on").catch(() => {});
+      }
+
+      if (controlType === "roku") {
+        if (varandaDenonId) {
+          sendHubitatCommand(varandaDenonId, "mediaplayer").catch(() => {});
+        }
+        if (varandaTvId) {
+          sendHubitatCommand(varandaTvId, "hdmi3").catch(() => {});
+        }
+      }
+
+      if (controlType === "tv" && varandaDenonId) {
+        sendHubitatCommand(varandaDenonId, "tvAudio").catch(() => {});
+      }
+    }
   }
 
   // Feedback visual (preserva transform base quando existir)
