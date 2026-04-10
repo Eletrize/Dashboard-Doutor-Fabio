@@ -505,7 +505,7 @@ const CLIENT_CONFIG = {
       lights: [
         { id: "12250", name: "Espetos Corredor" },
         { id: "12252", name: "Piscina" },
-        { id: "12452", name: "LED Piscina" },
+        { id: "12450", name: "LED Piscina" },
       ],
       quickActions: [
         {
@@ -513,7 +513,7 @@ const CLIENT_CONFIG = {
           devices: [
             { id: "12250", commandOn: "on", commandOff: "off" },
             { id: "12252", commandOn: "on", commandOff: "off" },
-            { id: "12452", commandOn: "on", commandOff: "off" },
+            { id: "12450", commandOn: "on", commandOff: "off" },
           ],
         },
       ],
@@ -1398,7 +1398,7 @@ function generateLightsControls(envKey) {
   const env = getEnvironment(envKey);
   if (!env?.lights?.length) return "";
 
-  const LED_MODE_DEVICE_ID = "12451";
+  const LED_MODE_DEVICE_ID = "12449";
 
   const DEFAULT_ICON_ON =
     CLIENT_CONFIG?.ui?.toggles?.light?.on ||
@@ -1442,7 +1442,7 @@ function generateLightsControls(envKey) {
         : DEFAULT_ICON_OFF;
       const defaultLevel = normalizeDimmerLevel(light?.defaultLevel, 80);
       const deviceId = String(light.id);
-      const isPoolLedControl = envKey === "ambiente4" && deviceId === "12452";
+      const isPoolLedControl = envKey === "ambiente4" && deviceId === "12450";
 
       // Todas as luzes agora tÃªm Ã­cone de background (light-on com 60% opacity quando ligado)
       const backgroundIcon = DEFAULT_ICON_ON;
