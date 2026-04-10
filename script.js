@@ -1864,7 +1864,7 @@ function tvCommand(el, command) {
     if (envKey === "ambiente1" && mediaControlTypes.includes(controlType)) {
       const receiverId =
         getConfiguredEnvironmentBinding(envKey, controlType, "receiver") ||
-        getConfiguredEnvironmentControlId(envKey, "receiver", "3");
+        getConfiguredEnvironmentControlId(envKey, "receiver", "12409");
       const tvId =
         getConfiguredEnvironmentBinding(envKey, controlType, "display") ||
         getConfiguredEnvironmentBinding(envKey, "tv", "display", "362");
@@ -2184,8 +2184,8 @@ function getHomeTheaterControlIds() {
       "362",
     ),
     receiverId:
-      getConfiguredEnvironmentControlId("ambiente1", "receiver", "354") ||
-      getConfiguredEnvironmentBinding("ambiente1", "tv", "receiver", "354"),
+      getConfiguredEnvironmentControlId("ambiente1", "receiver", "12409") ||
+      getConfiguredEnvironmentBinding("ambiente1", "tv", "receiver", "12409"),
   };
 }
 

@@ -279,10 +279,10 @@ const CLIENT_CONFIG = {
       visible: true,
       order: 1,
       controlIds: {
-        receiver: "3",
-        receiverVolume: "3",
+        receiver: "12409",
+        receiverVolume: "12409",
         tvControl: "4",
-        musicMetadata: "3",
+        musicMetadata: "12409",
       },
       lights: [
         { id: "12243", name: "Spots Painel" },
@@ -314,48 +314,48 @@ const CLIENT_CONFIG = {
           name: "TelevisÃ£o",
           controlDeviceId: "4",
           powerDeviceId: "4",
-          volumeDeviceId: "3",
+          volumeDeviceId: "12409",
           displayDeviceId: "4",
           inputDeviceId: "4",
-          receiverDeviceId: "3",
+          receiverDeviceId: "12409",
         },
       ],
       bluray: [
         {
           id: "5",
           name: "Blu-ray",
-          volumeDeviceId: "3",
+          volumeDeviceId: "12409",
           displayDeviceId: "4",
-          receiverDeviceId: "3",
+          receiverDeviceId: "12409",
         },
       ],
       appletv: [
         {
           id: "6",
           name: "Apple TV",
-          volumeDeviceId: "3",
+          volumeDeviceId: "12409",
           displayDeviceId: "4",
-          receiverDeviceId: "3",
+          receiverDeviceId: "12409",
         },
       ],
       music: [
         {
-          id: "3",
+          id: "12409",
           name: "Denon",
-          metadataDeviceId: "3",
-          transportDeviceId: "3",
-          controlDeviceId: "3",
-          volumeDeviceId: "3",
-          powerDeviceId: "3",
+          metadataDeviceId: "12409",
+          transportDeviceId: "12409",
+          controlDeviceId: "12409",
+          volumeDeviceId: "12409",
+          powerDeviceId: "12409",
         },
       ],
       clarotv: [
         {
           id: "7",
           name: "NET",
-          volumeDeviceId: "3",
+          volumeDeviceId: "12409",
           displayDeviceId: "4",
-          receiverDeviceId: "3",
+          receiverDeviceId: "12409",
         },
       ],
     },
@@ -611,8 +611,8 @@ const CLIENT_CONFIG = {
 
   devices: {
     audioDefaults: {
-      commandDeviceId: "3",
-      metadataDeviceId: "3",
+      commandDeviceId: "12409",
+      metadataDeviceId: "12409",
     },
     legacyControls: {
       piscinaTelao: {
@@ -704,11 +704,11 @@ const CLIENT_CONFIG = {
     },
     // Inicializa????o por ambiente (dispositivos com comando "initialize")
     initializeDevicesByEnv: {
-      ambiente1: ["5", "2", "3", "7", "6", "4"],
+      ambiente1: ["5", "2", "12409", "7", "6", "4"],
     },
 
     // O polling atual usa ALL_LIGHT_IDS tambÃ©m para volume do Denon
-    extraPollingDevices: ["3"],
+    extraPollingDevices: ["12409"],
   },
 };
 
