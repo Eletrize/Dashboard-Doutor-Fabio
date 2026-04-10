@@ -2239,10 +2239,10 @@ function getPoolScreenControlIds() {
   return {
     screenId:
       getConfiguredEnvironmentControlId("ambiente3", "screen") ||
-      getLegacyConfiguredId("piscinaTelao", "screen", "157"),
+      getLegacyConfiguredId("piscinaTelao", "screen", "19"),
     receiverId:
       getConfiguredEnvironmentControlId("ambiente3", "screenReceiver") ||
-      getLegacyConfiguredId("piscinaTelao", "receiver", "16"),
+      getLegacyConfiguredId("piscinaTelao", "receiver", "18"),
   };
 }
 

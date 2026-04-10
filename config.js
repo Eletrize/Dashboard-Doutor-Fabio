@@ -427,25 +427,25 @@ const CLIENT_CONFIG = {
         poolHydromassage: "153",
         poolDeck: "161",
         poolAwning: "162",
-        screen: "157",
-        screenReceiver: "16",
+        screen: "19",
+        screenReceiver: "18",
         screenRemote: "114",
-        screenVolume: "353",
+        screenVolume: "18",
       },
-      curtainMotionType: "vertical",
+      curtainMotionType: "lateral",
       lights: [
-        { id: "306", name: "Spots" },
-        { id: "307", name: "Churrasqueira" },
-        { id: "341", name: "Pendente", type: "dimmer", defaultLevel: 100 },
+        { id: "12248", name: "Spots" },
+        { id: "12249", name: "Churrasqueira" },
+        { id: "12230", name: "Pendente", type: "dimmer", defaultLevel: 100 },
       ],
       quickActions: [
         {
           type: "lights",
           devices: [
-            { id: "306", commandOn: "on", commandOff: "off" },
-            { id: "307", commandOn: "on", commandOff: "off" },
+            { id: "12248", commandOn: "on", commandOff: "off" },
+            { id: "12249", commandOn: "on", commandOff: "off" },
             {
-              id: "341",
+              id: "12230",
               commandOn: "setLevel",
               commandOff: "off",
               valueOn: 100,
@@ -457,44 +457,44 @@ const CLIENT_CONFIG = {
         {
           name: "Todas",
           description: "Aciona Todas as cortinas do ambiente",
-          targets: ["368", "369", "371", "370"],
+          targets: ["11", "13", "15", "14"],
           commands: { open: "open", stop: "stop", close: "close" },
         },
         {
           name: "Esquerda",
           description: "Aciona cortinas a esquerda",
-          targets: ["368", "369"],
+          targets: ["11", "13"],
           commands: { open: "open", stop: "stop", close: "close" },
         },
         {
           name: "Direita",
           description: "Aciona cortinas a direita",
-          targets: ["371", "370"],
+          targets: ["15", "14"],
           commands: { open: "open", stop: "stop", close: "close" },
         },
-        { id: "368", name: "Churrasqueira" },
-        { id: "369", name: "Central Esquerda" },
-        { id: "371", name: "Central Direita" },
-        { id: "370", name: "Corredor" },
+        { id: "11", name: "Churrasqueira" },
+        { id: "13", name: "Central Esquerda" },
+        { id: "15", name: "Central Direita" },
+        { id: "14", name: "Corredor" },
       ],
       airConditioner: {
-        deviceId: "349",
+        deviceId: "16",
         brand: "carrier",
         zones: [{ id: "Varanda", name: "Varanda" }],
         controls: { zoneSelector: false, aletas: true, windfree: false },
         temperature: { min: 18, max: 25, default: 22 },
       },
-      roku: [{ id: "365", name: "Roku" }],
+      roku: [{ id: "20", name: "Roku" }],
       games: [{ id: "123", name: "Games" }],
       music: [
         {
-          id: "124",
-          name: "MÃºsica",
-          volumeDeviceId: "353",
-          powerDeviceId: "353",
+          id: "18",
+          name: "Denon",
+          volumeDeviceId: "18",
+          powerDeviceId: "18",
         },
       ],
-      tv: [{ id: "363", name: "Televisão" }],
+      tv: [{ id: "19", name: "Televisão" }],
     },
 
     ambiente4: {
@@ -617,10 +617,10 @@ const CLIENT_CONFIG = {
     },
     legacyControls: {
       piscinaTelao: {
-        screen: "157",
-        receiver: "16",
+        screen: "19",
+        receiver: "18",
         remote: "114",
-        volume: "353",
+        volume: "18",
       },
       suiteMaster: {
         tv: "183",
@@ -889,10 +889,10 @@ const DEFAULT_WEATHER_CONFIG = {
 };
 
 const DEFAULT_MAIN_DASHBOARD_CONFIG = {
-  nowPlayingDeviceId: "353",
+  nowPlayingDeviceId: "18",
   controls: {
-    transportDeviceId: "353",
-    audioDeviceId: "353",
+    transportDeviceId: "18",
+    audioDeviceId: "18",
     commands: {
       play: "play",
       pause: "pause",
