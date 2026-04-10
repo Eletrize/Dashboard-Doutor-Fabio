@@ -499,7 +499,7 @@ const CLIENT_CONFIG = {
 
     ambiente4: {
       name: "Piscina",
-      photo: "photo-placeholder.webp",
+      photo: "photo-piscina.webp",
       visible: true,
       order: 4,
       lights: [
@@ -517,7 +517,6 @@ const CLIENT_CONFIG = {
           ],
         },
       ],
-      hidromassagem: [{ id: "130", name: "Hidromassagem" }],
     },
 
     ambiente5: {
@@ -525,10 +524,11 @@ const CLIENT_CONFIG = {
       photo: "photo-escritorio.webp",
       visible: true,
       order: 5,
-      curtains: [{ id: "373", name: "Cortina" }],
+      curtainMotionType: "vertical",
+      curtains: [{ id: "21", name: "Cortina" }],
       airConditioner: {
-        deviceId: "350",
-        zones: [{ id: "escritorio", name: "Escritório", deviceId: "350" }],
+        deviceId: "12388",
+        zones: [{ id: "escritorio", name: "Escritório", deviceId: "12388" }],
         controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
@@ -539,11 +539,17 @@ const CLIENT_CONFIG = {
       photo: "photo-escada.webp",
       visible: true,
       order: 6,
-      lights: [{ id: "316", name: "Trilho" }],
+      lights: [
+        { id: "12258", name: "Trilho" },
+        { id: "12459", name: "Copa" },
+      ],
       quickActions: [
         {
           type: "lights",
-          devices: [{ id: "316", commandOn: "on", commandOff: "off" }],
+          devices: [
+            { id: "12258", commandOn: "on", commandOff: "off" },
+            { id: "12459", commandOn: "on", commandOff: "off" },
+          ],
         },
       ],
     },
@@ -553,12 +559,12 @@ const CLIENT_CONFIG = {
       photo: "photo-brinquedoteca.webp",
       visible: true,
       order: 7,
-      tv: [{ id: "382", name: "Televisão" }],
+      tv: [{ id: "12606", name: "Televisão" }],
       airConditioner: {
-        deviceId: "379",
+        deviceId: "12593",
         brand: "samsung",
         zones: [
-          { id: "Brinquedoteca", name: "Brinquedoteca", deviceId: "379" },
+          { id: "Brinquedoteca", name: "Brinquedoteca", deviceId: "12593" },
         ],
         controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
@@ -570,13 +576,25 @@ const CLIENT_CONFIG = {
       photo: "photo-suitemilena.webp",
       visible: true,
       order: 8,
-      curtains: [{ id: "51", name: "Cortina" }],
+      curtains: [
+        {
+          name: "Cortina",
+          targets: ["12646", "12647"],
+          actionPlans: {
+            open: [{ id: "12646", command: "on" }],
+            close: [{ id: "12647", command: "on" }],
+          },
+        },
+      ],
       airConditioner: {
-        zones: [{ id: "suitemilena", name: "Suíte Milena", deviceId: "188" }],
-        controls: { zoneSelector: false, aletas: true, windfree: false },
+        deviceId: "12638",
+        zones: [
+          { id: "suitemilena", name: "Suíte Milena", deviceId: "12638" },
+        ],
+        controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
-      tv: [{ id: "53", name: "Televisão" }],
+      tv: [{ id: "12636", name: "Televisão" }],
       music: [{ id: "54", name: "MÃºsica" }],
       clarotv: [{ id: "55", name: "Claro TV" }],
     },
@@ -587,9 +605,12 @@ const CLIENT_CONFIG = {
       visible: true,
       order: 10,
       lights: [],
-      curtains: [{ id: "52", name: "Cortina" }],
+      curtains: [{ id: "12616", name: "Cortina" }],
       airConditioner: {
-        zones: [{ id: "suitemaster", name: "Suíte Master", deviceId: "180" }],
+        deviceId: "12613",
+        zones: [
+          { id: "suitemaster", name: "Suíte Master", deviceId: "12613" },
+        ],
         controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
@@ -601,9 +622,12 @@ const CLIENT_CONFIG = {
       visible: true,
       order: 10,
       lights: [],
-      curtains: [{ id: "52", name: "Cortina" }],
+      curtains: [{ id: "12619", name: "Cortina" }],
       airConditioner: {
-        zones: [{ id: "suitemaster", name: "Suíte Master", deviceId: "180" }],
+        deviceId: "12622",
+        zones: [
+          { id: "suitemaster", name: "Suíte Master", deviceId: "12622" },
+        ],
         controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
@@ -1179,7 +1203,45 @@ function getCurtainActionConfig(source, action) {
   };
 }
 
+function getCurtainCustomActionPlan(curtain, action) {
+  if (!curtain || typeof curtain !== "object") return null;
+
+  const actionName = String(action || "").trim();
+  if (!actionName) return null;
+
+  const actionSuffix =
+    actionName.charAt(0).toUpperCase() + actionName.slice(1).toLowerCase();
+  const rawPlan =
+    curtain?.actionPlans?.[actionName] ?? curtain?.[`actionPlan${actionSuffix}`];
+
+  if (!Array.isArray(rawPlan)) return null;
+
+  return rawPlan
+    .map((item) => {
+      const id = item?.id || item?.deviceId;
+      const command = item?.command || item?.cmd;
+      if (!id || !command) return null;
+
+      const payload = {
+        id: String(id),
+        command: String(command),
+      };
+
+      if (item?.value !== undefined && item.value !== null && item.value !== "") {
+        payload.value = item.value;
+      }
+
+      return payload;
+    })
+    .filter(Boolean);
+}
+
 function buildCurtainActionPlan(curtain, action) {
+  const customPlan = getCurtainCustomActionPlan(curtain, action);
+  if (customPlan) {
+    return customPlan;
+  }
+
   const targets = normalizeCurtainTargets(curtain);
   if (!targets.length) return [];
 
