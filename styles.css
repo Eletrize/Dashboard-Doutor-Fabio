@@ -4403,7 +4403,10 @@ body.app-info-open {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
 }
 
 .scenes-step-tab.is-active {
@@ -4547,7 +4550,10 @@ body.app-info-open {
   color: #fff;
   text-align: left;
   cursor: pointer;
-  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
 }
 
 .scenes-picker-device-item:hover,
@@ -4705,7 +4711,10 @@ body.app-info-open {
   letter-spacing: 0.01em;
   padding: 0 14px;
   cursor: pointer;
-  transition: background 160ms ease, border-color 160ms ease, opacity 160ms ease;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    opacity 160ms ease;
 }
 
 .scenes-btn:disabled {
@@ -5110,7 +5119,9 @@ body.app-info-open {
   color: #fff;
   text-align: left;
   cursor: pointer;
-  transition: background 160ms ease, border-color 160ms ease,
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
     transform 160ms ease;
 }
 
@@ -5241,7 +5252,9 @@ body.app-info-open {
   font-weight: 600;
   text-align: center;
   cursor: pointer;
-  transition: background 160ms ease, border-color 160ms ease,
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
     opacity 160ms ease;
 }
 
@@ -5283,7 +5296,9 @@ body.app-info-open {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: opacity 160ms ease, border-color 160ms ease,
+  transition:
+    opacity 160ms ease,
+    border-color 160ms ease,
     background 160ms ease;
 }
 
@@ -5462,7 +5477,7 @@ body.orchestrated-animation .page-title {
   animation: 2s infinite pulse;
 }
 
-/* BotÃ£o do logo no loader */
+/* botão do logo no loader */
 .loader-logo-btn {
   cursor: default;
   background: transparent !important;
@@ -9318,7 +9333,7 @@ body:not(.tv-controls-on)
   display: block;
 }
 
-/* AC Mode Button Label - Para botÃ£o com texto */
+/* AC Mode Button Label - Para botão com texto */
 .ac-mode-btn__label {
   color: #fff;
   text-transform: uppercase;
@@ -9425,7 +9440,7 @@ body:not(.tv-controls-on)
   grid-template-columns: repeat(2, 1fr) !important;
 }
 
-/* AC Living - BotÃ£o power desabilitado */
+/* AC Living - botão power desabilitado */
 .ac-command-btn--disabled {
   opacity: 0.4 !important;
   cursor: not-allowed !important;
@@ -9436,7 +9451,7 @@ body:not(.tv-controls-on)
   opacity: 0.5 !important;
 }
 
-/* AC Living - BotÃ£o de seleÃ§Ã£o ativo */
+/* AC Living - botão de seleÃ§Ã£o ativo */
 [data-ac-living] .ac-mode-btn[aria-pressed="true"] {
   background: linear-gradient(135deg, #b4b4b440, #87878726) !important;
   border-color: #b4b4b480 !important;

@@ -43,7 +43,10 @@ function getUiItemFromConfig(key) {
   if (!key) return null;
 
   try {
-    if (typeof window !== "undefined" && typeof window.getUiItem === "function") {
+    if (
+      typeof window !== "undefined" &&
+      typeof window.getUiItem === "function"
+    ) {
       return window.getUiItem(key) || null;
     }
   } catch (e) {
@@ -126,7 +129,10 @@ function extractRelativeAssetPath(value) {
 
 function getIconOverrideMap() {
   try {
-    if (typeof window !== "undefined" && typeof window.getIconOverrides === "function") {
+    if (
+      typeof window !== "undefined" &&
+      typeof window.getIconOverrides === "function"
+    ) {
       return window.getIconOverrides() || {};
     }
   } catch (e) {
@@ -134,7 +140,10 @@ function getIconOverrideMap() {
   }
 
   try {
-    if (typeof window !== "undefined" && window.CLIENT_CONFIG?.ui?.iconOverrides) {
+    if (
+      typeof window !== "undefined" &&
+      window.CLIENT_CONFIG?.ui?.iconOverrides
+    ) {
       return window.CLIENT_CONFIG.ui.iconOverrides;
     }
   } catch (e) {
@@ -157,13 +166,18 @@ function resolveIconPath(path) {
 
 function applyIconOverrides(root = document) {
   const overrides = getIconOverrideMap();
-  if (!overrides || typeof overrides !== "object" || Object.keys(overrides).length === 0) {
+  if (
+    !overrides ||
+    typeof overrides !== "object" ||
+    Object.keys(overrides).length === 0
+  ) {
     return;
   }
 
   try {
     // Atualizar atributos data-icon-on/off para controles que alternam ícones
-    const toggles = root.querySelectorAll?.("[data-icon-on], [data-icon-off]") || [];
+    const toggles =
+      root.querySelectorAll?.("[data-icon-on], [data-icon-off]") || [];
     toggles.forEach((el) => {
       const rawOn = el.getAttribute("data-icon-on");
       const rawOff = el.getAttribute("data-icon-off");
@@ -351,7 +365,7 @@ const AssetPreloader = (() => {
             offset + Math.min(weight, Math.round((completed / total) * weight));
           updateProgress(
             percent,
-            `Pré-carregando mídia (${completed}/${total})`
+            `Pré-carregando mídia (${completed}/${total})`,
           );
         }
 
@@ -386,7 +400,7 @@ AssetPreloader.add("images/pwa/app-icon-512-transparent.png", {
   priority: "background",
 });
 ICON_ASSET_PATHS.forEach((asset) =>
-  AssetPreloader.add(asset, { priority: "background" })
+  AssetPreloader.add(asset, { priority: "background" }),
 );
 
 let assetPreloadComplete = false;
@@ -406,13 +420,13 @@ if (typeof window !== "undefined") {
         weight: 15,
         offset: 30,
       }).catch((error) =>
-        console.warn("Falha ao pré-carregar mídia adicional", error)
+        console.warn("Falha ao pré-carregar mídia adicional", error),
       );
     });
 
   window.__assetPreloadPromise = assetPreloadPromise;
-window.queueAssetForPreload = (url, priority) =>
-  AssetPreloader.add(url, { priority });
+  window.queueAssetForPreload = (url, priority) =>
+    AssetPreloader.add(url, { priority });
 }
 
 function isStandaloneMode() {
@@ -421,9 +435,7 @@ function isStandaloneMode() {
     typeof window.matchMedia === "function"
       ? window.matchMedia("(display-mode: standalone)")
       : null;
-  return Boolean(
-    (mql && mql.matches) || window.navigator?.standalone === true
-  );
+  return Boolean((mql && mql.matches) || window.navigator?.standalone === true);
 }
 
 async function requestPersistentStorage() {
@@ -461,7 +473,10 @@ const fullscreenManager = (() => {
     document.documentElement
       .requestFullscreen({ navigationUI: "hide" })
       .catch((error) => {
-        console.warn("Não foi possível entrar em tela cheia automaticamente", error);
+        console.warn(
+          "Não foi possível entrar em tela cheia automaticamente",
+          error,
+        );
       });
 
     if (screen?.orientation?.lock) {
@@ -536,7 +551,7 @@ function detectIPadMini6() {
       "Ã°Å¸ÂÅ½ iPad Mini 6 detectado - aplicando fixes específicos",
       `Screen: ${screenWidth}x${screenHeight}`,
       `Inner: ${window.innerWidth}x${window.innerHeight}`,
-      `DPR: ${window.devicePixelRatio}`
+      `DPR: ${window.devicePixelRatio}`,
     );
     return true;
   }
@@ -574,7 +589,7 @@ function detectDevice() {
     console.log(
       `Ã°Å¸â€œÂ± Dispositivo mobile detectado (${
         isApple ? "Apple" : "Android"
-      })`
+      })`,
     );
   }
 }
@@ -582,7 +597,9 @@ function detectDevice() {
 // Função para detectar se está na página de controle remoto da TV
 function isOnTVControlPage() {
   const target = `${window.location.pathname}${window.location.hash}`;
-  return /(ambiente\d+-(tv|htv|bluray|appletv|clarotv|roku|games|hidromassagem))/.test(target);
+  return /(ambiente\d+-(tv|htv|bluray|appletv|clarotv|roku|games|hidromassagem))/.test(
+    target,
+  );
 }
 
 // Função para criar/mostrar overlay de orientação
@@ -680,7 +697,7 @@ function updateDeviceStyles() {
     overlay.classList.add("active");
     document.documentElement.dataset.layoutState = "mobile-blocked";
     console.log(
-      "Ã°Å¸â€œÂµ Celular em landscape no controle remoto - bloqueado"
+      "Ã°Å¸â€œÂµ Celular em landscape no controle remoto - bloqueado",
     );
   } else {
     const overlay = showOrientationOverlay();
@@ -704,9 +721,7 @@ window.addEventListener("resize", updateDeviceStyles);
 
 // IDs de todos os dispositivos de iluminação (obtidos do config.js)
 let ALL_LIGHT_IDS =
-  typeof getAllLightIds === "function"
-    ? getAllLightIds()
-    : [];
+  typeof getAllLightIds === "function" ? getAllLightIds() : [];
 
 const AUDIO_DEFAULTS =
   typeof getAudioDefaults === "function"
@@ -806,10 +821,7 @@ function getDenonCommandDeviceIdForEnv(envKey) {
     getConfiguredEnvironmentBinding(envKey, "music", "volume") ||
     getConfiguredEnvironmentBinding(envKey, "music", "power");
 
-  return (
-    configuredId ||
-    DEFAULT_DENON_COMMAND_DEVICE_ID
-  );
+  return configuredId || DEFAULT_DENON_COMMAND_DEVICE_ID;
 }
 
 function getDenonCommandDeviceIdForCurrentRoute(hash = window.location.hash) {
@@ -1054,22 +1066,33 @@ async function initializeEnvironmentDevices(envKey) {
   const now = Date.now();
   const last = lastInitByEnv.get(envKey) || 0;
   if (now - last < INIT_COOLDOWN_MS) {
-    console.log(`⏳ [initializeEnvironmentDevices] Cooldown ativo (${envKey}), ignorando.`);
+    console.log(
+      `⏳ [initializeEnvironmentDevices] Cooldown ativo (${envKey}), ignorando.`,
+    );
     return;
   }
 
-  console.log(`🚀 [initializeEnvironmentDevices] Iniciando dispositivos de ${envKey}...`);
+  console.log(
+    `🚀 [initializeEnvironmentDevices] Iniciando dispositivos de ${envKey}...`,
+  );
   lastInitByEnv.set(envKey, now);
 
   const results = await Promise.allSettled(
     ids.map(async (deviceId) => {
       try {
-        console.log(`🔧 [initializeEnvironmentDevices] Enviando initialize para ${deviceId}`);
+        console.log(
+          `🔧 [initializeEnvironmentDevices] Enviando initialize para ${deviceId}`,
+        );
         await sendHubitatCommand(deviceId, "initialize");
-        console.log(`✅ [initializeEnvironmentDevices] ${deviceId} inicializado`);
+        console.log(
+          `✅ [initializeEnvironmentDevices] ${deviceId} inicializado`,
+        );
         return { deviceId, success: true };
       } catch (error) {
-        console.error(`❌ [initializeEnvironmentDevices] Erro em ${deviceId}:`, error);
+        console.error(
+          `❌ [initializeEnvironmentDevices] Erro em ${deviceId}:`,
+          error,
+        );
         return { deviceId, success: false, error };
       }
     }),
@@ -1143,9 +1166,7 @@ function enqueueDeviceCommand(deviceId, task) {
   const previous = DEVICE_COMMAND_QUEUE.get(key) || Promise.resolve();
 
   // Nunca deixa um erro quebrar a fila: engole o erro do anterior antes de continuar.
-  const next = previous
-    .catch(() => {})
-    .then(() => task());
+  const next = previous.catch(() => {}).then(() => task());
 
   // Limpa a fila quando este item terminar (se ainda for o último).
   DEVICE_COMMAND_QUEUE.set(
@@ -1154,7 +1175,7 @@ function enqueueDeviceCommand(deviceId, task) {
       if (DEVICE_COMMAND_QUEUE.get(key) === next) {
         DEVICE_COMMAND_QUEUE.delete(key);
       }
-    })
+    }),
   );
 
   return next;
@@ -1182,12 +1203,14 @@ async function fetchWithTimeout(url, options = {}, timeoutMs) {
 function computeBackoffDelay(attempt) {
   return Math.min(
     NETWORK_CONFIG.RETRY_DELAY_BASE * Math.pow(2, attempt - 1),
-    NETWORK_CONFIG.RETRY_DELAY_MAX
+    NETWORK_CONFIG.RETRY_DELAY_MAX,
   );
 }
 
 function isHtmlResponseText(text) {
-  const trimmed = String(text || "").trim().toLowerCase();
+  const trimmed = String(text || "")
+    .trim()
+    .toLowerCase();
   return trimmed.startsWith("<!doctype") || trimmed.startsWith("<html");
 }
 
@@ -1205,11 +1228,17 @@ async function fetchTextWithRetry(url, options = {}, config = {}) {
 
   for (let attempt = 1; attempt <= maxRetries; attempt += 1) {
     try {
-      const response = await fetchWithTimeout(url, { cache: "no-cache", ...options }, timeoutMs);
+      const response = await fetchWithTimeout(
+        url,
+        { cache: "no-cache", ...options },
+        timeoutMs,
+      );
       const text = await response.text();
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText || "Erro"}`);
+        throw new Error(
+          `HTTP ${response.status}: ${response.statusText || "Erro"}`,
+        );
       }
 
       // Proxy/Functions às vezes devolvem HTML quando estão fora.
@@ -1326,13 +1355,13 @@ function toggleRoomControl(el) {
   sendHubitatCommand(deviceId, newState === "on" ? "on" : "off")
     .then(() => {
       console.log(
-        `Ã¢Å“â€¦ Comando ${newState} enviado com sucesso para dispositivo ${deviceId}`
+        `Ã¢Å“â€¦ Comando ${newState} enviado com sucesso para dispositivo ${deviceId}`,
       );
     })
     .catch((error) => {
       console.error(
         `⚠️Erro ao enviar comando para dispositivo ${deviceId}:`,
-        error
+        error,
       );
       // Em caso de erro, reverter o estado visual
       const revertState = newState === "on" ? "off" : "on";
@@ -1373,7 +1402,7 @@ function resolveLightDeviceIdFromConfig(el) {
 
   if (normalizedLabel) {
     const match = lights.find(
-      (light) => normalizeLabel(light?.name) === normalizedLabel
+      (light) => normalizeLabel(light?.name) === normalizedLabel,
     );
     if (match) {
       const id = String(match.id);
@@ -1468,7 +1497,7 @@ function toggleDimmerControl(eventOrEl, maybeEl) {
 
   if (!el || !el.dataset) return;
 
-   if (el.dataset.longPressHandled === "true") {
+  if (el.dataset.longPressHandled === "true") {
     delete el.dataset.longPressHandled;
     return;
   }
@@ -1502,9 +1531,9 @@ function toggleDimmerControl(eventOrEl, maybeEl) {
       (error) => {
         console.error(
           `⚠️Erro ao definir nível do dimmer ${deviceId} para ${levelToSet}:`,
-          error
+          error,
         );
-      }
+      },
     );
   } else {
     if (slider) {
@@ -1562,7 +1591,10 @@ function handleDimmerChange(event, sliderEl) {
       return null;
     })
     .catch((error) => {
-      console.error(`⚠️Erro ao enviar nível ${level} para dimmer ${deviceId}:`, error);
+      console.error(
+        `⚠️Erro ao enviar nível ${level} para dimmer ${deviceId}:`,
+        error,
+      );
     });
 }
 
@@ -1596,7 +1628,7 @@ function showDimmerPopup(controlEl) {
 
   const currentLevel = clampDimmerValue(
     controlEl.dataset.level ?? controlEl.dataset.defaultLevel ?? 80,
-    80
+    80,
   );
 
   const overlay = document.createElement("div");
@@ -1649,7 +1681,10 @@ function showDimmerPopup(controlEl) {
           return null;
         })
         .catch((error) => {
-          console.error(`⚠️Erro ao enviar nível ${lvl} para dimmer ${deviceId}:`, error);
+          console.error(
+            `⚠️Erro ao enviar nível ${lvl} para dimmer ${deviceId}:`,
+            error,
+          );
         });
     });
   }
@@ -1664,15 +1699,22 @@ function togglePoolControl(el, action) {
     return;
   }
 
-  console.log(` Enviando comando "${action}" para dispositivo piscina ${deviceId}`);
+  console.log(
+    ` Enviando comando "${action}" para dispositivo piscina ${deviceId}`,
+  );
 
   // Enviar comando para Hubitat
   sendHubitatCommand(deviceId, action)
     .then(() => {
-      console.log(` Comando "${action}" enviado com sucesso para dispositivo ${deviceId}`);
+      console.log(
+        ` Comando "${action}" enviado com sucesso para dispositivo ${deviceId}`,
+      );
     })
     .catch((error) => {
-      console.error(` Erro ao enviar comando para dispositivo ${deviceId}:`, error);
+      console.error(
+        ` Erro ao enviar comando para dispositivo ${deviceId}:`,
+        error,
+      );
     });
 }
 // ========================================
@@ -1696,7 +1738,7 @@ function getActiveTvPowerDeviceId(wrapper = getActiveTvControlWrapper()) {
   if (!wrapper) return null;
 
   const powerButton = wrapper.querySelector(
-    ".tv-btn--power-on[data-device-id], .tv-btn--power-off[data-device-id]"
+    ".tv-btn--power-on[data-device-id], .tv-btn--power-off[data-device-id]",
   );
   if (powerButton?.dataset?.deviceId) {
     return String(powerButton.dataset.deviceId);
@@ -1720,10 +1762,7 @@ function syncTVPowerStateFromStorage() {
     : "off";
 
   updateTVPowerState(nextState, { wrapper });
-  debugLog(() => [
-    "syncTVPowerStateFromStorage",
-    { powerDeviceId, nextState },
-  ]);
+  debugLog(() => ["syncTVPowerStateFromStorage", { powerDeviceId, nextState }]);
 }
 
 function updateTVPowerState(newState, options = {}) {
@@ -1744,16 +1783,20 @@ function updateTVPowerState(newState, options = {}) {
 
   // Selecionar todos os outros controles (incluindo música e volume)
   const otherControls = wrapper.querySelectorAll(
-    ".tv-control-section:not(.tv-control-section--power), .tv-volume-canais-wrapper, .tv-commands-grid, .tv-directional-pad, .tv-numpad, .tv-favorites-list, .tv-logo-section, .tv-control-mode-toggle, .tv-control-section--music, .tv-control-section--dpad, .tv-control-section--volume, .tv-control-section--media, .music-now-content, .music-album-container, .music-info, .tv-volume-slider-container, .tv-volume-slider, .tv-volume-value, .tv-portrait-tabs, .tv-portrait-tab"
+    ".tv-control-section:not(.tv-control-section--power), .tv-volume-canais-wrapper, .tv-commands-grid, .tv-directional-pad, .tv-numpad, .tv-favorites-list, .tv-logo-section, .tv-control-mode-toggle, .tv-control-section--music, .tv-control-section--dpad, .tv-control-section--volume, .tv-control-section--media, .music-now-content, .music-album-container, .music-info, .tv-volume-slider-container, .tv-volume-slider, .tv-volume-value, .tv-portrait-tabs, .tv-portrait-tab",
   );
   const gestureIcons = wrapper.querySelectorAll(".tv-gesture-icons");
   const gestureSurface = wrapper.querySelectorAll(".tv-gesture-surface");
 
   // Selecionar títulos das seções de controle
-  const titles = wrapper.querySelectorAll(".tv-section-title, .tv-section-line");
-  
+  const titles = wrapper.querySelectorAll(
+    ".tv-section-title, .tv-section-line",
+  );
+
   // Selecionar seção de volume separadamente (coluna 2)
-  const volumeSection = wrapper.querySelectorAll(".tv-col-2 > .tv-control-section");
+  const volumeSection = wrapper.querySelectorAll(
+    ".tv-col-2 > .tv-control-section",
+  );
 
   if (normalizedState === "on") {
     // TV ligada
@@ -1883,7 +1926,9 @@ function tvCommand(el, command) {
 
       if (input && receiverId) {
         window.setTimeout(() => {
-          sendHubitatCommand(receiverId, "setInputSource", input).catch(() => {});
+          sendHubitatCommand(receiverId, "setInputSource", input).catch(
+            () => {},
+          );
         }, 350);
         if (controlType !== "tv") {
           sendHubitatCommand(tvId, "hdmi3").catch(() => {});
@@ -1916,13 +1961,13 @@ function tvCommand(el, command) {
     sendHubitatCommand(deviceId, cmd)
       .then(() => {
         console.log(
-          `✅ Comando TV ${cmd} enviado com sucesso para dispositivo ${deviceId}`
+          `✅ Comando TV ${cmd} enviado com sucesso para dispositivo ${deviceId}`,
         );
       })
       .catch((error) => {
         console.error(
           `❌ Erro ao enviar comando TV para dispositivo ${deviceId}:`,
-          error
+          error,
         );
       });
   });
@@ -1940,9 +1985,7 @@ function toggleClaroTvPanel(trigger, targetView) {
       ? { favorites: "Apps", numbers: "Comandos" }
       : { favorites: "Favoritos", numbers: "Números" };
 
-  const panel = wrapper.querySelector(
-    ".tv-control-section[data-claro-panel]"
-  );
+  const panel = wrapper.querySelector(".tv-control-section[data-claro-panel]");
   if (!panel) return;
 
   const currentView = panel.dataset.claroPanel || "numbers";
@@ -2057,7 +2100,7 @@ function syncAppleTvControlMode(section) {
 
 function initAppleTvGestureControls(root = document) {
   const sections = root.querySelectorAll(
-    ".tv-control-wrapper .tv-control-section--dpad"
+    ".tv-control-wrapper .tv-control-section--dpad",
   );
 
   sections.forEach((section) => {
@@ -2106,8 +2149,7 @@ function initAppleTvGestureControls(root = document) {
       pointerId = null;
     };
 
-    const isGesturesMode = () =>
-      section.dataset.controlMode === "gestures";
+    const isGesturesMode = () => section.dataset.controlMode === "gestures";
 
     surface.addEventListener("pointerdown", (e) => {
       if (!isGesturesMode()) return;
@@ -2126,9 +2168,15 @@ function initAppleTvGestureControls(root = document) {
       moved = true;
 
       if (Math.abs(dx) > Math.abs(dy)) {
-        sendCommand(dx > 0 ? "cursorRight" : "cursorLeft", dx > 0 ? buttons.right : buttons.left);
+        sendCommand(
+          dx > 0 ? "cursorRight" : "cursorLeft",
+          dx > 0 ? buttons.right : buttons.left,
+        );
       } else {
-        sendCommand(dy > 0 ? "cursorDown" : "cursorUp", dy > 0 ? buttons.down : buttons.up);
+        sendCommand(
+          dy > 0 ? "cursorDown" : "cursorUp",
+          dy > 0 ? buttons.down : buttons.up,
+        );
       }
     });
 
@@ -2150,9 +2198,7 @@ function initAppleTvGestureControls(root = document) {
     window.__APPLE_TV_TOGGLE_RESIZE__ = true;
     window.addEventListener("resize", () => {
       document
-        .querySelectorAll(
-          ".tv-control-wrapper .tv-control-section--dpad"
-        )
+        .querySelectorAll(".tv-control-wrapper .tv-control-section--dpad")
         .forEach((section) => syncAppleTvControlMode(section));
     });
   }
@@ -2209,7 +2255,9 @@ function htvMacroOn() {
   const { tvControlId: TV_ID, receiverId: RECEIVER_ID } =
     getHomeTheaterControlIds();
 
-  console.log("🎬 Macro HTV: Inicializando, ligando TV, setando HDMI 2 e input SAT/CBL...");
+  console.log(
+    "🎬 Macro HTV: Inicializando, ligando TV, setando HDMI 2 e input SAT/CBL...",
+  );
 
   // Inicializa TV primeiro
   sendHubitatCommand(TV_ID, "initialize")
@@ -2241,7 +2289,9 @@ function htvMacroOn() {
       // Mesmo com erro, tentar setar o input (caso TV já esteja ligada)
       console.log("🔄 Tentando setar input SAT/CBL mesmo com erro anterior...");
       sendHubitatCommand(RECEIVER_ID, "setInputSource", "SAT/CBL")
-        .then(() => console.log("✅ Input SAT/CBL selecionado no Receiver (recuperação)"))
+        .then(() =>
+          console.log("✅ Input SAT/CBL selecionado no Receiver (recuperação)"),
+        )
         .catch((err) => console.error("❌ Erro ao setar input:", err));
     });
 }
@@ -2278,7 +2328,9 @@ function htvMacroOn_old() {
       // Mesmo com erro, tentar setar o input (caso TV já esteja ligada)
       console.log("🔄 Tentando setar input SAT/CBL mesmo com erro anterior...");
       sendHubitatCommand(RECEIVER_ID, "setInputSource", "SAT/CBL")
-        .then(() => console.log("✅ Input SAT/CBL selecionado no Receiver (recuperação)"))
+        .then(() =>
+          console.log("✅ Input SAT/CBL selecionado no Receiver (recuperação)"),
+        )
         .catch((err) => console.error("❌ Erro ao setar input:", err));
     });
 }
@@ -2293,7 +2345,7 @@ function telaoMacroOn() {
   // Liga Telão e seta input SAT/CBL no receiver
   Promise.all([
     sendHubitatCommand(TELAO_ID, "on"),
-    sendHubitatCommand(RECEIVER_ID, "setInputSource", "SAT/CBL")
+    sendHubitatCommand(RECEIVER_ID, "setInputSource", "SAT/CBL"),
   ])
     .then(() => {
       console.log("✅ Telão ligado e input SAT/CBL selecionado");
@@ -2330,7 +2382,7 @@ function htvMacroOff() {
 
   Promise.all([
     sendHubitatCommand(TV_ID, "off"),
-    sendHubitatCommand(RECEIVER_ID, "off")
+    sendHubitatCommand(RECEIVER_ID, "off"),
   ])
     .then(() => {
       console.log("✅ TV e Receiver desligados");
@@ -2599,7 +2651,7 @@ function tvMacroOff() {
 
   Promise.all([
     sendHubitatCommand(TV_ID, "off"),
-    sendHubitatCommand(RECEIVER_ID, "off")
+    sendHubitatCommand(RECEIVER_ID, "off"),
   ])
     .then(() => {
       console.log("✅ TV e Receiver desligados");
@@ -2614,7 +2666,9 @@ function fireTVMacro() {
   const { tvControlId: TV_ID, receiverId: RECEIVER_ID } =
     getHomeTheaterControlIds();
 
-  console.log("🎬 Macro Fire TV: Selecionando HDMI 2 e setando Receiver para BD...");
+  console.log(
+    "🎬 Macro Fire TV: Selecionando HDMI 2 e setando Receiver para BD...",
+  );
 
   // Enviar comando HDMI 2 para TV
   sendHubitatCommand(TV_ID, "hdmi2")
@@ -2668,8 +2722,8 @@ function initVolumeSlider() {
 
     console.log(
       `Ã°Å¸Å½Å¡Ã¯Â¸Â Volume display atualizado: ${value} (${percentage.toFixed(
-        1
-      )}%)`
+        1,
+      )}%)`,
     );
   });
 
@@ -2678,7 +2732,7 @@ function initVolumeSlider() {
     const value = e.target.value;
 
     console.log(
-      `Ã°Å¸â€Å  Volume alterado para: ${value} - enviando para Denon AVR`
+      `Ã°Å¸â€Å  Volume alterado para: ${value} - enviando para Denon AVR`,
     );
 
     // Enviar comando setVolume para o Denon AVR
@@ -2727,9 +2781,7 @@ async function updateDenonVolumeFromServer() {
       : null;
 
     if (!pollingUrl) {
-      console.log(
-        "⚠️não é possível buscar volume em desenvolvimento"
-      );
+      console.log("⚠️não é possível buscar volume em desenvolvimento");
       return;
     }
 
@@ -2755,7 +2807,7 @@ async function updateDenonVolumeFromServer() {
         if (denonData.attributes) {
           if (Array.isArray(denonData.attributes)) {
             const volumeAttr = denonData.attributes.find(
-              (attr) => attr?.name === "volume"
+              (attr) => attr?.name === "volume",
             );
             volume =
               volumeAttr?.currentValue ??
@@ -2792,7 +2844,7 @@ async function updateDenonVolumeFromServer() {
         musicSlider.value = volumeValue;
         musicSlider.style.setProperty(
           "--volume-percent",
-          percentageMusic + "%"
+          percentageMusic + "%",
         );
       }
 
@@ -2827,10 +2879,10 @@ async function updateDenonVolumeFromServer() {
 // Função para atualizar a UI do volume do Denon (chamada pelo polling)
 function updateDenonVolumeUI(
   volume,
-  denonDeviceId = getDenonCommandDeviceIdForCurrentRoute()
+  denonDeviceId = getDenonCommandDeviceIdForCurrentRoute(),
 ) {
   const resolvedDenonId = String(
-    denonDeviceId || getDenonCommandDeviceIdForCurrentRoute()
+    denonDeviceId || getDenonCommandDeviceIdForCurrentRoute(),
   );
   const tvSlider = document.getElementById("tv-volume-slider");
   const tvDisplay = document.getElementById("tv-volume-display");
@@ -2876,7 +2928,7 @@ function updateDenonVolumeUI(
   const lastCmd = recentCommands.get(resolvedDenonId);
   if (lastCmd && Date.now() - lastCmd < COMMAND_PROTECTION_MS) {
     debugLog(
-      () => "updateDenonVolumeUI: comando manual recente, ignorando polling"
+      () => "updateDenonVolumeUI: comando manual recente, ignorando polling",
     );
     return;
   }
@@ -2927,7 +2979,10 @@ function updateDenonVolumeUI(
   }
 
   if (updated) {
-    debugLog(() => ["updateDenonVolumeUI: volume sincronizado", { volumeValue }]);
+    debugLog(() => [
+      "updateDenonVolumeUI: volume sincronizado",
+      { volumeValue },
+    ]);
   }
 }
 
@@ -2964,7 +3019,7 @@ function getDenonPowerStateFromDevice(device) {
       if (!attrName) continue;
       if (["switch", "power", "status", "state"].includes(attrName)) {
         const normalized = normalizeDenonPowerState(
-          attr.currentValue ?? attr.value
+          attr.currentValue ?? attr.value,
         );
         if (normalized) return normalized;
       }
@@ -2984,10 +3039,10 @@ function getDenonPowerStateFromDevice(device) {
 
 function applyDenonPowerState(
   rawState,
-  denonDeviceId = getDenonCommandDeviceIdForCurrentRoute()
+  denonDeviceId = getDenonCommandDeviceIdForCurrentRoute(),
 ) {
   const resolvedDenonId = String(
-    denonDeviceId || getDenonCommandDeviceIdForCurrentRoute()
+    denonDeviceId || getDenonCommandDeviceIdForCurrentRoute(),
   );
   const normalized = normalizeDenonPowerState(rawState);
   if (!normalized) return;
@@ -2996,7 +3051,7 @@ function applyDenonPowerState(
     const lastCmd = recentCommands.get(resolvedDenonId);
     if (lastCmd && Date.now() - lastCmd < COMMAND_PROTECTION_MS) {
       console.log(
-        "[Denon] Ignorando sincronizacao de power por comando recente"
+        "[Denon] Ignorando sincronizacao de power por comando recente",
       );
       return;
     }
@@ -3068,7 +3123,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("🎵 [hashchange] Hash mudou para:", window.location.hash);
     const isMusicActive = isMusicPageActive();
     console.log("🎵 [hashchange] isMusicPageActive:", isMusicActive);
-    
+
     if (isMusicActive) {
       console.log("🎵 [hashchange] Iniciando player de música em 300ms...");
       setTimeout(() => {
@@ -3088,16 +3143,16 @@ function setRoomControlUI(el, state) {
 
   const ICON_ON = resolveIconPath(
     (el && el.dataset && (el.dataset.iconOn || el.dataset.iconon)) ||
-      "images/icons/icon-small-light-on.svg"
+      "images/icons/icon-small-light-on.svg",
   );
   const ICON_OFF = resolveIconPath(
     (el && el.dataset && (el.dataset.iconOff || el.dataset.iconoff)) ||
-      "images/icons/icon-small-light-off.svg"
+      "images/icons/icon-small-light-off.svg",
   );
   const normalized = normalizeSwitchState(state);
 
   const ICON_BG = resolveIconPath(
-    (el.dataset.iconBg || el.dataset.iconbg || ICON_ON)
+    el.dataset.iconBg || el.dataset.iconbg || ICON_ON,
   );
 
   el.dataset.state = normalized;
@@ -3136,7 +3191,9 @@ function setRoomControlUI(el, state) {
 }
 
 function normalizeSwitchState(value, fallback = "off") {
-  const fb = String(fallback || "off").trim().toLowerCase();
+  const fb = String(fallback || "off")
+    .trim()
+    .toLowerCase();
   const safeFallback = fb === "on" ? "on" : "off";
 
   if (value === undefined || value === null) {
@@ -3162,12 +3219,14 @@ function needsControlVisualSync(el, state) {
 
   const normalizedState = normalizeSwitchState(state);
   const ICON_ON = resolveIconPath(
-    (el.dataset.iconOn || el.dataset.iconon) ||
-      "images/icons/icon-small-light-on.svg"
+    el.dataset.iconOn ||
+      el.dataset.iconon ||
+      "images/icons/icon-small-light-on.svg",
   );
   const ICON_OFF = resolveIconPath(
-    (el.dataset.iconOff || el.dataset.iconoff) ||
-      "images/icons/icon-small-light-off.svg"
+    el.dataset.iconOff ||
+      el.dataset.iconoff ||
+      "images/icons/icon-small-light-off.svg",
   );
 
   const mainIcon = getMainControlIcon(el);
@@ -3182,7 +3241,11 @@ function needsControlVisualSync(el, state) {
   const bgIcon = el.querySelector(".control-icon-bg");
   if (bgIcon) {
     const inlineOpacity = String(bgIcon.style.opacity || "").trim();
-    if (normalizedState === "off" && inlineOpacity !== "" && inlineOpacity !== "0") {
+    if (
+      normalizedState === "off" &&
+      inlineOpacity !== "" &&
+      inlineOpacity !== "0"
+    ) {
       return true;
     }
     if (normalizedState === "on" && inlineOpacity === "0") {
@@ -3263,13 +3326,13 @@ function handleDeviceStateQuotaError(deviceId, key, state, error) {
   if (!deviceStateQuotaWarningShown) {
     console.warn(
       `Persistencia de estados sem espaco para ${deviceId}. Tentando limpeza...`,
-      error
+      error,
     );
     deviceStateQuotaWarningShown = true;
   } else {
     debugLog(() => [
       "QuotaExceeded repetido",
-      { deviceId, message: error?.message }
+      { deviceId, message: error?.message },
     ]);
   }
 
@@ -3280,7 +3343,9 @@ function handleDeviceStateQuotaError(deviceId, key, state, error) {
       const excluded = new Set([key]);
       removedEntries = purgeDeviceStateEntries(excluded);
       if (removedEntries > 0) {
-        console.info(`Estados antigos removidos do localStorage: ${removedEntries}`);
+        console.info(
+          `Estados antigos removidos do localStorage: ${removedEntries}`,
+        );
       }
     } finally {
       deviceStateCleanupInProgress = false;
@@ -3290,7 +3355,7 @@ function handleDeviceStateQuotaError(deviceId, key, state, error) {
   if (removedEntries === 0) {
     disableDeviceStatePersistence(
       "Sem espaco restante no localStorage e nenhum estado para remover",
-      error
+      error,
     );
     return;
   }
@@ -3302,18 +3367,18 @@ function handleDeviceStateQuotaError(deviceId, key, state, error) {
     deviceStateQuotaErrors += 1;
     const attempt = Math.min(
       deviceStateQuotaErrors,
-      DEVICE_STATE_MAX_QUOTA_ERRORS
+      DEVICE_STATE_MAX_QUOTA_ERRORS,
     );
 
     if (attempt >= DEVICE_STATE_MAX_QUOTA_ERRORS) {
       disableDeviceStatePersistence(
         "localStorage sem espaco suficiente para estados",
-        retryError
+        retryError,
       );
     } else {
       console.warn(
         `Persistencia de estados ainda sem espaco (tentativa ${attempt}/${DEVICE_STATE_MAX_QUOTA_ERRORS})`,
-        retryError
+        retryError,
       );
     }
   }
@@ -3454,7 +3519,6 @@ function pruneStaleEntries() {
       deviceControlCache.delete(deviceId);
     }
   });
-
 }
 
 function scheduleControlSync(forceMasterUpdate) {
@@ -3538,7 +3602,6 @@ function initRoomPage() {
   } catch (error) {
     debugLog(() => ["initRoomPage rename fallback", error]);
   }
-
 }
 
 // === CONTROLADOR DE AR CONDICIONADO ===
@@ -3559,9 +3622,7 @@ function initAirConditionerControl() {
     envKey && typeof getEnvironment === "function"
       ? getEnvironment(envKey)?.airConditioner || null
       : null;
-  const baseDeviceId = acConfig?.deviceId
-    ? String(acConfig.deviceId)
-    : "";
+  const baseDeviceId = acConfig?.deviceId ? String(acConfig.deviceId) : "";
   const acBrandProfiles =
     (typeof CLIENT_CONFIG !== "undefined" &&
       CLIENT_CONFIG?.devices?.airConditionerBrands) ||
@@ -3587,16 +3648,16 @@ function initAirConditionerControl() {
   const tempSlider = root.querySelector('[data-role="temp-slider"]');
   const tempCurrent = root.querySelector('[data-role="temp-current"]');
   const tempDecreaseButtons = Array.from(
-    root.querySelectorAll('[data-role="temp-decrease"]')
+    root.querySelectorAll('[data-role="temp-decrease"]'),
   );
   const tempIncreaseButtons = Array.from(
-    root.querySelectorAll('[data-role="temp-increase"]')
+    root.querySelectorAll('[data-role="temp-increase"]'),
   );
   const powerOnBtn = root.querySelector('[data-role="power-on"]');
   const powerOffBtn = root.querySelector('[data-role="power-off"]');
   const liveRegion = root.querySelector('[data-role="temperature-live"]');
-  const aletaButtons = Array.from(root.querySelectorAll('[data-aleta-button]'));
-  const zoneButtons = Array.from(root.querySelectorAll('[data-zone-button]'));
+  const aletaButtons = Array.from(root.querySelectorAll("[data-aleta-button]"));
+  const zoneButtons = Array.from(root.querySelectorAll("[data-zone-button]"));
 
   if (!tempSlider || !tempCurrent || !powerOnBtn || !powerOffBtn) {
     console.warn("Elementos essenciais do AC n?o encontrados.");
@@ -3622,7 +3683,9 @@ function initAirConditionerControl() {
   };
 
   function getFallbackDeviceId() {
-    return baseDeviceId || root.dataset.deviceId || getACDeviceIdForCurrentRoute();
+    return (
+      baseDeviceId || root.dataset.deviceId || getACDeviceIdForCurrentRoute()
+    );
   }
 
   function parseZoneIds(button) {
@@ -3693,8 +3756,12 @@ function initAirConditionerControl() {
     if (value === null || value === undefined) return null;
     const normalized = String(value).trim().toLowerCase();
     if (!normalized) return null;
-    const onValues = Array.isArray(swingConfig.on) ? swingConfig.on : [swingConfig.on];
-    const offValues = Array.isArray(swingConfig.off) ? swingConfig.off : [swingConfig.off];
+    const onValues = Array.isArray(swingConfig.on)
+      ? swingConfig.on
+      : [swingConfig.on];
+    const offValues = Array.isArray(swingConfig.off)
+      ? swingConfig.off
+      : [swingConfig.off];
     if (onValues.map((v) => String(v).toLowerCase()).includes(normalized)) {
       return "moving";
     }
@@ -3719,8 +3786,8 @@ function initAirConditionerControl() {
     state.activeZoneIds = baseDeviceId
       ? [baseDeviceId]
       : ids.length
-      ? ids
-      : getActiveZoneIds();
+        ? ids
+        : getActiveZoneIds();
     zoneButtons.forEach((btn) => {
       btn.setAttribute("aria-pressed", (btn === button).toString());
     });
@@ -3745,8 +3812,12 @@ function initAirConditionerControl() {
 
   function setControlsEnabled(enabled) {
     tempSlider.toggleAttribute("disabled", !enabled);
-    tempDecreaseButtons.forEach((btn) => btn.toggleAttribute("disabled", !enabled));
-    tempIncreaseButtons.forEach((btn) => btn.toggleAttribute("disabled", !enabled));
+    tempDecreaseButtons.forEach((btn) =>
+      btn.toggleAttribute("disabled", !enabled),
+    );
+    tempIncreaseButtons.forEach((btn) =>
+      btn.toggleAttribute("disabled", !enabled),
+    );
     aletaButtons.forEach((btn) => btn.toggleAttribute("disabled", !enabled));
   }
 
@@ -3831,7 +3902,7 @@ function initAirConditionerControl() {
       setAletaButtonsActive(desired);
       state.swing = desired;
       getActiveZoneIds().forEach((id) =>
-        sendHubitatCommand(id, acCommands.swingToggle)
+        sendHubitatCommand(id, acCommands.swingToggle),
       );
       return;
     }
@@ -4111,7 +4182,7 @@ async function brutalCacheClear() {
     try {
       const registrations = await navigator.serviceWorker.getRegistrations();
       await Promise.all(
-        registrations.map((registration) => registration.unregister())
+        registrations.map((registration) => registration.unregister()),
       );
     } catch (error) {
       console.warn("Erro ao remover service workers:", error);
@@ -4140,7 +4211,7 @@ async function brutalCacheClear() {
 
 window.brutalCacheClear = brutalCacheClear;
 const isProductionOriginal = !["localhost", "127.0.0.1", "::1"].includes(
-  location.hostname
+  location.hostname,
 );
 // TEMPORÃƒÂRIO: ForÃƒÂ§ar produÃƒÂ§ÃƒÂ£o para debug mobile
 const isProduction = true;
@@ -4150,14 +4221,14 @@ console.log("Ã°Å¸â€Â DEBUG PRODUÇÃO’O (FORÇADO):", {
   isProduction: isProduction,
   isMobile:
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
+      navigator.userAgent,
     ),
 });
 
 // Detectar dispositivos mÃƒÂ³veis
 const isMobile =
   /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent
+    navigator.userAgent,
   );
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
@@ -4177,13 +4248,13 @@ const APP_VERSION = "1.0.0"; // Ã°Å¸Å½â€° MARCO v1.0 - SISTEMA TOTALME
       // SÃƒÂ³ recarregar se versão realmente mudou (não por tempo)
       if (lastVersion && lastVersion !== APP_VERSION) {
         console.log(
-          "Ã°Å¸â€œÂ± Nova versão detectada - forÃƒÂ§ando reload cache"
+          "Ã°Å¸â€œÂ± Nova versão detectada - forÃƒÂ§ando reload cache",
         );
         console.log(
           "Ã°Å¸â€œÂ± Versão anterior:",
           lastVersion,
           "Nova:",
-          APP_VERSION
+          APP_VERSION,
         );
 
         // Marcar que jÃƒÂ¡ foi recarregado para esta versão
@@ -4213,9 +4284,7 @@ const APP_VERSION = "1.0.0"; // Ã°Å¸Å½â€° MARCO v1.0 - SISTEMA TOTALME
         // ForÃƒÂ§ar reload apenas se não foi feito ainda para esta versão
         if (!localStorage.getItem("reload_done_" + APP_VERSION)) {
           setTimeout(function () {
-            console.log(
-              "Ã°Å¸â€œÂ± Recarregando página para nova versão..."
-            );
+            console.log("Ã°Å¸â€œÂ± Recarregando página para nova versão...");
             window.location.reload(true);
           }, 2000);
           return; // não continuar inicialização
@@ -4227,10 +4296,7 @@ const APP_VERSION = "1.0.0"; // Ã°Å¸Å½â€° MARCO v1.0 - SISTEMA TOTALME
         console.log("Ã°Å¸â€œÂ± Mobile cache OK - versão", APP_VERSION);
       }
     } catch (e) {
-      console.warn(
-        "Ã°Å¸â€œÂ± Erro na verificaÃƒÂ§ÃƒÂ£o de versão mobile:",
-        e
-      );
+      console.warn("Ã°Å¸â€œÂ± Erro na verificaÃƒÂ§ÃƒÂ£o de versão mobile:", e);
     }
   }
 })();
@@ -4290,7 +4356,8 @@ function normalizeMakerApiDeviceIds(ids, fallback = "*") {
 
 // Hubitat Cloud (Maker API) configuration via config.js (com fallback seguro)
 const CLIENT_MAKER_API_CLOUD =
-  (typeof window !== "undefined" && window.CLIENT_CONFIG?.makerApi?.cloud) || {};
+  (typeof window !== "undefined" && window.CLIENT_CONFIG?.makerApi?.cloud) ||
+  {};
 const DEFAULT_MAKER_API_CLOUD = {
   enabled: true,
   appBaseUrl:
@@ -4310,7 +4377,7 @@ const HUBITAT_CLOUD_DEVICES_BASE_URL = HUBITAT_CLOUD_APP_BASE_URL
   : "";
 const HUBITAT_CLOUD_DEVICE_IDS = normalizeMakerApiDeviceIds(
   CLIENT_MAKER_API_CLOUD.deviceIds,
-  DEFAULT_MAKER_API_CLOUD.deviceIds
+  DEFAULT_MAKER_API_CLOUD.deviceIds,
 );
 
 function useHubitatCloud(deviceId) {
@@ -4322,7 +4389,9 @@ function useHubitatCloud(deviceId) {
 }
 
 function deriveSwitchStateFromCommand(command, value) {
-  const cmd = String(command || "").trim().toLowerCase();
+  const cmd = String(command || "")
+    .trim()
+    .toLowerCase();
   if (!cmd) return null;
 
   if (cmd === "on" || cmd === "poweron") return "on";
@@ -4340,17 +4409,19 @@ function deriveSwitchStateFromCommand(command, value) {
 
 const DEV_STATE_ONLY_MODE_STORAGE_KEY = "dashboard_dev_state_only_mode";
 const DEV_STATE_ONLY_MODE_DEFAULT = Boolean(
-  typeof window !== "undefined" && window.CLIENT_CONFIG?.development?.stateOnlyMode === true
+  typeof window !== "undefined" &&
+  window.CLIENT_CONFIG?.development?.stateOnlyMode === true,
 );
 const DEV_STATE_ONLY_ALLOW_PRODUCTION = Boolean(
   typeof window !== "undefined" &&
-    window.CLIENT_CONFIG?.development?.allowStateOnlyInProduction === true
+  window.CLIENT_CONFIG?.development?.allowStateOnlyInProduction === true,
 );
 
 function canUseStateOnlyDevMode() {
   if (typeof window === "undefined") return false;
   const host = String(window.location?.hostname || "").toLowerCase();
-  const isLocalHost = host === "localhost" || host === "127.0.0.1" || host === "::1";
+  const isLocalHost =
+    host === "localhost" || host === "127.0.0.1" || host === "::1";
   return isLocalHost || DEV_STATE_ONLY_ALLOW_PRODUCTION;
 }
 
@@ -4405,7 +4476,8 @@ const DEFAULT_MQTT_STATE_CONFIG = {
 };
 
 const CLIENT_MQTT_STATE_CONFIG =
-  (typeof window !== "undefined" && window.CLIENT_CONFIG?.development?.mqtt) || {};
+  (typeof window !== "undefined" && window.CLIENT_CONFIG?.development?.mqtt) ||
+  {};
 const MQTT_STATE_TOPIC_SUFFIX = "state";
 const MQTT_PAYLOAD_DECODER =
   typeof TextDecoder !== "undefined"
@@ -4439,16 +4511,18 @@ function normalizeMqttStateConfig() {
     username: String(merged.username || "").trim(),
     password: String(merged.password || ""),
     clientIdPrefix:
-      String(merged.clientIdPrefix || DEFAULT_MQTT_STATE_CONFIG.clientIdPrefix).trim() ||
-      DEFAULT_MQTT_STATE_CONFIG.clientIdPrefix,
+      String(
+        merged.clientIdPrefix || DEFAULT_MQTT_STATE_CONFIG.clientIdPrefix,
+      ).trim() || DEFAULT_MQTT_STATE_CONFIG.clientIdPrefix,
     stateTopicPrefix: normalizeTopicPath(
-      merged.stateTopicPrefix || DEFAULT_MQTT_STATE_CONFIG.stateTopicPrefix
+      merged.stateTopicPrefix || DEFAULT_MQTT_STATE_CONFIG.stateTopicPrefix,
     ),
     qos: qosRaw === 1 || qosRaw === 2 ? qosRaw : 0,
     retain: merged.retain !== false,
     libraryUrl:
-      String(merged.libraryUrl || DEFAULT_MQTT_STATE_CONFIG.libraryUrl).trim() ||
-      DEFAULT_MQTT_STATE_CONFIG.libraryUrl,
+      String(
+        merged.libraryUrl || DEFAULT_MQTT_STATE_CONFIG.libraryUrl,
+      ).trim() || DEFAULT_MQTT_STATE_CONFIG.libraryUrl,
   };
 }
 
@@ -4464,7 +4538,11 @@ function normalizeBooleanSwitchState(value) {
   if (normalized === "1" || normalized === "true" || normalized === "ligado") {
     return "on";
   }
-  if (normalized === "0" || normalized === "false" || normalized === "desligado") {
+  if (
+    normalized === "0" ||
+    normalized === "false" ||
+    normalized === "desligado"
+  ) {
     return "off";
   }
 
@@ -4531,7 +4609,10 @@ function decodeMqttPayload(payload) {
   }
 }
 
-function buildMqttStateTopic(deviceId, config = mqttStateConfigCache || normalizeMqttStateConfig()) {
+function buildMqttStateTopic(
+  deviceId,
+  config = mqttStateConfigCache || normalizeMqttStateConfig(),
+) {
   const id = String(deviceId || "").trim();
   if (!id) return "";
 
@@ -4543,7 +4624,9 @@ function buildMqttStateTopic(deviceId, config = mqttStateConfigCache || normaliz
   return `${prefix}/${encodedId}/${MQTT_STATE_TOPIC_SUFFIX}`;
 }
 
-function buildMqttStateSubscriptionTopic(config = mqttStateConfigCache || normalizeMqttStateConfig()) {
+function buildMqttStateSubscriptionTopic(
+  config = mqttStateConfigCache || normalizeMqttStateConfig(),
+) {
   const prefix = normalizeTopicPath(config?.stateTopicPrefix);
   if (!prefix) {
     return `+/${MQTT_STATE_TOPIC_SUFFIX}`;
@@ -4553,14 +4636,15 @@ function buildMqttStateSubscriptionTopic(config = mqttStateConfigCache || normal
 
 function extractDeviceIdFromMqttStateTopic(
   topic,
-  config = mqttStateConfigCache || normalizeMqttStateConfig()
+  config = mqttStateConfigCache || normalizeMqttStateConfig(),
 ) {
   const rawTopic = String(topic || "").trim();
   if (!rawTopic) return null;
 
   const topicParts = rawTopic.split("/").filter((part) => part.length > 0);
   if (topicParts.length < 2) return null;
-  if (topicParts[topicParts.length - 1] !== MQTT_STATE_TOPIC_SUFFIX) return null;
+  if (topicParts[topicParts.length - 1] !== MQTT_STATE_TOPIC_SUFFIX)
+    return null;
 
   const prefixParts = normalizeTopicPath(config?.stateTopicPrefix)
     .split("/")
@@ -4671,7 +4755,7 @@ function publishStoredStateToMqtt(deviceId, state, options = {}) {
         if (error) {
           console.warn(`MQTT publish falhou para ${topic}:`, error);
         }
-      }
+      },
     );
   } catch (error) {
     console.warn("Erro ao publicar estado no MQTT:", error);
@@ -4692,7 +4776,9 @@ async function initializeMqttStateBridge() {
     }
 
     if (!config.brokerUrl) {
-      console.warn("MQTT habilitado, mas development.mqtt.brokerUrl está vazio");
+      console.warn(
+        "MQTT habilitado, mas development.mqtt.brokerUrl está vazio",
+      );
       return { enabled: false, reason: "missing-broker-url" };
     }
 
@@ -4724,13 +4810,20 @@ async function initializeMqttStateBridge() {
     mqttStateClient.on("connect", () => {
       mqttStateConnected = true;
       const subscriptionTopic = buildMqttStateSubscriptionTopic(config);
-      mqttStateClient.subscribe(subscriptionTopic, { qos: config.qos }, (error) => {
-        if (error) {
-          console.error(`MQTT subscribe falhou (${subscriptionTopic}):`, error);
-          return;
-        }
-        console.log(`MQTT conectado e inscrito em ${subscriptionTopic}`);
-      });
+      mqttStateClient.subscribe(
+        subscriptionTopic,
+        { qos: config.qos },
+        (error) => {
+          if (error) {
+            console.error(
+              `MQTT subscribe falhou (${subscriptionTopic}):`,
+              error,
+            );
+            return;
+          }
+          console.log(`MQTT conectado e inscrito em ${subscriptionTopic}`);
+        },
+      );
     });
 
     mqttStateClient.on("message", (topic, payload) => {
@@ -4951,14 +5044,19 @@ async function loadAllDeviceStatesDirect(deviceIds) {
   const text = await response.text();
 
   if (!response.ok) {
-    throw new Error(`Polling proxy falhou: HTTP ${response.status} ${response.statusText}`);
+    throw new Error(
+      `Polling proxy falhou: HTTP ${response.status} ${response.statusText}`,
+    );
   }
 
   let data;
   try {
     data = JSON.parse(text);
   } catch (err) {
-    console.error("⚠️ [fallback-proxy] Resposta não é JSON:", text.slice(0, 300));
+    console.error(
+      "⚠️ [fallback-proxy] Resposta não é JSON:",
+      text.slice(0, 300),
+    );
     throw err;
   }
 
@@ -4976,13 +5074,13 @@ async function testHubitatConnection() {
     console.log("Ã°Å¸â€Â§ Status da resposta:", response.status);
     console.log(
       "Ã°Å¸â€Â§ Headers da resposta:",
-      Object.fromEntries(response.headers.entries())
+      Object.fromEntries(response.headers.entries()),
     );
 
     const responseText = await response.text();
     console.log(
       "Ã°Å¸â€Â§ ConteÃƒÂºdo da resposta:",
-      responseText.substring(0, 300)
+      responseText.substring(0, 300),
     );
 
     if (response.ok) {
@@ -5012,7 +5110,7 @@ function urlDeviceInfo(deviceId) {
 function urlSendCommand(deviceId, command, value) {
   // SEMPRE usar o proxy para evitar CORS e 404
   return `${HUBITAT_PROXY_URL}?device=${deviceId}&command=${encodeURIComponent(
-    command
+    command,
   )}${value !== undefined ? `&value=${encodeURIComponent(value)}` : ""}`;
 }
 
@@ -5021,7 +5119,7 @@ async function sendHubitatCommand(deviceId, command, value) {
     console.log(
       `📡 [sendHubitatCommand] Enviando comando: ${command} para dispositivo ${deviceId}${
         value !== undefined ? ` com valor ${value}` : ""
-      }`
+      }`,
     );
     const commandState = deriveSwitchStateFromCommand(command, value);
     const normalizedDeviceId = String(deviceId);
@@ -5038,7 +5136,7 @@ async function sendHubitatCommand(deviceId, command, value) {
         console.warn(
           `🧪 [DEV state-only] Comando simulado: ${command} -> dispositivo ${deviceId}${
             value !== undefined ? ` (valor ${value})` : ""
-          }`
+          }`,
         );
         return {
           ok: true,
@@ -5063,12 +5161,12 @@ async function sendHubitatCommand(deviceId, command, value) {
         {
           maxRetries: NETWORK_CONFIG.MAX_RETRY_ATTEMPTS,
           timeoutMs: NETWORK_CONFIG.FETCH_TIMEOUT_PER_ATTEMPT,
-        }
+        },
       );
 
       console.log(
         `📡 [sendHubitatCommand] Resposta (status ${response.status}):`,
-        String(text).substring(0, 200)
+        String(text).substring(0, 200),
       );
 
       if (commandState !== null) {
@@ -5119,17 +5217,21 @@ function getCurtainActionPlanFromElement(el, action) {
     if (!ids.length) return [];
 
     const directCommand =
-      el?.dataset?.cmd ||
-      el?.closest?.("[data-cmd]")?.dataset?.cmd ||
-      action;
+      el?.dataset?.cmd || el?.closest?.("[data-cmd]")?.dataset?.cmd || action;
 
     const directValue =
-      el?.dataset?.value ??
-      el?.closest?.("[data-value]")?.dataset?.value;
+      el?.dataset?.value ?? el?.closest?.("[data-value]")?.dataset?.value;
 
     return ids.map((id) => {
-      const payload = { id: String(id), command: String(directCommand || action) };
-      if (directValue !== undefined && directValue !== null && directValue !== "") {
+      const payload = {
+        id: String(id),
+        command: String(directCommand || action),
+      };
+      if (
+        directValue !== undefined &&
+        directValue !== null &&
+        directValue !== ""
+      ) {
         payload.value = directValue;
       }
       return payload;
@@ -5183,7 +5285,8 @@ function sendCurtainCommandBatch(actionPlan, action) {
   }
 
   const normalizedAction = String(action || "").toLowerCase();
-  const persistState = normalizedAction === "open" || normalizedAction === "close";
+  const persistState =
+    normalizedAction === "open" || normalizedAction === "close";
   const nextState = normalizedAction === "open" ? "open" : "closed";
 
   const commands = actionPlan.map((item) => {
@@ -5215,7 +5318,7 @@ function curtainAction(el, action) {
       console.log(
         `🪟 curtainAction em lote: action=${action}, dispositivos=${actionPlan
           .map((item) => item.id)
-          .join(",")}`
+          .join(",")}`,
       );
       return sendCurtainCommandBatch(actionPlan, action);
     }
@@ -5223,26 +5326,35 @@ function curtainAction(el, action) {
     const id =
       el?.dataset?.deviceId ||
       el.closest("[data-device-id]")?.dataset?.deviceId;
-    
-    console.log(`🪟 curtainAction chamada: action=${action}, id=${id}, el=`, el);
-    
+
+    console.log(
+      `🪟 curtainAction chamada: action=${action}, id=${id}, el=`,
+      el,
+    );
+
     if (!id) {
       console.error("🪟 ERRO: ID do dispositivo não encontrado!");
       return;
     }
-    
+
     // Suporte a comandos diretos push1, push2, push3, push4
-    if (action.startsWith('push')) {
+    if (action.startsWith("push")) {
       console.log(`🪟 Cortina (ID ${id}): enviando comando direto ${action}`);
       return sendHubitatCommand(id, action)
-        .then(result => {
-          console.log(`🪟 Comando ${action} enviado com sucesso para ID ${id}:`, result);
+        .then((result) => {
+          console.log(
+            `🪟 Comando ${action} enviado com sucesso para ID ${id}:`,
+            result,
+          );
         })
-        .catch(err => {
-          console.error(`🪟 ERRO ao enviar comando ${action} para ID ${id}:`, err);
+        .catch((err) => {
+          console.error(
+            `🪟 ERRO ao enviar comando ${action} para ID ${id}:`,
+            err,
+          );
         });
     }
-    
+
     const cmd = el?.dataset?.cmd;
     const value = el?.dataset?.value;
     return sendCurtainCommand(id, action, cmd, value);
@@ -5370,7 +5482,7 @@ function startPolling() {
   console.log(
     "Polling iniciado - intervalo base",
     POLLING_INTERVAL_BASE_MS / 1000,
-    "segundos"
+    "segundos",
   );
 }
 
@@ -5450,17 +5562,23 @@ async function updateDeviceStatesFromServer(options = {}) {
     let devicesMap;
 
     const trimmed = (rawText || "").trim();
-    const looksLikeHtml = trimmed.startsWith("<!DOCTYPE html") || trimmed.startsWith("<html");
+    const looksLikeHtml =
+      trimmed.startsWith("<!DOCTYPE html") || trimmed.startsWith("<html");
 
     if (looksLikeHtml) {
-      console.warn("⚠️ Polling retornou HTML (Cloudflare Functions falhando). Tentando fallback Maker API...");
+      console.warn(
+        "⚠️ Polling retornou HTML (Cloudflare Functions falhando). Tentando fallback Maker API...",
+      );
       const direct = await loadAllDeviceStatesDirect(pollingDeviceIds);
       devicesMap = direct.devices;
     } else {
       try {
         data = JSON.parse(rawText);
       } catch (err) {
-        console.warn("⚠️ Polling JSON parse falhou, tentando fallback Maker API...", err);
+        console.warn(
+          "⚠️ Polling JSON parse falhou, tentando fallback Maker API...",
+          err,
+        );
         const direct = await loadAllDeviceStatesDirect(pollingDeviceIds);
         devicesMap = direct.devices;
       }
@@ -5482,12 +5600,12 @@ async function updateDeviceStatesFromServer(options = {}) {
 
         if (Array.isArray(device.attributes)) {
           const switchAttr = device.attributes.find(
-            (attribute) => attribute.name === "switch"
+            (attribute) => attribute.name === "switch",
           );
           state = switchAttr?.currentValue || switchAttr?.value || "off";
 
           const levelAttr = device.attributes.find(
-            (attribute) => attribute.name === "level"
+            (attribute) => attribute.name === "level",
           );
           if (levelAttr) {
             level = levelAttr?.currentValue ?? levelAttr?.value ?? level;
@@ -5521,7 +5639,9 @@ async function updateDeviceStatesFromServer(options = {}) {
       debugLog(() => ["Polling response sem devices", data]);
       return;
     }
-    const activeDenonDeviceId = String(getDenonCommandDeviceIdForCurrentRoute());
+    const activeDenonDeviceId = String(
+      getDenonCommandDeviceIdForCurrentRoute(),
+    );
 
     Object.entries(devicesMap).forEach(([deviceId, deviceData]) => {
       if (!deviceData) {
@@ -5537,7 +5657,7 @@ async function updateDeviceStatesFromServer(options = {}) {
             nextLevel !== undefined &&
             clampDimmerValue(nextLevel, 0) > 0
             ? "on"
-            : "off"
+            : "off",
         );
 
         if (previousState !== nextState) {
@@ -5545,10 +5665,14 @@ async function updateDeviceStatesFromServer(options = {}) {
         }
 
         setStoredState(deviceId, nextState);
-        updateDeviceUI(deviceId, {
-          state: nextState,
-          level: nextLevel,
-        }, forceUpdate);
+        updateDeviceUI(
+          deviceId,
+          {
+            state: nextState,
+            level: nextLevel,
+          },
+          forceUpdate,
+        );
 
         if (
           String(deviceId) === activeDenonDeviceId &&
@@ -5589,7 +5713,7 @@ async function updateDeviceStatesFromServer(options = {}) {
         pollingFailureCount += 1;
         currentPollingInterval = Math.min(
           Math.round(currentPollingInterval * 1.5) || POLLING_INTERVAL_BASE_MS,
-          POLLING_INTERVAL_MAX_MS
+          POLLING_INTERVAL_MAX_MS,
         );
       } else if (hasStateChanges) {
         pollingFailureCount = 0;
@@ -5598,7 +5722,7 @@ async function updateDeviceStatesFromServer(options = {}) {
         pollingFailureCount = 0;
         currentPollingInterval = Math.min(
           currentPollingInterval + POLLING_INTERVAL_STEP_MS,
-          POLLING_INTERVAL_MAX_MS
+          POLLING_INTERVAL_MAX_MS,
         );
       }
 
@@ -5648,7 +5772,7 @@ function getControlElementsForDevice(deviceId) {
 
   const selectorId = escapeDeviceIdForSelector(deviceKey);
   const discovered = Array.from(
-    document.querySelectorAll(`[data-device-id="${selectorId}"]`)
+    document.querySelectorAll(`[data-device-id="${selectorId}"]`),
   );
 
   if (discovered.length > 0) {
@@ -5662,7 +5786,7 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
   // Verificar se o DOM está pronto
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () =>
-      updateDeviceUI(deviceId, stateOrData, forceUpdate)
+      updateDeviceUI(deviceId, stateOrData, forceUpdate),
     );
     return;
   }
@@ -5675,10 +5799,10 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
       stateOrData.state !== undefined
         ? stateOrData.state
         : stateOrData.switch !== undefined
-        ? stateOrData.switch
-        : stateOrData.value !== undefined
-        ? stateOrData.value
-        : stateOrData;
+          ? stateOrData.switch
+          : stateOrData.value !== undefined
+            ? stateOrData.value
+            : stateOrData;
 
     if (stateOrData.level !== undefined) {
       level = clampDimmerValue(stateOrData.level, stateOrData.level);
@@ -5689,7 +5813,7 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
     state,
     level !== null && level !== undefined && clampDimmerValue(level, 0) > 0
       ? "on"
-      : "off"
+      : "off",
   );
   const normalizedDeviceId = String(deviceId);
 
@@ -5703,7 +5827,7 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
   }
 
   const previousStoredState = normalizeSwitchState(
-    getStoredState(normalizedDeviceId)
+    getStoredState(normalizedDeviceId),
   );
   if (previousStoredState !== normalizedState) {
     setStoredState(normalizedDeviceId, normalizedState);
@@ -5774,7 +5898,7 @@ function updateDeviceUI(deviceId, stateOrData, forceUpdate = false) {
   }
 }
 
-// === BotÃ£o de luz (home card) ===
+// === botão de luz (home card) ===
 function getHomeQuickAction(route, type) {
   if (!route || typeof getEnvironment !== "function") return null;
   const env = getEnvironment(route);
@@ -5784,7 +5908,7 @@ function getHomeQuickAction(route, type) {
   return (
     actions.find(
       (action) =>
-        String(action?.type || "").toLowerCase() === String(type).toLowerCase()
+        String(action?.type || "").toLowerCase() === String(type).toLowerCase(),
     ) || null
   );
 }
@@ -5799,24 +5923,23 @@ function normalizeQuickActionDevices(action) {
       device.valueOn !== undefined
         ? device.valueOn
         : device.level !== undefined
-        ? device.level
-        : device.defaultLevel !== undefined
-        ? device.defaultLevel
-        : null,
+          ? device.level
+          : device.defaultLevel !== undefined
+            ? device.defaultLevel
+            : null,
   }));
 }
 
 function anyQuickActionOn(devices) {
   return (devices || []).some(
-    (device) => (getStoredState(device.id) || "off") === "on"
+    (device) => (getStoredState(device.id) || "off") === "on",
   );
 }
 
 function setHomeLightButtonIcon(button, state) {
   const iconOn =
     button.dataset.iconOn ||
-    (typeof getUiToggleIcon === "function" &&
-      getUiToggleIcon("light", "on")) ||
+    (typeof getUiToggleIcon === "function" && getUiToggleIcon("light", "on")) ||
     "images/icons/icon-small-light-on.svg";
   const iconOff =
     button.dataset.iconOff ||
@@ -5921,7 +6044,7 @@ async function onHomeMasterClick(event, button) {
     updateDeviceUI(deviceId, rollbackState, true);
     console.warn(
       `⚠️Master lights: falha ao enviar comandos para ${deviceId} após retries`,
-      lastError
+      lastError,
     );
     return { ok: false, deviceId };
   };
@@ -5949,9 +6072,10 @@ async function onHomeMasterClick(event, button) {
 
   if (typeof updateDeviceStatesFromServer === "function") {
     setTimeout(() => {
-      updateDeviceStatesFromServer({ skipSchedule: true, forceUpdate: true }).catch(
-        () => {}
-      );
+      updateDeviceStatesFromServer({
+        skipSchedule: true,
+        forceUpdate: true,
+      }).catch(() => {});
     }, 250);
   }
 }
@@ -6052,7 +6176,7 @@ function onHomeCurtainMasterClick(event, button) {
   // Verificar se jÃƒÂ¡ está carregando
   if (button.dataset.loading === "true") {
     console.log(
-      "Ã¢ÂÂ¸Ã¯Â¸Â BotÃƒÂ£o de cortina jÃƒÂ¡ está carregando, ignorando clique"
+      "Ã¢ÂÂ¸Ã¯Â¸Â BotÃƒÂ£o de cortina jÃƒÂ¡ está carregando, ignorando clique",
     );
     return;
   }
@@ -6072,7 +6196,7 @@ function onHomeCurtainMasterClick(event, button) {
   // Determinar comando baseado no estado atual das cortinas
   console.log(
     "Ã°Å¸â€Â Verificando estados individuais das cortinas:",
-    curtainIds.map((id) => ({ id, state: getCurtainState(id) }))
+    curtainIds.map((id) => ({ id, state: getCurtainState(id) })),
   );
   const currentState = anyCurtainOpen(curtainIds) ? "open" : "closed";
   const newCommand = currentState === "open" ? "close" : "open";
@@ -6080,7 +6204,7 @@ function onHomeCurtainMasterClick(event, button) {
     "Ã°Å¸Å½Â¯ Comando de cortina determinado:",
     currentState,
     "Ã¢â€ â€™",
-    newCommand
+    newCommand,
   );
 
   // Atualizar UI imediatamente (antes do loading)
@@ -6197,14 +6321,14 @@ function hideLoader() {
       const failSafeMs = 6000;
       const failSafeTimeout = setTimeout(() => {
         console.warn(
-          `⚠️Preload demorou mais que ${failSafeMs}ms; escondendo loader mesmo assim.`
+          `⚠️Preload demorou mais que ${failSafeMs}ms; escondendo loader mesmo assim.`,
         );
         finalizeHide();
       }, failSafeMs);
 
       pending
         .catch((error) =>
-          console.warn("Falha ao pré-carregar todos os assets", error)
+          console.warn("Falha ao pré-carregar todos os assets", error),
         )
         .finally(() => {
           clearTimeout(failSafeTimeout);
@@ -6266,7 +6390,7 @@ function startHomeAnimation() {
       if (checkElements() || attempts > 10) {
         clearInterval(waitForElements);
         if (checkElements()) {
-          console.log("🎬 Elementos encontrados após " + (attempts * 50) + "ms");
+          console.log("🎬 Elementos encontrados após " + attempts * 50 + "ms");
           executeOrchestratedAnimation(loader);
         } else {
           console.warn("⚠️ Elementos da home não encontrados, usando fallback");
@@ -6309,14 +6433,14 @@ function executeOrchestratedAnimation(loader) {
     topBar: !!topBar,
     roomCards: roomCards.length,
     navbar: !!navbar,
-    pageTitle: !!pageTitle
+    pageTitle: !!pageTitle,
   });
 
   // ===== FASE 0: Preparação (0ms) =====
   // Ativar modo de animação orquestrada (desativa transições automáticas via CSS)
   document.body.classList.add("orchestrated-animation");
   document.body.classList.remove("reveal-home");
-  
+
   // Preparar elementos da home (somente via CSS: opacity 0 durante orchestrated-animation)
   // Não aplicar transforms/staggers: queremos apenas um fade rápido.
 
@@ -6327,7 +6451,7 @@ function executeOrchestratedAnimation(loader) {
   if (pageTitle) {
     pageTitle.style.opacity = "0";
   }
-  
+
   // Esconder logo do header (será substituído pelo logo do loader)
   if (headerLogo) headerLogo.style.opacity = "0";
 
@@ -6341,14 +6465,14 @@ function executeOrchestratedAnimation(loader) {
   setTimeout(() => {
     if (loaderLogo && loaderLogoBtnImg) {
       loaderLogo.classList.add("transitioning");
-      
+
       // Calcular posição do header onde o logo deve ir
       const loaderRect = loaderLogoBtnImg.getBoundingClientRect();
-      
+
       // Posição inicial (centro da tela)
       const startX = loaderRect.left;
       const startY = loaderRect.top;
-      
+
       // Posição final - calcular baseado na posição real do header
       // O .page-title.fixed-header tem: top: 87px; transform: translate(-50%, -100%)
       // Isso significa que o BOTTOM do header fica em 87px
@@ -6356,20 +6480,21 @@ function executeOrchestratedAnimation(loader) {
       // Posição do topo do logo: 87px - 72px + (72-64)/2 = 87 - 72 + 4 = 19px
       const endX = (window.innerWidth - loaderRect.width) / 2;
       const endY = 19; // Topo do logo fica em ~19px
-      
+
       console.log("🎬 Logo movimento:", { startX, startY, endX, endY });
-      
+
       // Definir posição inicial fixa
       loaderLogo.style.left = startX + "px";
       loaderLogo.style.top = startY + "px";
       loaderLogo.style.position = "fixed";
       loaderLogo.style.margin = "0";
       loaderLogo.style.zIndex = "10001";
-      loaderLogo.style.transition = "left 1s cubic-bezier(0.4, 0, 0.2, 1), top 1s cubic-bezier(0.4, 0, 0.2, 1)";
-      
+      loaderLogo.style.transition =
+        "left 1s cubic-bezier(0.4, 0, 0.2, 1), top 1s cubic-bezier(0.4, 0, 0.2, 1)";
+
       // Forçar reflow
       void loaderLogo.offsetWidth;
-      
+
       // Iniciar movimento (sem scale - logo já tem tamanho correto 64px)
       loaderLogo.style.left = endX + "px";
       loaderLogo.style.top = endY + "px";
@@ -6387,11 +6512,11 @@ function executeOrchestratedAnimation(loader) {
   // ===== FASE 3: Logo chega ao header, elementos começam a aparecer (1000ms) =====
   setTimeout(() => {
     console.log("🎬 Logo chegou ao header, iniciando fade dos elementos");
-    
+
     // Manter logo do loader visível (ele é o logo final!)
     // Esconder o logo do header (será substituído pelo do loader)
     if (headerLogo) headerLogo.style.visibility = "hidden";
-    
+
     // Mostrar pageTitle mas sem o logo interno (o logo do loader está no lugar)
     if (pageTitle) {
       pageTitle.style.transition = "opacity 0.3s ease";
@@ -6428,14 +6553,14 @@ function executeOrchestratedAnimation(loader) {
       headerLogo.style.visibility = "visible";
       headerLogo.style.opacity = "1";
     }
-    
+
     // Agora esconder o loader (incluindo o logo do loader)
     loader.style.display = "none";
     loader.classList.add("hidden");
-    
+
     // NÃO limpar opacity/transform dos elementos - eles devem permanecer visíveis!
     // Apenas limpar as transições inline
-    roomCards.forEach(card => {
+    roomCards.forEach((card) => {
       card.style.transition = "";
       // Manter opacity e transform para elementos ficarem visíveis
     });
@@ -6448,7 +6573,7 @@ function executeOrchestratedAnimation(loader) {
     if (pageTitle) {
       pageTitle.style.transition = "";
     }
-    
+
     // Limpar estilos do loader
     loader.style.background = "";
     loader.style.transition = "";
@@ -6462,11 +6587,11 @@ function executeOrchestratedAnimation(loader) {
       loaderLine.classList.remove("expanding");
       loaderLine.style.opacity = "";
     }
-    
+
     // Remover modo de animação orquestrada MAS manter elementos visíveis
     // Os estilos inline de opacity:1 e transform:translateY(0) permanecem
     document.body.classList.remove("orchestrated-animation");
-    
+
     console.log("✅ Animação orquestrada concluída!");
   }, 3500);
 }
@@ -6481,8 +6606,6 @@ function ensureTopBarVisible() {
   topBar.style.opacity = "1";
   topBar.style.transform = "scaleX(1)";
 }
-
-
 
 function updateProgress(percentage, text) {
   try {
@@ -6504,7 +6627,7 @@ function updateProgress(percentage, text) {
 
     // Log para debug mobile
     console.log(
-      `Ã°Å¸â€œÅ  Progresso: ${percentage}% - ${text || "Carregando..."}`
+      `Ã°Å¸â€œÅ  Progresso: ${percentage}% - ${text || "Carregando..."}`,
     );
   } catch (error) {
     console.warn("Ã¢Å¡Â Ã¯Â¸Â Erro ao atualizar progresso:", error);
@@ -6518,7 +6641,7 @@ async function loadAllDeviceStatesGlobally() {
     "Ã°Å¸Å’Â ALL_LIGHT_IDS disponível:",
     !!ALL_LIGHT_IDS,
     "Length:",
-    ALL_LIGHT_IDS ? ALL_LIGHT_IDS.length : "undefined"
+    ALL_LIGHT_IDS ? ALL_LIGHT_IDS.length : "undefined",
   );
   console.log("Ã°Å¸Å’Â DEBUG CARREGAMENTO:", {
     isProduction: isProduction,
@@ -6531,7 +6654,9 @@ async function loadAllDeviceStatesGlobally() {
   console.log("Ã°Å¸Å’Â Carregamento universal (desktop e mobile idênticos)");
 
   if (isStateOnlyDevMode()) {
-    console.warn("🧪 [DEV state-only] Carregando estados apenas do storage local");
+    console.warn(
+      "🧪 [DEV state-only] Carregando estados apenas do storage local",
+    );
     updateProgress(20, "Modo DEV local ativo...");
 
     let loadedCount = 0;
@@ -6543,12 +6668,12 @@ async function loadAllDeviceStatesGlobally() {
       const progress = 20 + ((index + 1) / ALL_LIGHT_IDS.length) * 80;
       updateProgress(
         progress,
-        `Dispositivo ${index + 1}/${ALL_LIGHT_IDS.length}...`
+        `Dispositivo ${index + 1}/${ALL_LIGHT_IDS.length}...`,
       );
     });
 
     console.log(
-      `🧪 [DEV state-only] Estados carregados localmente: ${loadedCount}/${ALL_LIGHT_IDS.length}`
+      `🧪 [DEV state-only] Estados carregados localmente: ${loadedCount}/${ALL_LIGHT_IDS.length}`,
     );
     updateProgress(100, "Modo DEV local pronto!");
     return true;
@@ -6556,7 +6681,7 @@ async function loadAllDeviceStatesGlobally() {
 
   if (!isProduction) {
     console.log(
-      "Ã°Å¸â€™Â» MODO DESENVOLVIMENTO ATIVO - carregando do localStorage"
+      "Ã°Å¸â€™Â» MODO DESENVOLVIMENTO ATIVO - carregando do localStorage",
     );
     console.log("Ã°Å¸â€™Â» ISSO PODE SER O PROBLEMA NO MOBILE!");
     console.log("Ã°Å¸â€œâ€¹ Dispositivos a carregar:", ALL_LIGHT_IDS.length);
@@ -6584,12 +6709,12 @@ async function loadAllDeviceStatesGlobally() {
       const progress = 20 + ((index + 1) / ALL_LIGHT_IDS.length) * 80;
       updateProgress(
         progress,
-        `Dispositivo ${index + 1}/${ALL_LIGHT_IDS.length}...`
+        `Dispositivo ${index + 1}/${ALL_LIGHT_IDS.length}...`,
       );
     });
 
     console.log(
-      `Ã¢Å“â€¦ Carregamento completo: ${loadedCount}/${ALL_LIGHT_IDS.length} dispositivos`
+      `Ã¢Å“â€¦ Carregamento completo: ${loadedCount}/${ALL_LIGHT_IDS.length} dispositivos`,
     );
     updateProgress(100, "Carregamento Concluído!");
     return true;
@@ -6604,7 +6729,7 @@ async function loadAllDeviceStatesGlobally() {
       const healthController = new AbortController();
       const healthTimeout = setTimeout(
         () => healthController.abort(),
-        NETWORK_CONFIG.HEALTH_CHECK_TIMEOUT
+        NETWORK_CONFIG.HEALTH_CHECK_TIMEOUT,
       );
 
       const healthCheck = await fetch(POLLING_URL + "?health=1", {
@@ -6618,7 +6743,7 @@ async function loadAllDeviceStatesGlobally() {
     } catch (healthError) {
       console.warn(
         "Ã¢Å¡Â Ã¯Â¸Â Health check falhou, continuando mesmo assim:",
-        healthError.message
+        healthError.message,
       );
     }
 
@@ -6626,12 +6751,9 @@ async function loadAllDeviceStatesGlobally() {
 
     const deviceIds = ALL_LIGHT_IDS.join(",");
     console.log(
-      `Ã°Å¸â€œÂ¡ Buscando estados de ${ALL_LIGHT_IDS.length} dispositivos no servidor...`
+      `Ã°Å¸â€œÂ¡ Buscando estados de ${ALL_LIGHT_IDS.length} dispositivos no servidor...`,
     );
-    console.log(
-      "Ã°Å¸â€œÂ¡ URL será:",
-      `${POLLING_URL}?devices=${deviceIds}`
-    );
+    console.log("Ã°Å¸â€œÂ¡ URL será:", `${POLLING_URL}?devices=${deviceIds}`);
 
     updateProgress(30, "Enviando solicitação...");
 
@@ -6639,16 +6761,16 @@ async function loadAllDeviceStatesGlobally() {
     const fetchWithRetry = async (
       url,
       options,
-      maxRetries = NETWORK_CONFIG.MAX_RETRY_ATTEMPTS
+      maxRetries = NETWORK_CONFIG.MAX_RETRY_ATTEMPTS,
     ) => {
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
           console.log(
-            `Ã°Å¸â€œÂ¡ Tentativa ${attempt}/${maxRetries} para ${url}`
+            `Ã°Å¸â€œÂ¡ Tentativa ${attempt}/${maxRetries} para ${url}`,
           );
           updateProgress(
             30 + (attempt - 1) * 5,
-            `Tentativa ${attempt}/${maxRetries}...`
+            `Tentativa ${attempt}/${maxRetries}...`,
           );
 
           // Configurar timeout por tentativa
@@ -6661,7 +6783,7 @@ async function loadAllDeviceStatesGlobally() {
               console.warn(
                 `Ã¢ÂÂ° Timeout de ${
                   timeout / 1000
-                }s atingido na tentativa ${attempt}`
+                }s atingido na tentativa ${attempt}`,
               );
               controller.abort();
             }, timeout);
@@ -6672,7 +6794,7 @@ async function loadAllDeviceStatesGlobally() {
           if (timeoutId) clearTimeout(timeoutId);
 
           console.log(
-            `Ã°Å¸â€œÂ¡ Tentativa ${attempt} - Status: ${response.status}`
+            `Ã°Å¸â€œÂ¡ Tentativa ${attempt} - Status: ${response.status}`,
           );
 
           if (!response.ok) {
@@ -6685,21 +6807,21 @@ async function loadAllDeviceStatesGlobally() {
 
           if (attempt === maxRetries) {
             throw new Error(
-              `Falha apÃƒÂ³s ${maxRetries} tentativas: ${error.message}`
+              `Falha apÃƒÂ³s ${maxRetries} tentativas: ${error.message}`,
             );
           }
 
           // Aguardar antes do retry (backoff exponencial)
           const delay = Math.min(
             NETWORK_CONFIG.RETRY_DELAY_BASE * Math.pow(2, attempt - 1),
-            NETWORK_CONFIG.RETRY_DELAY_MAX
+            NETWORK_CONFIG.RETRY_DELAY_MAX,
           );
           console.log(
-            `Ã¢ÂÂ³ Aguardando ${delay}ms antes da prÃƒÂ³xima tentativa...`
+            `Ã¢ÂÂ³ Aguardando ${delay}ms antes da prÃƒÂ³xima tentativa...`,
           );
           updateProgress(
             30 + attempt * 5,
-            `Reagendando em ${delay / 1000}s...`
+            `Reagendando em ${delay / 1000}s...`,
           );
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
@@ -6734,7 +6856,7 @@ async function loadAllDeviceStatesGlobally() {
       responseText = await response.text();
       console.log(
         "Ã°Å¸â€œÂ¡ Resposta recebida (texto):",
-        responseText.substring(0, 500)
+        responseText.substring(0, 500),
       ); // Primeiros 500 chars
 
       if (!responseText) {
@@ -6747,18 +6869,18 @@ async function loadAllDeviceStatesGlobally() {
         responseText.trim().startsWith("<html")
       ) {
         console.error(
-          "⚠️CRÃƒÂTICO: Cloudflare Functions não estÃƒÂ£o funcionando!"
+          "⚠️CRÃƒÂTICO: Cloudflare Functions não estÃƒÂ£o funcionando!",
         );
         console.error(
-          "⚠️O servidor está retornando HTML em vez de executar as Functions."
+          "⚠️O servidor está retornando HTML em vez de executar as Functions.",
         );
         console.error(
-          "⚠️Implementando fallback automÃƒÂ¡tico para API direta do Hubitat..."
+          "⚠️Implementando fallback automÃƒÂ¡tico para API direta do Hubitat...",
         );
 
         // FALLBACK AUTOMÃƒÂTICO: Usar API direta do Hubitat
         console.log(
-          "Ã°Å¸â€â€ž Tentando API direta do Hubitat como fallback..."
+          "Ã°Å¸â€â€ž Tentando API direta do Hubitat como fallback...",
         );
         updateProgress(60, "Usando API direta como fallback...");
 
@@ -6778,18 +6900,16 @@ async function loadAllDeviceStatesGlobally() {
                   deviceData.level !== undefined &&
                   clampDimmerValue(deviceData.level, 0) > 0
                   ? "on"
-                  : "off"
+                  : "off",
               );
               setStoredState(deviceId, normalized);
               updateDeviceUI(deviceId, normalized, true);
-              console.log(
-                `Ã¢Å“â€¦ Device ${deviceId}: ${normalized} (direto)`
-              );
+              console.log(`Ã¢Å“â€¦ Device ${deviceId}: ${normalized} (direto)`);
             } else {
               const storedState = getStoredState(deviceId) || "off";
               updateDeviceUI(deviceId, storedState, true);
               console.log(
-                `Ã¢Å¡Â Ã¯Â¸Â Device ${deviceId}: usando estado salvo "${storedState}"`
+                `Ã¢Å¡Â Ã¯Â¸Â Device ${deviceId}: usando estado salvo "${storedState}"`,
               );
             }
 
@@ -6797,22 +6917,20 @@ async function loadAllDeviceStatesGlobally() {
             const progress = 60 + (processedCount / deviceEntries.length) * 35;
             updateProgress(
               progress,
-              `Processando ${processedCount}/${deviceEntries.length}...`
+              `Processando ${processedCount}/${deviceEntries.length}...`,
             );
           });
 
           updateProgress(100, "Carregamento via API direta Concluído!");
 
-          console.log(
-            "Ã¢Å“â€¦ Fallback automÃƒÂ¡tico Concluído com sucesso"
-          );
+          console.log("Ã¢Å“â€¦ Fallback automÃƒÂ¡tico Concluído com sucesso");
           return true;
         } catch (fallbackError) {
           console.error("⚠️Fallback também falhou:", fallbackError);
 
           // ÃƒÅ¡ltimo recurso: usar estados salvos
           console.log(
-            "Ã°Å¸â€œÂ¦ Usando estados salvos como ÃƒÂºltimo recurso..."
+            "Ã°Å¸â€œÂ¦ Usando estados salvos como ÃƒÂºltimo recurso...",
           );
           ALL_LIGHT_IDS.forEach((deviceId) => {
             const storedState = getStoredState(deviceId) || "off";
@@ -6820,7 +6938,7 @@ async function loadAllDeviceStatesGlobally() {
           });
 
           throw new Error(
-            "Functions não funcionam e API direta também falhou - usando estados salvos"
+            "Functions não funcionam e API direta também falhou - usando estados salvos",
           );
         }
       }
@@ -6832,7 +6950,7 @@ async function loadAllDeviceStatesGlobally() {
       console.error("⚠️Erro ao parsear JSON:", jsonError);
       console.error(
         "⚠️ConteÃƒÂºdo da resposta que falhou:",
-        responseText?.substring(0, 200)
+        responseText?.substring(0, 200),
       );
       throw new Error(`Resposta invÃƒÂ¡lida do servidor: ${jsonError.message}`);
     }
@@ -6847,7 +6965,7 @@ async function loadAllDeviceStatesGlobally() {
           console.log(
             "Ã°Å¸â€â€ž Normalizando",
             data.data.length,
-            "dispositivos do formato novo..."
+            "dispositivos do formato novo...",
           );
           const mapped = {};
           data.data.forEach((d, index) => {
@@ -6877,7 +6995,7 @@ async function loadAllDeviceStatesGlobally() {
                 console.log(`Ã°Å¸â€œâ€¹ Device ${d.id}: switch=${state}`);
               } else {
                 console.log(
-                  `Ã°Å¸â€Ëœ Device ${d.id}: não é lÃƒÂ¢mpada (sem atributo 'switch'), pulando...`
+                  `Ã°Å¸â€Ëœ Device ${d.id}: não é lÃƒÂ¢mpada (sem atributo 'switch'), pulando...`,
                 );
                 return; // Pular dispositivos sem switch (botÃƒÂµes, sensores, etc.)
               }
@@ -6888,7 +7006,7 @@ async function loadAllDeviceStatesGlobally() {
             } else {
               console.warn(
                 `Ã¢Å¡Â Ã¯Â¸Â Device ${d.id}: attributes invÃƒÂ¡lido:`,
-                d.attributes
+                d.attributes,
               );
             }
 
@@ -6898,12 +7016,12 @@ async function loadAllDeviceStatesGlobally() {
           console.log(
             "Ã°Å¸â€â€ž Resposta normalizada para formato devices (",
             Object.keys(mapped).length,
-            "dispositivos )"
+            "dispositivos )",
           );
           console.log("Ã°Å¸â€Â Estados finais mapeados:", mapped);
         } else {
           throw new Error(
-            "Formato de resposta inesperado: falta campo devices e data[]"
+            "Formato de resposta inesperado: falta campo devices e data[]",
           );
         }
       } catch (normError) {
@@ -6929,13 +7047,13 @@ async function loadAllDeviceStatesGlobally() {
             deviceData.level !== undefined &&
             clampDimmerValue(deviceData.level, 0) > 0
             ? "on"
-            : "off"
+            : "off",
         );
         setStoredState(deviceId, normalized);
         updateDeviceUI(
           deviceId,
           { state: normalized, level: deviceData.level },
-          true
+          true,
         ); // forceUpdate = true
       } else {
         console.warn(`Falha no device ${deviceId}:`, deviceData.error);
@@ -6947,7 +7065,7 @@ async function loadAllDeviceStatesGlobally() {
       const progress = 70 + (processedCount / deviceEntries.length) * 25;
       updateProgress(
         progress,
-        `Aplicando estado ${processedCount}/${deviceEntries.length}...`
+        `Aplicando estado ${processedCount}/${deviceEntries.length}...`,
       );
     }
 
@@ -7011,7 +7129,7 @@ async function loadAllDeviceStatesGlobally() {
       const connectionTest = await testHubitatConnection();
       if (!connectionTest) {
         showErrorMessage(
-          "Falha na Conexão com Hubitat. Verifique se as Configurações foram alteradas no painel do Cloudflare."
+          "Falha na Conexão com Hubitat. Verifique se as Configurações foram alteradas no painel do Cloudflare.",
         );
       }
     } catch (diagError) {
@@ -7023,13 +7141,13 @@ async function loadAllDeviceStatesGlobally() {
       console.warn("Ã¢ÂÂ±Ã¯Â¸Â Timeout apÃƒÂ³s mÃƒÂºltiplas tentativas");
       updateProgress(60, "Timeout - usando backup...");
       showErrorMessage(
-        "Timeout na Conexão. Verifique sua internet e tente novamente."
+        "Timeout na Conexão. Verifique sua internet e tente novamente.",
       );
     } else if (error.message.includes("Falha apÃƒÂ³s")) {
       console.warn("Ã°Å¸â€â€ž MÃƒÂºltiplas tentativas falharam");
       updateProgress(60, "Falhas mÃƒÂºltiplas - modo backup...");
       showErrorMessage(
-        "Servidor temporariamente indisponível. Usando dados salvos."
+        "Servidor temporariamente indisponível. Usando dados salvos.",
       );
     } else if (error.name === "TypeError" && error.message.includes("fetch")) {
       console.warn("Ã°Å¸Å’Â Problema de conectividade de rede");
@@ -7039,7 +7157,7 @@ async function loadAllDeviceStatesGlobally() {
       console.warn("Ã°Å¸â€Â¥ Erro no servidor (5xx)");
       updateProgress(60, "Erro servidor - backup...");
       showErrorMessage(
-        "Problema no servidor. Usando ÃƒÂºltimos dados conhecidos."
+        "Problema no servidor. Usando ÃƒÂºltimos dados conhecidos.",
       );
     } else {
       console.warn("⚠️Erro desconhecido no carregamento:", error.message);
@@ -7055,7 +7173,7 @@ async function loadAllDeviceStatesGlobally() {
       const progress = 60 + ((index + 1) / ALL_LIGHT_IDS.length) * 35;
       updateProgress(
         progress,
-        `Carregando backup ${index + 1}/${ALL_LIGHT_IDS.length}...`
+        `Carregando backup ${index + 1}/${ALL_LIGHT_IDS.length}...`,
       );
     });
 
@@ -7126,7 +7244,7 @@ function updateScrollFade(container) {
     container.classList.remove(
       "scroll-fade-active",
       "scroll-fade-start",
-      "scroll-fade-end"
+      "scroll-fade-end",
     );
     return;
   }
@@ -7138,7 +7256,11 @@ function updateScrollFade(container) {
 }
 
 function registerScrollFade(container) {
-  if (!container || !container.classList || scrollFadeContainers.has(container)) {
+  if (
+    !container ||
+    !container.classList ||
+    scrollFadeContainers.has(container)
+  ) {
     return;
   }
   scrollFadeContainers.add(container);
@@ -7189,7 +7311,7 @@ function setupDomObserver() {
 
   if (typeof MutationObserver === "undefined") {
     console.warn(
-      "MutationObserver indisponivel - usando fallback de sincronizacao periodica"
+      "MutationObserver indisponivel - usando fallback de sincronizacao periodica",
     );
     if (fallbackSyncTimer) {
       clearInterval(fallbackSyncTimer);
@@ -7330,7 +7452,8 @@ window.debugEletrize = {
   },
   mqttStatus: () => {
     console.log("MQTT status:", {
-      enabled: mqttStateConfigCache?.enabled ?? normalizeMqttStateConfig().enabled,
+      enabled:
+        mqttStateConfigCache?.enabled ?? normalizeMqttStateConfig().enabled,
       connected: mqttStateConnected,
       brokerUrl: mqttStateConfigCache?.brokerUrl || null,
       stateTopicPrefix: mqttStateConfigCache?.stateTopicPrefix || null,
@@ -7363,7 +7486,7 @@ window.debugEletrize = {
       const remaining = Math.max(0, COMMAND_PROTECTION_MS - (now - timestamp));
       const status = remaining > 0 ? "Ã°Å¸â€â€™ ATIVO" : "Ã°Å¸â€â€œ EXPIRADO";
       console.log(
-        `  ${status} ${deviceId}: ${Math.ceil(remaining / 1000)}s restantes`
+        `  ${status} ${deviceId}: ${Math.ceil(remaining / 1000)}s restantes`,
       );
     });
   },
@@ -7377,7 +7500,7 @@ window.debugEletrize = {
     try {
       console.log(
         "  ÃƒÅ¡ltima carga:",
-        new Date(parseInt(localStorage.getItem("last_mobile_load") || "0"))
+        new Date(parseInt(localStorage.getItem("last_mobile_load") || "0")),
       );
       console.log("  Versão cache:", localStorage.getItem("app_version"));
     } catch (e) {
@@ -7433,7 +7556,7 @@ window.debugEletrize = {
       "  Connection:",
       navigator.connection
         ? `${navigator.connection.effectiveType} (${navigator.connection.downlink}Mbps)`
-        : "não disponível"
+        : "não disponível",
     );
     checkMobileCompatibility();
   },
@@ -7466,7 +7589,10 @@ window.debugEletrize = {
 
 // Função para atualizar metadados do Denon
 function updateDenonMetadata() {
-  console.log("🎵 [updateDenonMetadata] INICIANDO - Hash atual:", window.location.hash);
+  console.log(
+    "🎵 [updateDenonMetadata] INICIANDO - Hash atual:",
+    window.location.hash,
+  );
 
   // Pedir ao Cloudflare function para retornar o JSON completo do Hubitat
   // (a function usa a variÃƒÂ¡vel HUBITAT_FULL_URL do ambiente quando configurada)
@@ -7489,10 +7615,11 @@ function updateDenonMetadata() {
     .then((data) => {
       console.log("Ã°Å¸Å½Âµ Resposta completa do Hubitat:", data);
 
-      const currentEnvKey = getEnvironmentKeyFromRouteHash(window.location.hash);
-      const denonMetadataDeviceId = getDenonMetadataDeviceIdForEnv(
-        currentEnvKey,
+      const currentEnvKey = getEnvironmentKeyFromRouteHash(
+        window.location.hash,
       );
+      const denonMetadataDeviceId =
+        getDenonMetadataDeviceIdForEnv(currentEnvKey);
 
       // Procurar o device de metadados da música atual nos dados
       // O formato pode ser um array direto ou um objeto com propriedade devices
@@ -7500,7 +7627,7 @@ function updateDenonMetadata() {
       let denonDevice = devices.find(
         (device) =>
           String(device.id) === denonMetadataDeviceId ||
-          device.id === parseInt(denonMetadataDeviceId, 10)
+          device.id === parseInt(denonMetadataDeviceId, 10),
       );
       // Fallback: procurar por dispositivos cujo nome/label contenha 'denon', 'receiver' ou 'av'
       if (!denonDevice) {
@@ -7515,7 +7642,7 @@ function updateDenonMetadata() {
         if (denonDevice)
           console.log(
             "Ã°Å¸â€Å½ Denon metadata device encontrado por name/label:",
-            denonDevice
+            denonDevice,
           );
       }
 
@@ -7540,30 +7667,28 @@ function updateDenonMetadata() {
         if (Array.isArray(denonDevice.attributes)) {
           // Formato array: [{name: "artist", currentValue: "..."}, ...]
           const artistAttr = denonDevice.attributes.find(
-            (attr) => attr.name === "artist" || attr.name === "trackArtist"
+            (attr) => attr.name === "artist" || attr.name === "trackArtist",
           );
           const trackAttr = denonDevice.attributes.find(
-            (attr) => attr.name === "trackDescription" || attr.name === "track"
+            (attr) => attr.name === "trackDescription" || attr.name === "track",
           );
           const albumAttr = denonDevice.attributes.find(
-            (attr) => attr.name === "albumName" || attr.name === "album"
+            (attr) => attr.name === "albumName" || attr.name === "album",
           );
-          const albumArtAttr = denonDevice.attributes.find(
-            (attr) => {
-              const name = attr.name?.toLowerCase();
-              return (
-                name === "albumarturl" ||
-                name === "albumarturi" ||
-                name === "currentalbumarturl" ||
-                name === "currentalbumarturi" ||
-                name === "enqueuedmetadataalbumarturl" ||
-                name === "enqueuedmetadataalbumarturi" ||
-                name === "albumart" ||
-                name === "artworkurl" ||
-                name === "imageurl"
-              );
-            }
-          );
+          const albumArtAttr = denonDevice.attributes.find((attr) => {
+            const name = attr.name?.toLowerCase();
+            return (
+              name === "albumarturl" ||
+              name === "albumarturi" ||
+              name === "currentalbumarturl" ||
+              name === "currentalbumarturi" ||
+              name === "enqueuedmetadataalbumarturl" ||
+              name === "enqueuedmetadataalbumarturi" ||
+              name === "albumart" ||
+              name === "artworkurl" ||
+              name === "imageurl"
+            );
+          });
           const statusAttr = denonDevice.attributes.find((attr) => {
             const attrName = String(attr?.name || "").toLowerCase();
             return (
@@ -7574,21 +7699,27 @@ function updateDenonMetadata() {
             );
           });
           const trackDataAttr = denonDevice.attributes.find(
-            (attr) => attr.name === "trackData" || attr.name === "trackdata"
+            (attr) => attr.name === "trackData" || attr.name === "trackdata",
           );
 
           artist = artistAttr?.currentValue || artistAttr?.value || artist;
           track = trackAttr?.currentValue || trackAttr?.value || track;
           album = albumAttr?.currentValue || albumAttr?.value || album;
-          
+
           // Extrair albumArt e processar (pode ser URL direta ou HTML)
           const rawAlbumArt = albumArtAttr?.currentValue || albumArtAttr?.value;
           if (rawAlbumArt && typeof rawAlbumArt === "string") {
             const albumArtValue = rawAlbumArt.trim();
-            if (albumArtValue.startsWith('http://') || albumArtValue.startsWith('https://')) {
+            if (
+              albumArtValue.startsWith("http://") ||
+              albumArtValue.startsWith("https://")
+            ) {
               albumArt = albumArtValue;
               console.log("🎵 [array] albumArt é URL direta:", albumArt);
-            } else if (albumArtValue.includes('<img') || albumArtValue.includes('src=')) {
+            } else if (
+              albumArtValue.includes("<img") ||
+              albumArtValue.includes("src=")
+            ) {
               const imgMatch = albumArtValue.match(/src=['"]([^'"]+)['"]/);
               albumArt = imgMatch ? imgMatch[1] : null;
               console.log("🎵 [array] albumArt extraído de HTML:", albumArt);
@@ -7597,7 +7728,7 @@ function updateDenonMetadata() {
               console.log("🎵 [array] albumArt valor direto:", albumArt);
             }
           }
-          
+
           playbackStatus =
             statusAttr?.currentValue || statusAttr?.value || playbackStatus;
           trackDataRaw =
@@ -7624,14 +7755,20 @@ function updateDenonMetadata() {
             typeof denonDevice.attributes.albumArt === "string"
           ) {
             const albumArtValue = denonDevice.attributes.albumArt.trim();
-            
+
             // Se já começa com http/https, é uma URL direta
-            if (albumArtValue.startsWith('http://') || albumArtValue.startsWith('https://')) {
+            if (
+              albumArtValue.startsWith("http://") ||
+              albumArtValue.startsWith("https://")
+            ) {
               albumArt = albumArtValue;
               console.log("🎵 albumArt é URL direta:", albumArt);
-            } 
+            }
             // Senão, tentar extrair de tag HTML <img src="...">
-            else if (albumArtValue.includes('<img') || albumArtValue.includes('src=')) {
+            else if (
+              albumArtValue.includes("<img") ||
+              albumArtValue.includes("src=")
+            ) {
               const imgMatch = albumArtValue.match(/src=['"]([^'"]+)['"]/);
               albumArt = imgMatch ? imgMatch[1] : null;
               console.log("🎵 albumArt extraído de HTML:", albumArt);
@@ -7704,29 +7841,43 @@ function updateDenonMetadata() {
           album,
           albumArt,
         });
-        
+
         // Debug: se albumArt não foi encontrado, listar todos os atributos disponíveis
         if (!albumArt) {
           console.log(
-            `⚠️ Album art não encontrado. Atributos disponíveis no dispositivo ${denonMetadataDeviceId}:`
+            `⚠️ Album art não encontrado. Atributos disponíveis no dispositivo ${denonMetadataDeviceId}:`,
           );
           if (Array.isArray(denonDevice.attributes)) {
-            denonDevice.attributes.forEach(attr => {
-              const name = attr.name?.toLowerCase() || '';
-              if (name.includes('art') || name.includes('image') || name.includes('url') || name.includes('uri') || name.includes('album')) {
-                console.log(`   - ${attr.name}: ${attr.currentValue || attr.value}`);
+            denonDevice.attributes.forEach((attr) => {
+              const name = attr.name?.toLowerCase() || "";
+              if (
+                name.includes("art") ||
+                name.includes("image") ||
+                name.includes("url") ||
+                name.includes("uri") ||
+                name.includes("album")
+              ) {
+                console.log(
+                  `   - ${attr.name}: ${attr.currentValue || attr.value}`,
+                );
               }
             });
           } else if (denonDevice.attributes) {
-            Object.keys(denonDevice.attributes).forEach(key => {
+            Object.keys(denonDevice.attributes).forEach((key) => {
               const keyLower = key.toLowerCase();
-              if (keyLower.includes('art') || keyLower.includes('image') || keyLower.includes('url') || keyLower.includes('uri') || keyLower.includes('album')) {
+              if (
+                keyLower.includes("art") ||
+                keyLower.includes("image") ||
+                keyLower.includes("url") ||
+                keyLower.includes("uri") ||
+                keyLower.includes("album")
+              ) {
                 console.log(`   - ${key}: ${denonDevice.attributes[key]}`);
               }
             });
           }
         }
-        
+
         artist = normalizePortugueseText(artist);
         track = normalizePortugueseText(track);
         album = normalizePortugueseText(album);
@@ -7735,11 +7886,11 @@ function updateDenonMetadata() {
         updateMusicPlayerUI(artist, track, album, albumArt);
       } else {
         console.log(
-          `Ã¢Å¡Â Ã¯Â¸Â Device de metadados ${denonMetadataDeviceId} não encontrado nos dados`
+          `Ã¢Å¡Â Ã¯Â¸Â Device de metadados ${denonMetadataDeviceId} não encontrado nos dados`,
         );
         console.log(
           "Dispositivos disponÃƒÂ­veis:",
-          devices.map((d) => ({ id: d.id, name: d.name || d.label }))
+          devices.map((d) => ({ id: d.id, name: d.name || d.label })),
         );
       }
     })
@@ -7750,10 +7901,7 @@ function updateDenonMetadata() {
         .then((res) => res.text())
         .then((t) => console.log("Raw polling response (debug):", t))
         .catch((e) =>
-          console.warn(
-            "não foi possível obter resposta bruta de /polling:",
-            e
-          )
+          console.warn("não foi possível obter resposta bruta de /polling:", e),
         );
     });
 }
@@ -7862,7 +8010,7 @@ function syncMusicTrackMarquee() {
   }
 
   const trackElements = activePage.querySelectorAll(
-    ".music-track-marquee__text:not(.music-track-marquee__text--clone)"
+    ".music-track-marquee__text:not(.music-track-marquee__text--clone)",
   );
 
   trackElements.forEach((trackElement) => {
@@ -7872,14 +8020,14 @@ function syncMusicTrackMarquee() {
     }
 
     const marqueeInner = marqueeContainer.querySelector(
-      ".music-track-marquee__inner"
+      ".music-track-marquee__inner",
     );
     if (!marqueeInner) {
       return;
     }
 
     const cloneElement = marqueeContainer.querySelector(
-      ".music-track-marquee__text--clone"
+      ".music-track-marquee__text--clone",
     );
     if (cloneElement) {
       cloneElement.textContent = trackElement.textContent || "";
@@ -7895,18 +8043,18 @@ function syncMusicTrackMarquee() {
 
       marqueeContainer.classList.toggle(
         "music-track-marquee--active",
-        shouldMarquee
+        shouldMarquee,
       );
 
       if (shouldMarquee) {
         const pixelsPerSecond = 80;
         const duration = Math.min(
           24,
-          Math.max(10, contentWidth / pixelsPerSecond)
+          Math.max(10, contentWidth / pixelsPerSecond),
         );
         marqueeContainer.style.setProperty(
           "--music-track-marquee-duration",
-          `${duration}s`
+          `${duration}s`,
         );
       }
     });
@@ -7958,7 +8106,10 @@ function initMusicPlayerUI() {
   });
 
   function bindVerticalVolumeSlider(slider) {
-    if (!slider || !slider.classList.contains("music-volume-slider--vertical")) {
+    if (
+      !slider ||
+      !slider.classList.contains("music-volume-slider--vertical")
+    ) {
       return;
     }
     if (slider.dataset.verticalBound === "true") {
@@ -7990,7 +8141,10 @@ function initMusicPlayerUI() {
 
     slider.addEventListener("pointermove", (event) => {
       if (!pointerActive) return;
-      if (slider.hasPointerCapture && !slider.hasPointerCapture(event.pointerId)) {
+      if (
+        slider.hasPointerCapture &&
+        !slider.hasPointerCapture(event.pointerId)
+      ) {
         return;
       }
       updateFromPointer(event);
@@ -8079,7 +8233,7 @@ function initMusicPlayerUI() {
       volumeSlider.style.pointerEvents = "none";
       console.log(
         "Ã°Å¸â€â€¡ Volume mutado. Volume anterior:",
-        volumeBeforeMute
+        volumeBeforeMute,
       );
       // Atualiza a barra visual para 0% quando mutado
       if (typeof updateVolumeBar === "function") updateVolumeBar();
@@ -8090,7 +8244,7 @@ function initMusicPlayerUI() {
       volumeSlider.style.pointerEvents = "auto";
       console.log(
         "Ã°Å¸â€Å  Volume desmutado. Volume restaurado:",
-        volumeBeforeMute
+        volumeBeforeMute,
       );
       // Atualiza a barra visual para o valor restaurado
       if (typeof updateVolumeBar === "function") updateVolumeBar();
@@ -8119,7 +8273,7 @@ function initMusicPlayerUI() {
       metadataContainer.dataset.metadataDeviceId
     ) {
       DENON_MUSIC_DEVICE_ID = String(
-        metadataContainer.dataset.metadataDeviceId
+        metadataContainer.dataset.metadataDeviceId,
       );
     }
 
@@ -8129,7 +8283,7 @@ function initMusicPlayerUI() {
   } catch (e) {
     console.warn(
       "não foi possível ler overrides de IDs de Denon via data-*:",
-      e
+      e,
     );
   }
 
@@ -8158,7 +8312,7 @@ function initMusicPlayerUI() {
       "Ã°Å¸Å½Âµ Toggle play/pause -> enviando comando",
       action,
       "para device",
-      DENON_MUSIC_DEVICE_ID
+      DENON_MUSIC_DEVICE_ID,
     );
 
     sendHubitatCommand(DENON_MUSIC_DEVICE_ID, action)
@@ -8167,33 +8321,33 @@ function initMusicPlayerUI() {
         setPlaying(!isPlaying);
       })
       .catch((err) =>
-        console.error("⚠️Erro ao enviar comando " + action + ":", err)
+        console.error("⚠️Erro ao enviar comando " + action + ":", err),
       );
   });
 
   nextBtn.addEventListener("click", () => {
     console.log(
       "Ã¢ÂÂ­Ã¯Â¸Â Next clicked - enviando comando para device",
-      DENON_MUSIC_DEVICE_ID
+      DENON_MUSIC_DEVICE_ID,
     );
     sendHubitatCommand(DENON_MUSIC_DEVICE_ID, "nextTrack")
       .then(() => console.log("Ã¢Å“â€¦ Comando nextTrack enviado com sucesso"))
       .catch((err) =>
-        console.error("⚠️Erro ao enviar comando nextTrack:", err)
+        console.error("⚠️Erro ao enviar comando nextTrack:", err),
       );
   });
 
   prevBtn.addEventListener("click", () => {
     console.log(
       "Ã¢ÂÂ®Ã¯Â¸Â Previous clicked - enviando comando para device",
-      DENON_MUSIC_DEVICE_ID
+      DENON_MUSIC_DEVICE_ID,
     );
     sendHubitatCommand(DENON_MUSIC_DEVICE_ID, "previousTrack")
       .then(() =>
-        console.log("Ã¢Å“â€¦ Comando previousTrack enviado com sucesso")
+        console.log("Ã¢Å“â€¦ Comando previousTrack enviado com sucesso"),
       )
       .catch((err) =>
-        console.error("⚠️Erro ao enviar comando previousTrack:", err)
+        console.error("⚠️Erro ao enviar comando previousTrack:", err),
       );
   });
 
@@ -8208,7 +8362,7 @@ function initMusicPlayerUI() {
       const newMutedState = !isMuted;
       const command = newMutedState ? "mute" : "unmute";
       console.log(
-        `Ã°Å¸â€â€¡ Mute button clicked - enviando comando "${command}" para device ${DENON_CMD_DEVICE_ID}`
+        `Ã°Å¸â€â€¡ Mute button clicked - enviando comando "${command}" para device ${DENON_CMD_DEVICE_ID}`,
       );
 
       sendHubitatCommand(DENON_CMD_DEVICE_ID, command)
@@ -8217,7 +8371,7 @@ function initMusicPlayerUI() {
           setMuted(newMutedState);
         })
         .catch((err) =>
-          console.error(`⚠️Erro ao enviar comando ${command}:`, err)
+          console.error(`⚠️Erro ao enviar comando ${command}:`, err),
         );
     });
 
@@ -8233,7 +8387,7 @@ function initMusicPlayerUI() {
         "Ã°Å¸â€Å  Volume ajustado para:",
         value,
         "% -",
-        percent + "%"
+        percent + "%",
       );
     }
 
@@ -8257,7 +8411,7 @@ function initMusicPlayerUI() {
         const v = parseInt(e.target.value);
         musicSlider.style.setProperty(
           "--volume-percent",
-          (v / 100) * 100 + "%"
+          (v / 100) * 100 + "%",
         );
         const volumeDisplay = queryActiveMusic("#music-volume-display");
         if (volumeDisplay) volumeDisplay.textContent = v;
@@ -8267,7 +8421,7 @@ function initMusicPlayerUI() {
       musicSlider.addEventListener("change", (e) => {
         const value = e.target.value;
         console.log(
-          `Ã°Å¸â€Å  Music slider changed -> sending setVolume ${value} to Denon (${DENON_CMD_DEVICE_ID})`
+          `Ã°Å¸â€Å  Music slider changed -> sending setVolume ${value} to Denon (${DENON_CMD_DEVICE_ID})`,
         );
         updateVolumeIcons(parseInt(value, 10), isMuted);
         // Mark recent command to prevent polling overwrite
@@ -8275,13 +8429,10 @@ function initMusicPlayerUI() {
         // Send command
         sendHubitatCommand(DENON_CMD_DEVICE_ID, "setVolume", value)
           .then(() =>
-            console.log("Ã¢Å“â€¦ setVolume sent to Denon via music slider")
+            console.log("Ã¢Å“â€¦ setVolume sent to Denon via music slider"),
           )
           .catch((err) =>
-            console.error(
-              "⚠️Error sending setVolume from music slider:",
-              err
-            )
+            console.error("⚠️Error sending setVolume from music slider:", err),
           );
       });
     }
@@ -8328,7 +8479,7 @@ function initMusicPlayerUI() {
     masterOnBtn.addEventListener("click", () => {
       if (!isPowerOn) {
         console.log(
-          `Power ON clicked - enviando comando "on" para device ${DENON_CMD_DEVICE_ID}`
+          `Power ON clicked - enviando comando "on" para device ${DENON_CMD_DEVICE_ID}`,
         );
         recentCommands.set(DENON_CMD_DEVICE_ID, Date.now());
         sendHubitatCommand(DENON_CMD_DEVICE_ID, "on")
@@ -8336,16 +8487,14 @@ function initMusicPlayerUI() {
             console.log("Ã¢Å“â€¦ Comando on enviado com sucesso");
             setMasterPower(true);
           })
-          .catch((err) =>
-            console.error("⚠️Erro ao enviar comando on:", err)
-          );
+          .catch((err) => console.error("⚠️Erro ao enviar comando on:", err));
       }
     });
 
     masterOffBtn.addEventListener("click", () => {
       if (isPowerOn) {
         console.log(
-          `Power OFF clicked - enviando comando "off" para device ${DENON_CMD_DEVICE_ID}`
+          `Power OFF clicked - enviando comando "off" para device ${DENON_CMD_DEVICE_ID}`,
         );
         recentCommands.set(DENON_CMD_DEVICE_ID, Date.now());
         sendHubitatCommand(DENON_CMD_DEVICE_ID, "off")
@@ -8353,9 +8502,7 @@ function initMusicPlayerUI() {
             console.log("Ã¢Å“â€¦ Comando off enviado com sucesso");
             setMasterPower(false);
           })
-          .catch((err) =>
-            console.error("⚠️Erro ao enviar comando off:", err)
-          );
+          .catch((err) => console.error("⚠️Erro ao enviar comando off:", err));
       }
     });
   }
@@ -8407,7 +8554,7 @@ function initUltraBasicMode() {
     ALL_LIGHT_IDS.forEach(function (deviceId) {
       try {
         var controls = document.querySelectorAll(
-          '[data-device-id="' + deviceId + '"]'
+          '[data-device-id="' + deviceId + '"]',
         );
         controls.forEach(function (control) {
           if (control.classList.contains("room-control")) {
@@ -8422,7 +8569,7 @@ function initUltraBasicMode() {
       } catch (e) {
         showMobileDebug(
           "Erro no dispositivo " + deviceId + ": " + e.message,
-          "error"
+          "error",
         );
       }
     });
@@ -8431,21 +8578,21 @@ function initUltraBasicMode() {
       "Ã¢Å“â€¦ Modo ultra-bÃƒÂ¡sico ativo - " +
         processedDevices +
         " dispositivos processados",
-      "success"
+      "success",
     );
 
     // Verificar elementos bÃƒÂ¡sicos
     var controls = document.querySelectorAll(".room-control");
     showMobileDebug(
       "Ã°Å¸â€Â Encontrados " + controls.length + " controles",
-      "info"
+      "info",
     );
 
     return true; // Sucesso
   } catch (error) {
     showMobileDebug(
       "⚠️ERRO CRÃƒÂTICO no modo ultra-bÃƒÂ¡sico: " + error.message,
-      "error"
+      "error",
     );
     return false; // Falha
   }
@@ -8465,7 +8612,7 @@ function initSimpleMode() {
     console.log(
       "Ã°Å¸â€œÂ± Processando",
       ALL_LIGHT_IDS.length,
-      "dispositivos..."
+      "dispositivos...",
     );
 
     // Carregar estados bÃƒÂ¡sicos
@@ -8477,11 +8624,11 @@ function initSimpleMode() {
         "Ã°Å¸â€œÂ± Processando device",
         deviceId,
         "- progresso:",
-        progress + "%"
+        progress + "%",
       );
       updateProgress(
         progress,
-        "Carregando " + (i + 1) + "/" + ALL_LIGHT_IDS.length + "..."
+        "Carregando " + (i + 1) + "/" + ALL_LIGHT_IDS.length + "...",
       );
 
       try {
@@ -8526,7 +8673,7 @@ function initSimpleMode() {
         }
       } else {
         console.log(
-          "Ã°Å¸â€™Â» Modo desenvolvimento - polling não iniciado no modo simples"
+          "Ã°Å¸â€™Â» Modo desenvolvimento - polling não iniciado no modo simples",
         );
       }
 
@@ -8727,7 +8874,7 @@ document.addEventListener(
     requestScreenWakeLock();
     startKeepAliveVideo();
   },
-  { once: true }
+  { once: true },
 );
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -8813,9 +8960,7 @@ function initializeApp() {
 
     // Timeout padrÃƒÂ£o para desktop e mobile (comportamento idÃƒÂªntico)
     var initDelay = 500;
-    console.log(
-      "Delay de inicialização: " + initDelay + "ms (universal)"
-    );
+    console.log("Delay de inicialização: " + initDelay + "ms (universal)");
 
     // Aguardar um pouco para UI carregar e entÃƒÂ£o iniciar carregamento
     setTimeout(function () {
@@ -8840,7 +8985,7 @@ function initializeApp() {
               var syncDelay = 100;
               setTimeout(() => {
                 console.log(
-                  "Ã°Å¸ÂÂ  Inicializando controles de cÃƒÂ´modos na inicialização..."
+                  "Ã°Å¸ÂÂ  Inicializando controles de cÃƒÂ´modos na inicialização...",
                 );
                 initRoomPage(); // Inicializar pagina de comodo
                 scheduleControlSync(true); // Sincronizar todos os controles
@@ -8857,7 +9002,7 @@ function initializeApp() {
                     isProduction: isProduction,
                     hostname: location.hostname,
                     isMobile: isMobile,
-                  }
+                  },
                 );
                 setTimeout(startPolling, pollingDelay);
               } else {
@@ -8867,7 +9012,7 @@ function initializeApp() {
                     isProduction: isProduction,
                     hostname: location.hostname,
                     isMobile: isMobile,
-                  }
+                  },
                 );
               }
 
@@ -8934,7 +9079,7 @@ window.addEventListener("DOMContentLoaded", function () {
 setTimeout(function () {
   if (!window.initializationStarted) {
     console.log(
-      "Fallback: DOMContentLoaded não executou, forÃƒÂ§ando inicialização..."
+      "Fallback: DOMContentLoaded não executou, forÃƒÂ§ando inicialização...",
     );
     initializeApp();
   }
@@ -8954,26 +9099,30 @@ function handleMasterCurtainsOpen() {
   if (btn) {
     btn.classList.add("loading");
   }
-  
+
   // Encontrar todas as cortinas
-  const curtainButtons = document.querySelectorAll('.curtain-tile__btn[data-device-id]');
+  const curtainButtons = document.querySelectorAll(
+    ".curtain-tile__btn[data-device-id]",
+  );
   const curtainIds = new Set();
-  
-  curtainButtons.forEach(button => {
+
+  curtainButtons.forEach((button) => {
     const id = button.dataset.deviceId;
     if (id && !curtainIds.has(id)) {
       curtainIds.add(id);
-      curtainAction(button, 'open');
+      curtainAction(button, "open");
     }
   });
-  
+
   setTimeout(() => {
     if (btn) {
       btn.classList.remove("loading");
     }
   }, 2000);
-  
-  console.log(`✅ Comando de abertura enviado para ${curtainIds.size} cortinas`);
+
+  console.log(
+    `✅ Comando de abertura enviado para ${curtainIds.size} cortinas`,
+  );
 }
 
 function handleMasterCurtainsClose() {
@@ -8982,26 +9131,30 @@ function handleMasterCurtainsClose() {
   if (btn) {
     btn.classList.add("loading");
   }
-  
+
   // Encontrar todas as cortinas
-  const curtainButtons = document.querySelectorAll('.curtain-tile__btn[data-device-id]');
+  const curtainButtons = document.querySelectorAll(
+    ".curtain-tile__btn[data-device-id]",
+  );
   const curtainIds = new Set();
-  
-  curtainButtons.forEach(button => {
+
+  curtainButtons.forEach((button) => {
     const id = button.dataset.deviceId;
     if (id && !curtainIds.has(id)) {
       curtainIds.add(id);
-      curtainAction(button, 'close');
+      curtainAction(button, "close");
     }
   });
-  
+
   setTimeout(() => {
     if (btn) {
       btn.classList.remove("loading");
     }
   }, 2000);
-  
-  console.log(`✅ Comando de fechamento enviado para ${curtainIds.size} cortinas`);
+
+  console.log(
+    `✅ Comando de fechamento enviado para ${curtainIds.size} cortinas`,
+  );
 }
 
 // Exportar funções usadas em onclick="" no HTML (necessário para IIFE)
@@ -9056,7 +9209,8 @@ function setupPremiumPressFeedback() {
     document.addEventListener(
       "pointerdown",
       (e) => {
-        const target = e.target && e.target.closest ? e.target.closest("button") : null;
+        const target =
+          e.target && e.target.closest ? e.target.closest("button") : null;
         if (!target) return;
 
         // Evitar conflito com botões que já têm animações próprias
@@ -9079,7 +9233,7 @@ function setupPremiumPressFeedback() {
         pressedEl = target;
         pressedEl.classList.add("is-pressed");
       },
-      true
+      true,
     );
 
     document.addEventListener("pointerup", clearPressed, true);

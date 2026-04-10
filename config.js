@@ -119,7 +119,7 @@ const CLIENT_CONFIG = {
       },
     },
 
-    // Ãcones on/off padronizados por tipo (reutilizÃ¡veis em qualquer botÃ£o toggle)
+    // Ãcones on/off padronizados por tipo (reutilizÃ¡veis em qualquer botão toggle)
     toggles: {
       light: {
         on: "images/icons/icon-small-light-on.svg",
@@ -177,7 +177,7 @@ const CLIENT_CONFIG = {
 
     // Tabelas de comandos por controle (referÃªncia / logging)
     controlCommands: {
-      // Apple TV: comandos reconhecidos pelo hub (mesmo que nem todos tenham botÃ£o)
+      // Apple TV: comandos reconhecidos pelo hub (mesmo que nem todos tenham botão)
       appletv: [
         "configure",
         "cursorCenter",
@@ -196,7 +196,7 @@ const CLIENT_CONFIG = {
         "refresh",
       ],
 
-      // Claro TV: comandos suportados (inclui os sem botÃ£o dedicado)
+      // Claro TV: comandos suportados (inclui os sem botão dedicado)
       clarotv: [
         "agora",
         "blue",
@@ -302,6 +302,7 @@ const CLIENT_CONFIG = {
           ],
         },
       ],
+      curtainMotionType: "vertical",
       airConditioner: {
         zones: [{ id: "Home", name: "Home", deviceId: "2" }],
         controls: { zoneSelector: false, aletas: true, windfree: true },
@@ -520,14 +521,14 @@ const CLIENT_CONFIG = {
     },
 
     ambiente5: {
-      name: "EscritÃ³rio",
+      name: "Escritório",
       photo: "photo-escritorio.webp",
       visible: true,
       order: 5,
       curtains: [{ id: "373", name: "Cortina" }],
       airConditioner: {
         deviceId: "350",
-        zones: [{ id: "escritorio", name: "EscritÃ³rio", deviceId: "350" }],
+        zones: [{ id: "escritorio", name: "Escritório", deviceId: "350" }],
         controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
@@ -565,13 +566,13 @@ const CLIENT_CONFIG = {
     },
 
     ambiente8: {
-      name: "SuÃ­te Milena",
+      name: "Suíte Milena",
       photo: "photo-suitemilena.webp",
       visible: true,
       order: 8,
       curtains: [{ id: "51", name: "Cortina" }],
       airConditioner: {
-        zones: [{ id: "suitemilena", name: "SuÃ­te Milena", deviceId: "188" }],
+        zones: [{ id: "suitemilena", name: "Suíte Milena", deviceId: "188" }],
         controls: { zoneSelector: false, aletas: true, windfree: false },
         temperature: { min: 18, max: 25, default: 22 },
       },
@@ -581,28 +582,28 @@ const CLIENT_CONFIG = {
     },
 
     ambiente9: {
-      name: "SuÃ­te Fabio",
+      name: "Suíte Fabio",
       photo: "photo-suitefabio.webp",
       visible: true,
       order: 10,
       lights: [],
       curtains: [{ id: "52", name: "Cortina" }],
       airConditioner: {
-        zones: [{ id: "suitemaster", name: "SuÃ­te Master", deviceId: "180" }],
+        zones: [{ id: "suitemaster", name: "Suíte Master", deviceId: "180" }],
         controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
     },
 
     ambiente10: {
-      name: "SuÃ­te Laura",
+      name: "Suíte Laura",
       photo: "photo-suitelaura.webp",
       visible: true,
       order: 10,
       lights: [],
       curtains: [{ id: "52", name: "Cortina" }],
       airConditioner: {
-        zones: [{ id: "suitemaster", name: "SuÃ­te Master", deviceId: "180" }],
+        zones: [{ id: "suitemaster", name: "Suíte Master", deviceId: "180" }],
         controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
@@ -778,7 +779,7 @@ const bottomNavConfig = {
     autoHideOnScroll: true,
     scrollDelta: 8,
     revealAtTop: 10,
-    // Atalho nas pÃ¡ginas de controle: recolhe a nav para um Ãºnico botÃ£o Home.
+    // Atalho nas pÃ¡ginas de controle: recolhe a nav para um Ãºnico botão Home.
     controlHomeShortcut: {
       enabled: true,
       // Aplicar atalho somente em pÃ¡ginas de controle (nÃ£o em qualquer rota).
@@ -794,7 +795,7 @@ const bottomNavConfig = {
       homeId: "ambientes",
       // No modo compacto, mantÃ©m sempre visÃ­vel (sem notch de scroll).
       disableAutoHide: true,
-      // Ajustes visuais do botÃ£o recolhido no canto inferior esquerdo.
+      // Ajustes visuais do botão recolhido no canto inferior esquerdo.
       leftOffset: "16px",
       bottomOffset: "18px",
       size: "68px",
@@ -1477,30 +1478,39 @@ function generateCurtainsControls(envKey) {
       .filter(Boolean)
       .join(" ");
 
-  return env.curtains
+  const curtains = env.curtains
     .map((curtainConfig) => buildCurtainControlModel(curtainConfig, env))
-    .filter(Boolean)
-    .map(
-      (curtain) => `
-        <article class="curtain-tile curtain-tile--transparent" data-device-id="${curtain.deviceId}" data-device-ids="${curtain.deviceIds}" data-environment="${env.name}">
+    .filter(Boolean);
+
+  const isSingleCurtain = curtains.length === 1;
+
+  return curtains
+    .map((curtain) => {
+      const openLabel =
+        curtain?.curtainMotionType === "vertical" ? "Subir" : "Abrir";
+      const closeLabel =
+        curtain?.curtainMotionType === "vertical" ? "Descer" : "Fechar";
+
+      return `
+        <article class="curtain-tile curtain-tile--transparent${isSingleCurtain ? " curtain-tile--full-width" : ""}" data-device-id="${curtain.deviceId}" data-device-ids="${curtain.deviceIds}" data-environment="${env.name}">
           <header class="curtain-tile__header curtain-tile__header--minimal">
             <h3 class="curtain-tile__title">${curtain.title}</h3>
             <div class="curtain-tile__line"></div>
           </header>
           <div class="curtain-tile__actions">
-            <button class="curtain-tile__btn" ${buildCurtainDataAttributes(curtain)} onclick="curtainAction(this, 'open')" aria-label="Abrir ${curtain.title}">
-              <img src="${curtain.iconOpen}" alt="Abrir">
+            <button class="curtain-tile__btn" ${buildCurtainDataAttributes(curtain)} onclick="curtainAction(this, 'open')" aria-label="${openLabel} ${curtain.title}">
+              <img src="${curtain.iconOpen}" alt="${openLabel}">
             </button>
             <button class="curtain-tile__btn curtain-tile__btn--stop" ${buildCurtainDataAttributes(curtain)} onclick="curtainAction(this, 'stop')" aria-label="Parar ${curtain.title}">
               <img src="${curtain.iconStop}" alt="Parar">
             </button>
-            <button class="curtain-tile__btn" ${buildCurtainDataAttributes(curtain)} onclick="curtainAction(this, 'close')" aria-label="Fechar ${curtain.title}">
-              <img src="${curtain.iconClose}" alt="Fechar">
+            <button class="curtain-tile__btn" ${buildCurtainDataAttributes(curtain)} onclick="curtainAction(this, 'close')" aria-label="${closeLabel} ${curtain.title}">
+              <img src="${curtain.iconClose}" alt="${closeLabel}">
             </button>
           </div>
         </article>
-      `,
-    )
+      `;
+    })
     .join("");
 }
 

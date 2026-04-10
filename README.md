@@ -109,7 +109,7 @@ Edite o array `rooms` em `index.html` (linha ~440):
 const rooms = [
   { name: "Sala de Estar", route: "ambiente1" },
   { name: "Quarto Principal", route: "ambiente2" },
-  { name: "EscritÃ³rio", route: "ambiente3" },
+  { name: "Escritório", route: "ambiente3" },
   { name: "Cozinha", route: "ambiente4" },
   { name: "Sala de Jantar", route: "ambiente5" },
   { name: "Garagem", route: "ambiente6" },
