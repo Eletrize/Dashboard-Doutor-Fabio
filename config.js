@@ -1,12 +1,12 @@
-/**
- * Dashboard Eletrize (Cloudflare) - Configuração do cliente
+﻿/**
+ * Dashboard Eletrize (Cloudflare) - ConfiguraÃ§Ã£o do cliente
  *
  * Objetivo: permitir adicionar/remover ambientes e dispositivos editando apenas este arquivo,
  * similar ao modelo do LongPing, mas mantendo o funcionamento Cloudflare (Pages/Functions).
  */
 
 const CLIENT_CONFIG = {
-  // Modo de teste local: mantém estados no dashboard sem depender do Hubitat.
+  // Modo de teste local: mantÃ©m estados no dashboard sem depender do Hubitat.
   // Use false para voltar ao comportamento normal.
   development: {
     stateOnlyMode: false,
@@ -23,9 +23,7 @@ const CLIENT_CONFIG = {
     },
   },
 
-  // Login do dashboard (Supabase Auth).
   // Segredos e regras de allowlist ficam no backend (Cloudflare Functions),
-  // nunca neste arquivo público.
   auth: {
     enabled: true,
     supabaseUrl: "https://ojuavodurcfndjuukvnj.supabase.co",
@@ -33,62 +31,70 @@ const CLIENT_CONFIG = {
     allowEmailSignUp: false,
     allowGoogleLogin: false,
     requireEmailConfirmation: true,
-    // Após OAuth (Google), o usuário volta para esta URL.
+    // ApÃ³s OAuth (Google), o usuÃ¡rio volta para esta URL.
     redirectTo: "",
   },
 
   clientInfo: {
     name: "Doutor Fabio",
     projectName: "Dashboard Residencial",
-    location: "Ribeirão Preto, SP",
+    location: "RibeirÃ£o Preto, SP",
     version: "1.5",
   },
 
-  // Configuração da Maker API (Hubitat) centralizada no config.js
+  // ConfiguraÃ§Ã£o da Maker API (Hubitat) centralizada no config.js
   makerApi: {
     cloud: {
       enabled: true,
       // URL base completa do app da Maker API (inclui apiId e appId)
       appBaseUrl:
-        "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144",
+        "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7",
       // Token de acesso fornecido pela Maker API
-      accessToken: "94f13f9f-2842-48ea-a860-02eda566a02a",
+      accessToken: "c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
       // Quais dispositivos devem usar a nuvem: "*"/"all" para todos ou uma lista de IDs
       deviceIds: "*",
-      // Endpoints diretos úteis (mantidos aqui para fácil consulta)
+      // Endpoints diretos Ãºteis (mantidos aqui para fÃ¡cil consulta)
       endpoints: {
+        devices:
+          "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7/devices?access_token=c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
         devicesAll:
-          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/devices/all?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+          "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7/devices/all?access_token=c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
         deviceInfo:
-          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/devices/[Device ID]?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+          "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7/devices/[Device ID]?access_token=c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
+        deviceData:
+          "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7/devices/deviceData/[Device ID]?access_token=c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
         deviceEvents:
-          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/devices/[Device ID]/events?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+          "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7/devices/[Device ID]/events?access_token=c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
         deviceCommands:
-          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/devices/[Device ID]/commands?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+          "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7/devices/[Device ID]/commands?access_token=c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
         deviceCapabilities:
-          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/devices/[Device ID]/capabilities?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+          "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7/devices/[Device ID]/capabilities?access_token=c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
         deviceAttribute:
-          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/devices/[Device ID]/attribute/[Attribute]?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+          "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7/devices/[Device ID]/attribute/[Attribute]?access_token=c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
         sendDeviceCommand:
-          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/devices/[Device ID]/[Command]/[Secondary value]?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+          "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7/devices/[Device ID]/[Command]/[Secondary value]?access_token=c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
+        setDeviceLabel:
+          "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7/devices/[Device ID]/setLabel?label=[Label]&access_token=c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
+        setDeviceDriver:
+          "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7/devices/[Device ID]/setDriver?namespace=[Driver Namespace]&name=[Driver Name]&access_token=c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
         sendPostUrl:
-          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/postURL/[URL]?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+          "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7/postURL/[URL]?access_token=c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
         setHubVariable:
-          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/hubvariables/[Variable Name]/[Value]?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+          "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7/hubvariables/[Variable Name]/[Value]?access_token=c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
         modesList:
-          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/modes?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+          "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7/modes?access_token=c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
         setMode:
-          "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144/modes/[Mode ID]?access_token=94f13f9f-2842-48ea-a860-02eda566a02a",
+          "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7/modes/[Mode ID]?access_token=c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
       },
     },
   },
 
-  // Overrides globais de ícones (vale para TODOS os botões)
+  // Overrides globais de Ã­cones (vale para TODOS os botÃµes)
   // Chave: caminho atual (ex.: "images/icons/icon-mute.svg")
   // Valor: novo caminho (ex.: "images/icons/whatsapp.svg")
-  // Dica: isso também cobre botões estáticos (música, cortinas, AC, etc.).
+  // Dica: isso tambÃ©m cobre botÃµes estÃ¡ticos (mÃºsica, cortinas, AC, etc.).
   ui: {
-    // Itens de UI reutilizáveis (nome + ícone) para abas/botões principais
+    // Itens de UI reutilizÃ¡veis (nome + Ã­cone) para abas/botÃµes principais
     // Use as chaves abaixo no app: lights, curtains, comfort, music, tv, htv, home, scenes
     items: {
       lights: { label: "Luzes", icon: "images/icons/icon-small-light-off.svg" },
@@ -97,11 +103,11 @@ const CLIENT_CONFIG = {
         label: "Ar Condicionado",
         icon: "images/icons/ar-condicionado.svg",
       },
-      music: { label: "Música", icon: "images/icons/icon-musica.svg" },
-      tv: { label: "Televisão", icon: "images/icons/icon-tv.svg" },
+      music: { label: "MÃºsica", icon: "images/icons/icon-musica.svg" },
+      tv: { label: "TelevisÃ£o", icon: "images/icons/icon-tv.svg" },
       htv: { label: "HTV", icon: "images/icons/icon-htv.svg" },
       home: { label: "Home", icon: "images/icons/icon-home.svg" },
-      scenes: { label: "Cenários", icon: "images/icons/icon-scenes.svg" },
+      scenes: { label: "CenÃ¡rios", icon: "images/icons/icon-scenes.svg" },
       bluray: { label: "Blu-ray", icon: "images/icons/icon-bluray.svg" },
       appletv: { label: "Apple TV", icon: "images/icons/icon-apple-tv.svg" },
       clarotv: { label: "Claro TV", icon: "images/icons/icon-clarotv.svg" },
@@ -113,7 +119,7 @@ const CLIENT_CONFIG = {
       },
     },
 
-    // Ícones on/off padronizados por tipo (reutilizáveis em qualquer botão toggle)
+    // Ãcones on/off padronizados por tipo (reutilizÃ¡veis em qualquer botÃ£o toggle)
     toggles: {
       light: {
         on: "images/icons/icon-small-light-on.svg",
@@ -141,7 +147,7 @@ const CLIENT_CONFIG = {
       },
     },
 
-    // Ícones de ações (setas, voltar, stop etc.)
+    // Ãcones de aÃ§Ãµes (setas, voltar, stop etc.)
     actions: {
       back: "images/icons/back-button.svg",
       curtainOpen: "images/icons/open-curtain.svg",
@@ -149,7 +155,7 @@ const CLIENT_CONFIG = {
       curtainClose: "images/icons/close-curtain.svg",
     },
 
-    // Ícones por tipo de movimento de cortina (configurável por ambiente/cortina)
+    // Ãcones por tipo de movimento de cortina (configurÃ¡vel por ambiente/cortina)
     curtainTypes: {
       lateral: {
         open: "images/icons/open-curtain.svg",
@@ -169,9 +175,9 @@ const CLIENT_CONFIG = {
       // "images/icons/arrow-up.svg": "images/icons/icon-ac-aleta-alta.svg",
     },
 
-    // Tabelas de comandos por controle (referência / logging)
+    // Tabelas de comandos por controle (referÃªncia / logging)
     controlCommands: {
-      // Apple TV: comandos reconhecidos pelo hub (mesmo que nem todos tenham botão)
+      // Apple TV: comandos reconhecidos pelo hub (mesmo que nem todos tenham botÃ£o)
       appletv: [
         "configure",
         "cursorCenter",
@@ -190,7 +196,7 @@ const CLIENT_CONFIG = {
         "refresh",
       ],
 
-      // Claro TV: comandos suportados (inclui os sem botão dedicado)
+      // Claro TV: comandos suportados (inclui os sem botÃ£o dedicado)
       clarotv: [
         "agora",
         "blue",
@@ -272,17 +278,23 @@ const CLIENT_CONFIG = {
       photo: "photo-hometeather.webp",
       visible: true,
       order: 1,
+      controlIds: {
+        receiver: "3",
+        receiverVolume: "3",
+        tvControl: "4",
+        musicMetadata: "3",
+      },
       lights: [
-        { id: "301", name: "Painel" },
-        { id: "340", name: "Spots", type: "dimmer", defaultLevel: 100 },
+        { id: "12243", name: "Spots Painel" },
+        { id: "12229", name: "Spots", type: "dimmer", defaultLevel: 100 },
       ],
       quickActions: [
         {
           type: "lights",
           devices: [
-            { id: "301", commandOn: "on", commandOff: "off" },
+            { id: "12243", commandOn: "on", commandOff: "off" },
             {
-              id: "340",
+              id: "12229",
               commandOn: "setLevel",
               commandOff: "off",
               valueOn: 100,
@@ -291,16 +303,61 @@ const CLIENT_CONFIG = {
         },
       ],
       airConditioner: {
-        zones: [{ id: "Home", name: "home", deviceId: "347" }],
+        zones: [{ id: "Home", name: "Home", deviceId: "2" }],
         controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
-      curtains: [],
-      tv: [{ id: "362", name: "Televisão" }],
-      bluray: [{ id: "357", name: "Blu-ray" }],
-      appletv: [{ id: "356", name: "Apple TV" }],
-      music: [{ id: "114", name: "Música" }],
-      clarotv: [{ id: "355", name: "Claro TV" }],
+      curtains: [{ id: "12298", name: "Cortina" }],
+      tv: [
+        {
+          id: "4",
+          name: "TelevisÃ£o",
+          controlDeviceId: "4",
+          powerDeviceId: "4",
+          volumeDeviceId: "3",
+          displayDeviceId: "4",
+          inputDeviceId: "4",
+          receiverDeviceId: "3",
+        },
+      ],
+      bluray: [
+        {
+          id: "5",
+          name: "Blu-ray",
+          volumeDeviceId: "3",
+          displayDeviceId: "4",
+          receiverDeviceId: "3",
+        },
+      ],
+      appletv: [
+        {
+          id: "6",
+          name: "Apple TV",
+          volumeDeviceId: "3",
+          displayDeviceId: "4",
+          receiverDeviceId: "3",
+        },
+      ],
+      music: [
+        {
+          id: "3",
+          name: "Denon",
+          metadataDeviceId: "3",
+          transportDeviceId: "3",
+          controlDeviceId: "3",
+          volumeDeviceId: "3",
+          powerDeviceId: "3",
+        },
+      ],
+      clarotv: [
+        {
+          id: "7",
+          name: "NET",
+          volumeDeviceId: "3",
+          displayDeviceId: "4",
+          receiverDeviceId: "3",
+        },
+      ],
     },
 
     ambiente2: {
@@ -363,6 +420,17 @@ const CLIENT_CONFIG = {
       photo: "photo-varanda.webp",
       visible: true,
       order: 3,
+      controlIds: {
+        poolLight: "270",
+        poolWaterfall: "152",
+        poolHydromassage: "153",
+        poolDeck: "161",
+        poolAwning: "162",
+        screen: "157",
+        screenReceiver: "16",
+        screenRemote: "114",
+        screenVolume: "353",
+      },
       curtainMotionType: "vertical",
       lights: [
         { id: "306", name: "Spots" },
@@ -420,12 +488,12 @@ const CLIENT_CONFIG = {
       music: [
         {
           id: "124",
-          name: "Música",
+          name: "MÃºsica",
           volumeDeviceId: "353",
           powerDeviceId: "353",
         },
       ],
-      tv: [{ id: "363", name: "Televisão" }],
+      tv: [{ id: "363", name: "TelevisÃ£o" }],
     },
 
     ambiente4: {
@@ -452,14 +520,14 @@ const CLIENT_CONFIG = {
     },
 
     ambiente5: {
-      name: "Escritório",
+      name: "EscritÃ³rio",
       photo: "photo-escritorio.webp",
       visible: true,
       order: 5,
       curtains: [{ id: "373", name: "Cortina" }],
       airConditioner: {
         deviceId: "350",
-        zones: [{ id: "escritorio", name: "Escritório", deviceId: "350" }],
+        zones: [{ id: "escritorio", name: "EscritÃ³rio", deviceId: "350" }],
         controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
@@ -484,7 +552,7 @@ const CLIENT_CONFIG = {
       photo: "photo-brinquedoteca.webp",
       visible: true,
       order: 7,
-      tv: [{ id: "382", name: "Televisão" }],
+      tv: [{ id: "382", name: "TelevisÃ£o" }],
       airConditioner: {
         deviceId: "379",
         brand: "samsung",
@@ -497,44 +565,44 @@ const CLIENT_CONFIG = {
     },
 
     ambiente8: {
-      name: "Suíte Milena",
+      name: "SuÃ­te Milena",
       photo: "photo-suitemilena.webp",
       visible: true,
       order: 8,
       curtains: [{ id: "51", name: "Cortina" }],
       airConditioner: {
-        zones: [{ id: "suitemilena", name: "Suíte Milena", deviceId: "188" }],
+        zones: [{ id: "suitemilena", name: "SuÃ­te Milena", deviceId: "188" }],
         controls: { zoneSelector: false, aletas: true, windfree: false },
         temperature: { min: 18, max: 25, default: 22 },
       },
-      tv: [{ id: "53", name: "Televisão" }],
-      music: [{ id: "54", name: "Música" }],
+      tv: [{ id: "53", name: "TelevisÃ£o" }],
+      music: [{ id: "54", name: "MÃºsica" }],
       clarotv: [{ id: "55", name: "Claro TV" }],
     },
 
     ambiente9: {
-      name: "Suíte Fabio",
+      name: "SuÃ­te Fabio",
       photo: "photo-suitefabio.webp",
       visible: true,
       order: 10,
       lights: [],
       curtains: [{ id: "52", name: "Cortina" }],
       airConditioner: {
-        zones: [{ id: "suitemaster", name: "Suíte Master", deviceId: "180" }],
+        zones: [{ id: "suitemaster", name: "SuÃ­te Master", deviceId: "180" }],
         controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
     },
 
     ambiente10: {
-      name: "Suíte Laura",
+      name: "SuÃ­te Laura",
       photo: "photo-suitelaura.webp",
       visible: true,
       order: 10,
       lights: [],
       curtains: [{ id: "52", name: "Cortina" }],
       airConditioner: {
-        zones: [{ id: "suitemaster", name: "Suíte Master", deviceId: "180" }],
+        zones: [{ id: "suitemaster", name: "SuÃ­te Master", deviceId: "180" }],
         controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
@@ -542,6 +610,30 @@ const CLIENT_CONFIG = {
   },
 
   devices: {
+    audioDefaults: {
+      commandDeviceId: "3",
+      metadataDeviceId: "3",
+    },
+    legacyControls: {
+      piscinaTelao: {
+        screen: "157",
+        receiver: "16",
+        remote: "114",
+        volume: "353",
+      },
+      suiteMaster: {
+        tv: "183",
+        htv: "189",
+      },
+      suite1: {
+        tv: "184",
+        htv: "190",
+      },
+      suite2: {
+        tv: "185",
+        htv: "191",
+      },
+    },
     airConditionerBrands: {
       default: {
         label: "Padrao",
@@ -612,11 +704,11 @@ const CLIENT_CONFIG = {
     },
     // Inicializa????o por ambiente (dispositivos com comando "initialize")
     initializeDevicesByEnv: {
-      ambiente1: ["357", "347", "354", "355", "356", "362"],
+      ambiente1: ["5", "2", "3", "7", "6", "4"],
     },
 
-    // O polling atual usa ALL_LIGHT_IDS também para volume do Denon
-    extraPollingDevices: ["354"],
+    // O polling atual usa ALL_LIGHT_IDS tambÃ©m para volume do Denon
+    extraPollingDevices: ["3"],
   },
 };
 
@@ -686,23 +778,23 @@ const bottomNavConfig = {
     autoHideOnScroll: true,
     scrollDelta: 8,
     revealAtTop: 10,
-    // Atalho nas páginas de controle: recolhe a nav para um único botão Home.
+    // Atalho nas pÃ¡ginas de controle: recolhe a nav para um Ãºnico botÃ£o Home.
     controlHomeShortcut: {
       enabled: true,
-      // Aplicar atalho somente em páginas de controle (não em qualquer rota).
+      // Aplicar atalho somente em pÃ¡ginas de controle (nÃ£o em qualquer rota).
       onlyControlRoutes: true,
       includeRoutes: ["scenes-criar"],
-      // Rotas de controle seguem o padrão: ambiente{n}-{controle}
+      // Rotas de controle seguem o padrÃ£o: ambiente{n}-{controle}
       controlRoutePattern: "^ambiente\\d+-",
-      // Rotas principais que mantêm a barra completa no centro.
+      // Rotas principais que mantÃªm a barra completa no centro.
       // Todas as demais rotas entram no modo compacto de retorno.
       primaryRoutes: ["home", "ambientes", "curtains", "scenes"],
       // Como localizar o item de Home dentro de items[].
       homePath: "ambientes",
       homeId: "ambientes",
-      // No modo compacto, mantém sempre visível (sem notch de scroll).
+      // No modo compacto, mantÃ©m sempre visÃ­vel (sem notch de scroll).
       disableAutoHide: true,
-      // Ajustes visuais do botão recolhido no canto inferior esquerdo.
+      // Ajustes visuais do botÃ£o recolhido no canto inferior esquerdo.
       leftOffset: "16px",
       bottomOffset: "18px",
       size: "68px",
@@ -860,7 +952,7 @@ function getMainDashboardConfig() {
 }
 
 // =========================
-// Helpers (API pública)
+// Helpers (API pÃºblica)
 // =========================
 
 function getDashboardAccessApi() {
@@ -906,6 +998,117 @@ function getEnvironment(envKey) {
   return (
     (CLIENT_CONFIG?.environments && CLIENT_CONFIG.environments[envKey]) || null
   );
+}
+
+function normalizeConfigId(value, fallback = "") {
+  if (value === undefined || value === null || value === "") {
+    return fallback ? String(fallback) : "";
+  }
+  return String(value).trim();
+}
+
+function normalizeEnvironmentDevice(device) {
+  if (!device || typeof device !== "object") return null;
+
+  const baseId = normalizeConfigId(device.id || device.deviceId);
+  if (!baseId) return null;
+
+  return {
+    ...device,
+    id: baseId,
+    deviceId: baseId,
+    metadataId: normalizeConfigId(
+      device.metadataDeviceId || device.metadataId,
+      baseId,
+    ),
+    transportId: normalizeConfigId(
+      device.transportDeviceId || device.transportId,
+      baseId,
+    ),
+    volumeId: normalizeConfigId(
+      device.volumeDeviceId || device.volumeId,
+      baseId,
+    ),
+    powerId: normalizeConfigId(
+      device.powerDeviceId || device.powerId,
+      baseId,
+    ),
+    controlId: normalizeConfigId(
+      device.controlDeviceId || device.controlId,
+      baseId,
+    ),
+    receiverId: normalizeConfigId(
+      device.receiverDeviceId || device.receiverId,
+    ),
+    displayId: normalizeConfigId(
+      device.displayDeviceId || device.displayId,
+    ),
+    inputId: normalizeConfigId(
+      device.inputDeviceId || device.inputId,
+    ),
+  };
+}
+
+function getEnvironmentDeviceList(envKey, field) {
+  const env = getEnvironment(envKey);
+  if (!env) return [];
+
+  const list = Array.isArray(env?.[field]) ? env[field] : [];
+  return list.map((device) => normalizeEnvironmentDevice(device)).filter(Boolean);
+}
+
+function getEnvironmentPrimaryDevice(envKey, field, index = 0) {
+  const list = getEnvironmentDeviceList(envKey, field);
+  if (!list.length) return null;
+
+  const parsedIndex = Number.parseInt(index, 10);
+  const safeIndex =
+    Number.isFinite(parsedIndex) && parsedIndex >= 0 ? parsedIndex : 0;
+
+  return list[safeIndex] || null;
+}
+
+function getEnvironmentDeviceBinding(envKey, field, bindingKey, index = 0) {
+  const device = getEnvironmentPrimaryDevice(envKey, field, index);
+  if (!device) return "";
+
+  const key = String(bindingKey || "").trim().toLowerCase();
+
+  if (!key || key === "id" || key === "device" || key === "deviceid") {
+    return device.id;
+  }
+
+  if (key === "metadata" || key === "metadataid") return device.metadataId;
+  if (key === "transport" || key === "transportid") return device.transportId;
+  if (key === "volume" || key === "volumeid") return device.volumeId;
+  if (key === "power" || key === "powerid") return device.powerId;
+  if (key === "control" || key === "controlid") return device.controlId;
+  if (key === "receiver" || key === "receiverid") return device.receiverId;
+  if (key === "display" || key === "displayid") return device.displayId;
+  if (key === "input" || key === "inputid") return device.inputId;
+
+  const bindingName = String(bindingKey || "").trim();
+  return normalizeConfigId(device[bindingName] || device[`${bindingName}Id`]);
+}
+
+function getEnvironmentControlId(envKey, controlKey) {
+  const env = getEnvironment(envKey);
+  if (!env?.controlIds || typeof env.controlIds !== "object") return "";
+  return normalizeConfigId(env.controlIds[controlKey]);
+}
+
+function getLegacyControlId(groupKey, controlKey) {
+  return normalizeConfigId(
+    CLIENT_CONFIG?.devices?.legacyControls?.[groupKey]?.[controlKey],
+  );
+}
+
+function getAudioDefaults() {
+  const defaults = CLIENT_CONFIG?.devices?.audioDefaults || {};
+  return {
+    commandDeviceId: normalizeConfigId(defaults.commandDeviceId),
+    metadataDeviceId: normalizeConfigId(defaults.metadataDeviceId),
+  };
 }
 
 function getEnvironmentLightIds(envKey) {
@@ -1077,7 +1280,7 @@ function getAcDeviceIds() {
       : "";
     const resolvedAcId = explicitAcId || firstZoneId;
     if (resolvedAcId) {
-      // Configuração por ambiente (deviceId/zones) tem precedência sobre mapa legado.
+      // ConfiguraÃ§Ã£o por ambiente (deviceId/zones) tem precedÃªncia sobre mapa legado.
       ids[env.key] = resolvedAcId;
     }
   });
@@ -1231,7 +1434,7 @@ function generateLightsControls(envKey) {
       const defaultLevel = normalizeDimmerLevel(light?.defaultLevel, 80);
       const deviceId = String(light.id);
 
-      // Todas as luzes agora têm ícone de background (light-on com 60% opacity quando ligado)
+      // Todas as luzes agora tÃªm Ã­cone de background (light-on com 60% opacity quando ligado)
       const backgroundIcon = DEFAULT_ICON_ON;
 
       if (!dimmerEnabled) {
@@ -1341,6 +1544,12 @@ window.getWeatherConfig = getWeatherConfig;
 window.getMainDashboardConfig = getMainDashboardConfig;
 window.getVisibleEnvironments = getVisibleEnvironments;
 window.getEnvironment = getEnvironment;
+window.getEnvironmentDeviceList = getEnvironmentDeviceList;
+window.getEnvironmentPrimaryDevice = getEnvironmentPrimaryDevice;
+window.getEnvironmentDeviceBinding = getEnvironmentDeviceBinding;
+window.getEnvironmentControlId = getEnvironmentControlId;
+window.getLegacyControlId = getLegacyControlId;
+window.getAudioDefaults = getAudioDefaults;
 window.getEnvironmentLightIds = getEnvironmentLightIds;
 window.getEnvironmentCurtainIds = getEnvironmentCurtainIds;
 window.getAllCurtainIds = getAllCurtainIds;
@@ -1358,4 +1567,5 @@ window.generateLightsControls = generateLightsControls;
 window.generateCurtainsControls = generateCurtainsControls;
 window.getAuthConfig = getAuthConfig;
 
-console.log("✅ CLIENT_CONFIG carregado:", CLIENT_CONFIG.clientInfo.name);
+console.log("âœ… CLIENT_CONFIG carregado:", CLIENT_CONFIG.clientInfo.name);
+

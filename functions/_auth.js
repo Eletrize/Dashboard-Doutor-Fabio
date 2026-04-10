@@ -1,6 +1,6 @@
 const DEFAULT_HUBITAT_BASE_URL =
-  "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144";
-const DEFAULT_HUBITAT_ACCESS_TOKEN = "94f13f9f-2842-48ea-a860-02eda566a02a";
+  "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7";
+const DEFAULT_HUBITAT_ACCESS_TOKEN = "c5a8aac8-69cc-42e2-84dc-c0b6519d72bd";
 
 export const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",

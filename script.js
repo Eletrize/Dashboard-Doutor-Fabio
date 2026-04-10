@@ -708,10 +708,14 @@ let ALL_LIGHT_IDS =
     ? getAllLightIds()
     : [];
 
-const DEFAULT_DENON_COMMAND_DEVICE_ID = "354";
-const DENON_COMMAND_DEVICE_ID_BY_ENV = {
-  ambiente3: "353",
-};
+const AUDIO_DEFAULTS =
+  typeof getAudioDefaults === "function"
+    ? getAudioDefaults()
+    : { commandDeviceId: "354", metadataDeviceId: "29" };
+const DEFAULT_DENON_COMMAND_DEVICE_ID =
+  String(AUDIO_DEFAULTS?.commandDeviceId || "").trim() || "354";
+const DEFAULT_DENON_METADATA_DEVICE_ID =
+  String(AUDIO_DEFAULTS?.metadataDeviceId || "").trim() || "29";
 const ENV_REMOTE_DEVICE_FIELDS = [
   "music",
   "tv",
@@ -744,10 +748,67 @@ function getEnvironmentKeyFromRouteHash(hash = window.location.hash) {
   return match ? match[1] : null;
 }
 
+function getConfiguredEnvironmentDevice(envKey, field) {
+  if (typeof getEnvironmentPrimaryDevice === "function") {
+    return getEnvironmentPrimaryDevice(envKey, field);
+  }
+  return null;
+}
+
+function getConfiguredEnvironmentBinding(
+  envKey,
+  field,
+  bindingKey,
+  fallback = "",
+) {
+  if (typeof getEnvironmentDeviceBinding === "function") {
+    const value = getEnvironmentDeviceBinding(envKey, field, bindingKey);
+    if (value) return String(value);
+  }
+
+  const device = getConfiguredEnvironmentDevice(envKey, field);
+  if (!device) return String(fallback || "");
+
+  const directValue =
+    device[bindingKey] ||
+    device[`${bindingKey}Id`] ||
+    (bindingKey === "id" ? device.id : "");
+  return String(directValue || fallback || "");
+}
+
+function getConfiguredEnvironmentControlId(envKey, controlKey, fallback = "") {
+  if (typeof getEnvironmentControlId === "function") {
+    const value = getEnvironmentControlId(envKey, controlKey);
+    if (value) return String(value);
+  }
+  return String(fallback || "");
+}
+
+function getLegacyConfiguredId(groupKey, controlKey, fallback = "") {
+  if (typeof getLegacyControlId === "function") {
+    const value = getLegacyControlId(groupKey, controlKey);
+    if (value) return String(value);
+  }
+  return String(fallback || "");
+}
+
+function getDenonMetadataDeviceIdForEnv(envKey) {
+  const configuredId = getConfiguredEnvironmentBinding(
+    envKey,
+    "music",
+    "metadata",
+  );
+  return configuredId || DEFAULT_DENON_METADATA_DEVICE_ID;
+}
+
 function getDenonCommandDeviceIdForEnv(envKey) {
-  if (!envKey) return DEFAULT_DENON_COMMAND_DEVICE_ID;
+  const configuredId =
+    getConfiguredEnvironmentBinding(envKey, "music", "volume") ||
+    getConfiguredEnvironmentBinding(envKey, "music", "power");
+
   return (
-    DENON_COMMAND_DEVICE_ID_BY_ENV[envKey] || DEFAULT_DENON_COMMAND_DEVICE_ID
+    configuredId ||
+    DEFAULT_DENON_COMMAND_DEVICE_ID
   );
 }
 
@@ -1800,8 +1861,12 @@ function tvCommand(el, command) {
     const route = (window.location.hash || "").replace("#", "");
     const envKey = route.split("-")[0] || "";
     if (envKey === "ambiente1" && controlType) {
-      const receiverId = "354";
-      const tvId = "362";
+      const receiverId =
+        getConfiguredEnvironmentBinding(envKey, controlType, "receiver") ||
+        getConfiguredEnvironmentControlId(envKey, "receiver", "354");
+      const tvId =
+        getConfiguredEnvironmentBinding(envKey, controlType, "display") ||
+        getConfiguredEnvironmentBinding(envKey, "tv", "display", "362");
       const inputByType = {
         clarotv: "DVD",
         appletv: "GAME",
@@ -2098,10 +2163,42 @@ document.addEventListener("click", (e) => {
 
 // Macro para ligar HTV + TV + Receiver de uma vez
 
+function getHomeTheaterControlIds() {
+  return {
+    tvControlId:
+      getConfiguredEnvironmentControlId("ambiente1", "tvControl") ||
+      getConfiguredEnvironmentBinding("ambiente1", "tv", "power", "111"),
+    tvDisplayId: getConfiguredEnvironmentBinding(
+      "ambiente1",
+      "tv",
+      "display",
+      "362",
+    ),
+    receiverId:
+      getConfiguredEnvironmentControlId("ambiente1", "receiver", "354") ||
+      getConfiguredEnvironmentBinding("ambiente1", "tv", "receiver", "354"),
+  };
+}
+
+function getPoolScreenControlIds() {
+  return {
+    screenId:
+      getConfiguredEnvironmentControlId("ambiente3", "screen") ||
+      getLegacyConfiguredId("piscinaTelao", "screen", "157"),
+    receiverId:
+      getConfiguredEnvironmentControlId("ambiente3", "screenReceiver") ||
+      getLegacyConfiguredId("piscinaTelao", "receiver", "16"),
+  };
+}
+
+function getLegacySuiteTvId(groupKey, fallback) {
+  return getLegacyConfiguredId(groupKey, "tv", fallback);
+}
+
 // Macro para ligar TV e Receiver e setar input SAT/CBL
 function htvMacroOn() {
-  const TV_ID = "111";
-  const RECEIVER_ID = "354";
+  const { tvControlId: TV_ID, receiverId: RECEIVER_ID } =
+    getHomeTheaterControlIds();
 
   console.log("🎬 Macro HTV: Inicializando, ligando TV, setando HDMI 2 e input SAT/CBL...");
 
@@ -2142,8 +2239,8 @@ function htvMacroOn() {
 
 // Versão anterior da função (mantida para referência)
 function htvMacroOn_old() {
-  const TV_ID = "111";
-  const RECEIVER_ID = "354";
+  const { tvControlId: TV_ID, receiverId: RECEIVER_ID } =
+    getHomeTheaterControlIds();
 
   console.log("🎬 Macro HTV: Ligando TV, setando HDMI 2 e input SAT/CBL...");
 
@@ -2179,8 +2276,8 @@ function htvMacroOn_old() {
 
 // Macro para ligar Telão da Piscina
 function telaoMacroOn() {
-  const TELAO_ID = "157";
-  const RECEIVER_ID = "16";
+  const { screenId: TELAO_ID, receiverId: RECEIVER_ID } =
+    getPoolScreenControlIds();
 
   console.log("🎬 Macro Telão: Ligando Telão e setando input SAT/CBL...");
 
@@ -2197,10 +2294,28 @@ function telaoMacroOn() {
     });
 }
 
+function telaoMacroOff() {
+  const { screenId: TELAO_ID, receiverId: RECEIVER_ID } =
+    getPoolScreenControlIds();
+
+  console.log("🎬 Macro Telão: Desligando telão e receiver...");
+
+  Promise.all([
+    sendHubitatCommand(TELAO_ID, "off"),
+    sendHubitatCommand(RECEIVER_ID, "off"),
+  ])
+    .then(() => {
+      console.log("✅ Telão e receiver desligados");
+    })
+    .catch((error) => {
+      console.error("❌ Erro ao desligar Telão:", error);
+    });
+}
+
 // Macro para desligar TV e Receiver
 function htvMacroOff() {
-  const TV_ID = "111";
-  const RECEIVER_ID = "354";
+  const { tvControlId: TV_ID, receiverId: RECEIVER_ID } =
+    getHomeTheaterControlIds();
 
   console.log("🎬 Macro HTV: Desligando TV e Receiver...");
 
@@ -2222,7 +2337,7 @@ function htvMacroOff() {
 
 // Macro para ligar HTV Suíte Master: Liga TV, aguarda 3s, seleciona HDMI2
 function suiteMasterHtvOn() {
-  const TV_ID = "183"; // TV Samsung Suíte Master
+  const TV_ID = getLegacySuiteTvId("suiteMaster", "183");
 
   console.log("🎬 Macro Suíte Master HTV: Ligando TV e selecionando HDMI2...");
 
@@ -2246,7 +2361,7 @@ function suiteMasterHtvOn() {
 
 // Macro para desligar HTV Suíte Master: Apenas desliga TV
 function suiteMasterHtvOff() {
-  const TV_ID = "183"; // TV Samsung Suíte Master
+  const TV_ID = getLegacySuiteTvId("suiteMaster", "183");
 
   console.log("🎬 Macro Suíte Master HTV: Desligando TV...");
 
@@ -2261,7 +2376,7 @@ function suiteMasterHtvOff() {
 
 // Macro para ligar TV Suíte Master: Apenas liga TV (apps internos)
 function suiteMasterTvOn() {
-  const TV_ID = "183"; // TV Samsung Suíte Master
+  const TV_ID = getLegacySuiteTvId("suiteMaster", "183");
 
   console.log("🎬 Macro Suíte Master TV: Ligando TV...");
 
@@ -2276,7 +2391,7 @@ function suiteMasterTvOn() {
 
 // Macro para desligar TV Suíte Master: Apenas desliga TV
 function suiteMasterTvOff() {
-  const TV_ID = "183"; // TV Samsung Suíte Master
+  const TV_ID = getLegacySuiteTvId("suiteMaster", "183");
 
   console.log("🎬 Macro Suíte Master TV: Desligando TV...");
 
@@ -2295,7 +2410,7 @@ function suiteMasterTvOff() {
 
 // Macro para ligar HTV Suíte I: Liga TV, aguarda 3s, seleciona HDMI2
 function suite1HtvOn() {
-  const TV_ID = "184"; // TV Samsung Suíte I
+  const TV_ID = getLegacySuiteTvId("suite1", "184");
 
   console.log("🎬 Macro Suíte I HTV: Ligando TV e selecionando HDMI2...");
 
@@ -2319,7 +2434,7 @@ function suite1HtvOn() {
 
 // Macro para desligar HTV Suíte I: Apenas desliga TV
 function suite1HtvOff() {
-  const TV_ID = "184"; // TV Samsung Suíte I
+  const TV_ID = getLegacySuiteTvId("suite1", "184");
 
   console.log("🎬 Macro Suíte I HTV: Desligando TV...");
 
@@ -2334,7 +2449,7 @@ function suite1HtvOff() {
 
 // Macro para ligar TV Suíte I: Apenas liga TV (apps internos)
 function suite1TvOn() {
-  const TV_ID = "184"; // TV Samsung Suíte I
+  const TV_ID = getLegacySuiteTvId("suite1", "184");
 
   console.log("🎬 Macro Suíte I TV: Ligando TV...");
 
@@ -2349,7 +2464,7 @@ function suite1TvOn() {
 
 // Macro para desligar TV Suíte I: Apenas desliga TV
 function suite1TvOff() {
-  const TV_ID = "184"; // TV Samsung Suíte I
+  const TV_ID = getLegacySuiteTvId("suite1", "184");
 
   console.log("🎬 Macro Suíte I TV: Desligando TV...");
 
@@ -2368,7 +2483,7 @@ function suite1TvOff() {
 
 // Macro para ligar HTV Suíte II: Liga TV, aguarda 3s, seleciona HDMI2
 function suite2HtvOn() {
-  const TV_ID = "185"; // TV Samsung Suíte II
+  const TV_ID = getLegacySuiteTvId("suite2", "185");
 
   console.log("🎬 Macro Suíte II HTV: Ligando TV e selecionando HDMI2...");
 
@@ -2392,7 +2507,7 @@ function suite2HtvOn() {
 
 // Macro para desligar HTV Suíte II: Apenas desliga TV
 function suite2HtvOff() {
-  const TV_ID = "185"; // TV Samsung Suíte II
+  const TV_ID = getLegacySuiteTvId("suite2", "185");
 
   console.log("🎬 Macro Suíte II HTV: Desligando TV...");
 
@@ -2407,7 +2522,7 @@ function suite2HtvOff() {
 
 // Macro para ligar TV Suíte II: Apenas liga TV (apps internos)
 function suite2TvOn() {
-  const TV_ID = "185"; // TV Samsung Suíte II
+  const TV_ID = getLegacySuiteTvId("suite2", "185");
 
   console.log("🎬 Macro Suíte II TV: Ligando TV...");
 
@@ -2422,7 +2537,7 @@ function suite2TvOn() {
 
 // Macro para desligar TV Suíte II: Apenas desliga TV
 function suite2TvOff() {
-  const TV_ID = "185"; // TV Samsung Suíte II
+  const TV_ID = getLegacySuiteTvId("suite2", "185");
 
   console.log("🎬 Macro Suíte II TV: Desligando TV...");
 
@@ -2441,8 +2556,8 @@ function suite2TvOff() {
 
 // Macro para ligar TV e Receiver e setar input TV
 function tvMacroOn() {
-  const TV_ID = "111";
-  const RECEIVER_ID = "354";
+  const { tvControlId: TV_ID, receiverId: RECEIVER_ID } =
+    getHomeTheaterControlIds();
 
   console.log("🎬 Macro TV: Ligando TV, depois setando input TV...");
 
@@ -2468,8 +2583,8 @@ function tvMacroOn() {
 
 // Macro para desligar TV e Receiver
 function tvMacroOff() {
-  const TV_ID = "111";
-  const RECEIVER_ID = "354";
+  const { tvControlId: TV_ID, receiverId: RECEIVER_ID } =
+    getHomeTheaterControlIds();
 
   console.log("🎬 Macro TV: Desligando TV e Receiver...");
 
@@ -2487,8 +2602,8 @@ function tvMacroOff() {
 
 // Macro para ativar Fire TV (HDMI 2 + BD no Receiver)
 function fireTVMacro() {
-  const TV_ID = "111";
-  const RECEIVER_ID = "354";
+  const { tvControlId: TV_ID, receiverId: RECEIVER_ID } =
+    getHomeTheaterControlIds();
 
   console.log("🎬 Macro Fire TV: Selecionando HDMI 2 e setando Receiver para BD...");
 
@@ -4170,8 +4285,8 @@ const CLIENT_MAKER_API_CLOUD =
 const DEFAULT_MAKER_API_CLOUD = {
   enabled: true,
   appBaseUrl:
-    "https://cloud.hubitat.com/api/df90ffba-2205-41f8-8f62-ec4c430ae94f/apps/144",
-  accessToken: "94f13f9f-2842-48ea-a860-02eda566a02a",
+    "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7",
+  accessToken: "c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
   deviceIds: "*",
 };
 
@@ -7365,15 +7480,18 @@ function updateDenonMetadata() {
     .then((data) => {
       console.log("Ã°Å¸Å½Âµ Resposta completa do Hubitat:", data);
 
-      // Procurar o Denon AVR pelos metadados (ID 29) nos dados
+      const currentEnvKey = getEnvironmentKeyFromRouteHash(window.location.hash);
+      const denonMetadataDeviceId = getDenonMetadataDeviceIdForEnv(
+        currentEnvKey,
+      );
+
+      // Procurar o device de metadados da música atual nos dados
       // O formato pode ser um array direto ou um objeto com propriedade devices
       const devices = Array.isArray(data) ? data : data.devices || [];
-      // O ID do dispositivo que fornece metadados do Denon é 29
-      const DENON_METADATA_DEVICE_ID = "29";
       let denonDevice = devices.find(
         (device) =>
-          String(device.id) === DENON_METADATA_DEVICE_ID ||
-          device.id === parseInt(DENON_METADATA_DEVICE_ID, 10)
+          String(device.id) === denonMetadataDeviceId ||
+          device.id === parseInt(denonMetadataDeviceId, 10)
       );
       // Fallback: procurar por dispositivos cujo nome/label contenha 'denon', 'receiver' ou 'av'
       if (!denonDevice) {
@@ -7580,7 +7698,9 @@ function updateDenonMetadata() {
         
         // Debug: se albumArt não foi encontrado, listar todos os atributos disponíveis
         if (!albumArt) {
-          console.log("⚠️ Album art não encontrado. Atributos disponíveis no dispositivo 29:");
+          console.log(
+            `⚠️ Album art não encontrado. Atributos disponíveis no dispositivo ${denonMetadataDeviceId}:`
+          );
           if (Array.isArray(denonDevice.attributes)) {
             denonDevice.attributes.forEach(attr => {
               const name = attr.name?.toLowerCase() || '';
@@ -7606,7 +7726,7 @@ function updateDenonMetadata() {
         updateMusicPlayerUI(artist, track, album, albumArt);
       } else {
         console.log(
-          "Ã¢Å¡Â Ã¯Â¸Â Denon AVR (ID 29) (metadados) não encontrado nos dados"
+          `Ã¢Å¡Â Ã¯Â¸Â Device de metadados ${denonMetadataDeviceId} não encontrado nos dados`
         );
         console.log(
           "Dispositivos disponÃƒÂ­veis:",
@@ -7971,7 +8091,9 @@ function initMusicPlayerUI() {
 
   // Device IDs (default) Ã¢â‚¬â€ podem ser sobrescritos por data-* no HTML da página ativa
   let DENON_CMD_DEVICE_ID = getDenonCommandDeviceIdForCurrentRoute(); // Denon AVR - comandos (volume/mute/power)
-  let DENON_MUSIC_DEVICE_ID = "29"; // Denon HEOS - metadados/transport (play/pause/next/prev)
+  let DENON_MUSIC_DEVICE_ID = getDenonMetadataDeviceIdForEnv(
+    getEnvironmentKeyFromRouteHash(window.location.hash),
+  );
 
   // Tentar detectar overrides a partir dos atributos data-*
   try {
@@ -8004,7 +8126,7 @@ function initMusicPlayerUI() {
 
   // Regras por ambiente têm precedência para evitar IDs legados nos controles de volume.
   const currentEnvKey = getEnvironmentKeyFromRouteHash(window.location.hash);
-  const forcedDenonCmdId = DENON_COMMAND_DEVICE_ID_BY_ENV[currentEnvKey];
+  const forcedDenonCmdId = getDenonCommandDeviceIdForEnv(currentEnvKey);
   if (forcedDenonCmdId) {
     DENON_CMD_DEVICE_ID = String(forcedDenonCmdId);
   }
@@ -8882,6 +9004,8 @@ window.startDimmerLongPress = startDimmerLongPress;
 window.cancelDimmerLongPress = cancelDimmerLongPress;
 window.togglePoolControl = togglePoolControl;
 window.fireTVMacro = fireTVMacro;
+window.telaoMacroOn = telaoMacroOn;
+window.telaoMacroOff = telaoMacroOff;
 window.htvMacroOn = htvMacroOn;
 window.htvMacroOff = htvMacroOff;
 window.tvMacroOn = tvMacroOn;
