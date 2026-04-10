@@ -371,7 +371,7 @@ const CLIENT_CONFIG = {
         { id: "12245", name: "Entrada" },
         { id: "12246", name: "Spots" },
         { id: "12247", name: "Sanca" },
-        { id: "12333", name: "Lustre", type: "dimmer", defaultLevel: 60 },
+        { id: "12233", name: "Lustre", type: "dimmer", defaultLevel: 60 },
         { id: "12231", name: "Spots Dimmer", type: "dimmer", defaultLevel: 100 },
       ],
       quickActions: [
@@ -383,7 +383,7 @@ const CLIENT_CONFIG = {
             { id: "12246", commandOn: "on", commandOff: "off" },
             { id: "12247", commandOn: "on", commandOff: "off" },
             {
-              id: "12333",
+              id: "12233",
               commandOn: "setLevel",
               commandOff: "off",
               valueOn: 60,
