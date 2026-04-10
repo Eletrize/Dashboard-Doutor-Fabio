@@ -1332,6 +1332,83 @@ function getMainControlIcon(el) {
   );
 }
 
+function isLinkedLedOnForModeButton(linkedLedId) {
+  const normalizedLedId = String(linkedLedId || "").trim();
+  if (!normalizedLedId) return false;
+
+  const selectorId =
+    typeof escapeDeviceIdForSelector === "function"
+      ? escapeDeviceIdForSelector(normalizedLedId)
+      : normalizedLedId;
+  const linkedControls = Array.from(
+    document.querySelectorAll(`[data-device-id="${selectorId}"]`),
+  ).filter((el) => !el.classList.contains("control-card--led-mode"));
+
+  if (linkedControls.length > 0) {
+    return linkedControls.some(
+      (el) => normalizeSwitchState(el?.dataset?.state) === "on",
+    );
+  }
+
+  return normalizeSwitchState(getStoredState(normalizedLedId)) === "on";
+}
+
+function syncLedModeControls() {
+  const ledModeButtons = document.querySelectorAll(".control-card--led-mode");
+  if (!ledModeButtons.length) return;
+
+  ledModeButtons.forEach((button) => {
+    const linkedLedId = button?.dataset?.ledDeviceId;
+    const isEnabled = isLinkedLedOnForModeButton(linkedLedId);
+    button.dataset.enabled = isEnabled ? "true" : "false";
+    button.setAttribute("aria-disabled", isEnabled ? "false" : "true");
+    button.classList.toggle("control-card--led-mode-disabled", !isEnabled);
+  });
+}
+
+function toggleLedModeControl(el) {
+  if (!el || !el.dataset) return;
+  const linkedLedId = String(el.dataset.ledDeviceId || "").trim();
+  const isLinkedLedOn = isLinkedLedOnForModeButton(linkedLedId);
+  const isEnabled =
+    isLinkedLedOn &&
+    el.dataset.enabled === "true" &&
+    el.getAttribute("aria-disabled") !== "true";
+  if (!isEnabled) return;
+
+  const deviceId = String(el.dataset.deviceId || "").trim();
+  if (!deviceId) return;
+
+  recentCommands.set(deviceId, Date.now());
+
+  const computedTransform = window.getComputedStyle(el).transform;
+  const baseTransform = computedTransform !== "none" ? computedTransform : "";
+  el.style.transform = baseTransform
+    ? `${baseTransform} scale(0.99)`
+    : "scale(0.99)";
+  el.style.background = "rgba(255, 255, 255, 0.15)";
+  el.style.borderColor = "rgba(255, 255, 255, 0.3)";
+  setTimeout(() => {
+    el.style.transform = "";
+    el.style.background = "";
+    el.style.borderColor = "";
+  }, 180);
+
+  console.log(`Enviando comando on (LED Mode) para dispositivo ${deviceId}`);
+  sendHubitatCommand(deviceId, "on")
+    .then(() => {
+      console.log(
+        `✅ Comando on (LED Mode) enviado com sucesso para dispositivo ${deviceId}`,
+      );
+    })
+    .catch((error) => {
+      console.error(
+        `⚠️Erro ao enviar comando LED Mode para dispositivo ${deviceId}:`,
+        error,
+      );
+    });
+}
+
 function toggleRoomControl(el) {
   const resolvedDeviceId = resolveLightDeviceIdFromConfig(el);
   const isOff = (el.dataset.state || "off") === "off";
@@ -3111,6 +3188,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initVolumeSlider();
   initAppleTvGestureControls();
   ensureTopBarVisible();
+  syncLedModeControls();
 
   // Re-inicializar quando a página mudar (para SPAs)
   window.addEventListener("hashchange", () => {
@@ -3120,6 +3198,7 @@ document.addEventListener("DOMContentLoaded", () => {
       initVolumeSlider();
       initAppleTvGestureControls();
       ensureTopBarVisible();
+      syncLedModeControls();
     }, 100);
   });
 
@@ -3215,6 +3294,8 @@ function setRoomControlUI(el, state) {
     }
     bgIcon.style.opacity = normalized === "on" ? "0.3" : "0";
   }
+
+  syncLedModeControls();
 }
 
 function normalizeSwitchState(value, fallback = "off") {
@@ -9186,6 +9267,7 @@ function handleMasterCurtainsClose() {
 
 // Exportar funções usadas em onclick="" no HTML (necessário para IIFE)
 window.toggleRoomControl = toggleRoomControl;
+window.toggleLedModeControl = toggleLedModeControl;
 window.toggleDimmerControl = toggleDimmerControl;
 window.handleDimmerInput = handleDimmerInput;
 window.handleDimmerChange = handleDimmerChange;

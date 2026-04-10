@@ -503,17 +503,17 @@ const CLIENT_CONFIG = {
       visible: true,
       order: 4,
       lights: [
-        { id: "308", name: "Corredor Espeto" },
-        { id: "310", name: "Piscina" },
-        { id: "59", name: "LED Piscina" },
+        { id: "12250", name: "Espetos Corredor" },
+        { id: "12252", name: "Piscina" },
+        { id: "12452", name: "LED Piscina" },
       ],
       quickActions: [
         {
           type: "lights",
           devices: [
-            { id: "308", commandOn: "on", commandOff: "off" },
-            { id: "310", commandOn: "on", commandOff: "off" },
-            { id: "59", commandOn: "on", commandOff: "off" },
+            { id: "12250", commandOn: "on", commandOff: "off" },
+            { id: "12252", commandOn: "on", commandOff: "off" },
+            { id: "12452", commandOn: "on", commandOff: "off" },
           ],
         },
       ],
@@ -1398,6 +1398,8 @@ function generateLightsControls(envKey) {
   const env = getEnvironment(envKey);
   if (!env?.lights?.length) return "";
 
+  const LED_MODE_DEVICE_ID = "12451";
+
   const DEFAULT_ICON_ON =
     CLIENT_CONFIG?.ui?.toggles?.light?.on ||
     "images/icons/icon-small-light-on.svg";
@@ -1410,6 +1412,16 @@ function generateLightsControls(envKey) {
   const DIMMER_ICON_OFF =
     CLIENT_CONFIG?.ui?.toggles?.dimmer?.off ||
     "images/icons/icon-dimmer-off.svg";
+
+  const buildLedModeCard = (linkedLedId) => `
+        <div class="control-card control-card--led-mode control-card--led-mode-disabled" data-state="off" data-device-id="${LED_MODE_DEVICE_ID}" data-led-device-id="${linkedLedId}" data-icon-on="images/icons/ledmode.svg" data-icon-off="images/icons/ledmode.svg" data-light-name="LED Mode" aria-disabled="true" onclick="toggleLedModeControl(this)">
+          <div class="control-icon-wrap">
+            <img class="control-icon control-icon-outline" src="images/icons/ledmode.svg" alt="LED Mode">
+            <img class="control-icon control-icon-main" src="images/icons/ledmode.svg" alt="LED Mode">
+          </div>
+          <div class="control-label">LED Mode</div>
+        </div>
+      `;
 
   return env.lights
     .map((light, index) => {
@@ -1430,12 +1442,13 @@ function generateLightsControls(envKey) {
         : DEFAULT_ICON_OFF;
       const defaultLevel = normalizeDimmerLevel(light?.defaultLevel, 80);
       const deviceId = String(light.id);
+      const isPoolLedControl = envKey === "ambiente4" && deviceId === "12452";
 
       // Todas as luzes agora tÃªm Ã­cone de background (light-on com 60% opacity quando ligado)
       const backgroundIcon = DEFAULT_ICON_ON;
 
       if (!dimmerEnabled) {
-        return `
+        const lightCard = `
         <div class="control-card" data-state="off" data-device-id="${deviceId}" data-light-name="${light.name}" data-light-index="${index}" data-icon-on="${iconOn}" data-icon-off="${iconOff}" data-icon-bg="${backgroundIcon}" onclick="toggleRoomControl(this)">
           <div class="control-icon-wrap">
             <img class="control-icon control-icon-bg" src="${backgroundIcon}" alt="" style="opacity: 0;">
@@ -1445,6 +1458,8 @@ function generateLightsControls(envKey) {
           <div class="control-label">${light.name}</div>
         </div>
       `;
+
+        return isPoolLedControl ? `${lightCard}${buildLedModeCard(deviceId)}` : lightCard;
       }
 
       const sliderId = `${envKey}-${deviceId}-dimmer`;

@@ -1461,6 +1461,29 @@ body.bottom-nav-active {
   background: var(--glass-bg-active);
   border-color: var(--glass-border-strong);
 }
+.control-card--led-mode .control-icon {
+  width: 56px;
+  height: 56px;
+}
+.control-card--led-mode-disabled {
+  opacity: 0.38;
+  filter: saturate(0.25) grayscale(0.2);
+  cursor: not-allowed;
+  border-style: dashed;
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      #ffffff08,
+      #ffffff08 8px,
+      #00000008 8px,
+      #00000008 16px
+    ),
+    var(--glass-bg);
+  pointer-events: none;
+}
+.control-card--led-mode-disabled .control-icon {
+  opacity: 0.78;
+}
 .dimmer-slider-row {
   width: 100%;
   align-items: center;
