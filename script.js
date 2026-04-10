@@ -7563,7 +7563,7 @@ window.debugEletrize = {
   testMobileApi: async () => {
     console.log("Ã°Å¸Â§Âª Testando APIs para mobile...");
     try {
-      const testUrl = isProduction ? `${POLLING_URL}?devices=366` : "#test";
+      const testUrl = isProduction ? `${POLLING_URL}?devices=10` : "#test";
       // Configurar timeout compatÃƒÂ­vel
       const fetchConfig = {
         method: "GET",
