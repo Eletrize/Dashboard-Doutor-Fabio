@@ -4,6 +4,7 @@
     "/polling",
     "/hubitat-proxy",
     "/admin-access",
+    "/session-bootstrap",
   ]);
 
   const state = {
@@ -168,6 +169,7 @@
 
   async function applySession(session) {
     const previousAuthenticated = state.authenticated;
+    const previousAccessToken = state.accessToken;
 
     state.accessToken = session?.access_token || "";
     state.user = session?.user || null;
@@ -192,6 +194,9 @@
       setGateLocked(false);
       setStatus("", "neutral");
       restorePendingHash();
+      if (!previousAuthenticated || previousAccessToken !== state.accessToken) {
+        warmSessionAccessCache().catch(() => {});
+      }
       if (!previousAuthenticated) {
         notifyAuthenticated();
       }
@@ -210,6 +215,19 @@
       throw error;
     }
     await applySession(data?.session || null);
+  }
+
+  async function warmSessionAccessCache() {
+    if (!state.enabled || !state.authenticated) return;
+
+    try {
+      await fetch("/session-bootstrap", {
+        method: "GET",
+        cache: "no-store",
+      });
+    } catch (error) {
+      console.warn("Falha ao aquecer sessao de acesso:", error);
+    }
   }
 
   async function handleEmailSignIn(event) {

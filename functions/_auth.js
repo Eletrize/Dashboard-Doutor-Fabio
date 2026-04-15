@@ -9,11 +9,152 @@ export const CORS_HEADERS = {
   "Access-Control-Max-Age": "86400",
 };
 
+const DEFAULT_AUTH_VALIDATION_CACHE_TTL_SECONDS = 60 * 60 * 6;
+const DEFAULT_ACCESS_POLICY_CACHE_TTL_SECONDS = 60 * 60 * 6;
+const MIN_CACHE_TTL_SECONDS = 5;
+
+const authValidationCache = new Map();
+const accessPolicyCache = new Map();
+
 function normalizeCsv(rawValue) {
   return String(rawValue || "")
     .split(",")
     .map((entry) => entry.trim().toLowerCase())
     .filter(Boolean);
+}
+
+function parsePositiveInt(rawValue, fallbackValue) {
+  const parsed = Number.parseInt(rawValue, 10);
+  if (!Number.isFinite(parsed) || parsed < MIN_CACHE_TTL_SECONDS) {
+    return fallbackValue;
+  }
+  return parsed;
+}
+
+function decodeJwtPayload(accessToken) {
+  const token = String(accessToken || "").trim();
+  const payloadSegment = token.split(".")[1] || "";
+  if (!payloadSegment) return null;
+
+  try {
+    const normalized = payloadSegment.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+    const decoded = atob(padded);
+    return JSON.parse(decoded);
+  } catch (error) {
+    return null;
+  }
+}
+
+function getTokenExpirationMs(accessToken) {
+  const payload = decodeJwtPayload(accessToken);
+  const expSeconds = Number(payload?.exp);
+  if (!Number.isFinite(expSeconds) || expSeconds <= 0) {
+    return 0;
+  }
+  return expSeconds * 1000;
+}
+
+function resolveCacheExpiryMs(accessToken, ttlMs) {
+  const now = Date.now();
+  const ttlExpiry = now + Math.max(1000, Number(ttlMs) || 1000);
+  const tokenExpiry = getTokenExpirationMs(accessToken);
+
+  if (tokenExpiry > now) {
+    return Math.min(ttlExpiry, tokenExpiry);
+  }
+
+  return ttlExpiry;
+}
+
+function pruneExpiredEntries(cacheMap) {
+  const now = Date.now();
+  for (const [key, entry] of cacheMap.entries()) {
+    if (!entry || Number(entry.expiresAt || 0) <= now) {
+      cacheMap.delete(key);
+    }
+  }
+}
+
+function getCachedEntry(cacheMap, cacheKey) {
+  if (!cacheKey) return null;
+
+  const entry = cacheMap.get(cacheKey);
+  if (!entry) return null;
+
+  if (Number(entry.expiresAt || 0) <= Date.now()) {
+    cacheMap.delete(cacheKey);
+    return null;
+  }
+
+  return entry;
+}
+
+function cloneUser(user) {
+  if (!user || typeof user !== "object") return null;
+  return { ...user };
+}
+
+function cloneProfile(profile) {
+  if (!profile || typeof profile !== "object") return null;
+  return { ...profile };
+}
+
+function toPolicyCacheEntry(policy, userId, expiresAt) {
+  return {
+    userId: String(userId || "").trim(),
+    expiresAt,
+    unrestricted: policy.unrestricted === true,
+    profile: cloneProfile(policy.profile),
+    viewDeviceIds: Array.from(policy.viewDeviceIds || []),
+    controlDeviceIds: Array.from(policy.controlDeviceIds || []),
+    viewEnvironmentKeys: Array.from(policy.viewEnvironmentKeys || []),
+    controlEnvironmentKeys: Array.from(policy.controlEnvironmentKeys || []),
+    sceneEnvironmentKeys: Array.from(policy.sceneEnvironmentKeys || []),
+  };
+}
+
+function fromPolicyCacheEntry(entry) {
+  return {
+    ok: true,
+    unrestricted: entry.unrestricted === true,
+    profile: cloneProfile(entry.profile),
+    viewDeviceIds: new Set(entry.viewDeviceIds || []),
+    controlDeviceIds: new Set(entry.controlDeviceIds || []),
+    viewEnvironmentKeys: new Set(entry.viewEnvironmentKeys || []),
+    controlEnvironmentKeys: new Set(entry.controlEnvironmentKeys || []),
+    sceneEnvironmentKeys: new Set(entry.sceneEnvironmentKeys || []),
+  };
+}
+
+function cacheAuthValidation(accessToken, user, env) {
+  const ttlSeconds = parsePositiveInt(
+    env?.AUTH_VALIDATION_CACHE_TTL_SECONDS,
+    DEFAULT_AUTH_VALIDATION_CACHE_TTL_SECONDS,
+  );
+  const ttlMs = ttlSeconds * 1000;
+
+  authValidationCache.set(accessToken, {
+    expiresAt: resolveCacheExpiryMs(accessToken, ttlMs),
+    user: cloneUser(user),
+  });
+}
+
+function cacheAccessPolicy(accessToken, userId, policy, env) {
+  const ttlSeconds = parsePositiveInt(
+    env?.ACCESS_POLICY_CACHE_TTL_SECONDS,
+    DEFAULT_ACCESS_POLICY_CACHE_TTL_SECONDS,
+  );
+  const ttlMs = ttlSeconds * 1000;
+
+  accessPolicyCache.set(
+    accessToken,
+    toPolicyCacheEntry(
+      policy,
+      userId,
+      resolveCacheExpiryMs(accessToken, ttlMs),
+    ),
+  );
 }
 
 function isFlagEnabled(rawValue, defaultValue) {
@@ -285,6 +426,12 @@ export async function resolveUserAccessPolicy(context, authResult) {
     };
   }
 
+  pruneExpiredEntries(accessPolicyCache);
+  const cachedPolicy = getCachedEntry(accessPolicyCache, authResult.accessToken);
+  if (cachedPolicy && cachedPolicy.userId === String(authResult.user.id)) {
+    return fromPolicyCacheEntry(cachedPolicy);
+  }
+
   try {
     const profile = await fetchUserAccessProfile(
       authResult.user.id,
@@ -293,7 +440,7 @@ export async function resolveUserAccessPolicy(context, authResult) {
     );
 
     if (!profile || isAdminProfile(profile)) {
-      return {
+      const policy = {
         ok: true,
         unrestricted: true,
         profile: profile || null,
@@ -303,6 +450,15 @@ export async function resolveUserAccessPolicy(context, authResult) {
         controlEnvironmentKeys: new Set(),
         sceneEnvironmentKeys: new Set(),
       };
+
+      cacheAccessPolicy(
+        authResult.accessToken,
+        authResult.user.id,
+        policy,
+        context.env,
+      );
+
+      return policy;
     }
 
     const rows = await fetchUserEnvironmentAccess(
@@ -361,7 +517,7 @@ export async function resolveUserAccessPolicy(context, authResult) {
       }
     });
 
-    return {
+    const policy = {
       ok: true,
       unrestricted: false,
       profile,
@@ -371,6 +527,15 @@ export async function resolveUserAccessPolicy(context, authResult) {
       controlEnvironmentKeys,
       sceneEnvironmentKeys,
     };
+
+    cacheAccessPolicy(
+      authResult.accessToken,
+      authResult.user.id,
+      policy,
+      context.env,
+    );
+
+    return policy;
   } catch (error) {
     return {
       ok: false,
@@ -407,6 +572,17 @@ export async function requireAuthenticatedUser(context) {
         },
         401
       ),
+    };
+  }
+
+  pruneExpiredEntries(authValidationCache);
+  const cachedAuth = getCachedEntry(authValidationCache, accessToken);
+  if (cachedAuth) {
+    return {
+      ok: true,
+      authSkipped: false,
+      user: cloneUser(cachedAuth.user),
+      accessToken,
     };
   }
 
@@ -458,6 +634,8 @@ export async function requireAuthenticatedUser(context) {
         ),
       };
     }
+
+    cacheAuthValidation(accessToken, user, env);
 
     return {
       ok: true,

@@ -1155,6 +1155,8 @@ const NETWORK_CONFIG = {
   MAX_RETRY_ATTEMPTS: 3, // 3 tentativas mÃƒÂ¡ximo
   RETRY_DELAY_BASE: 1000, // 1s base para backoff
   RETRY_DELAY_MAX: 5000, // 5s mÃƒÂ¡ximo entre tentativas
+  COMMAND_TIMEOUT_PER_ATTEMPT: 3500, // comandos: resposta rápida
+  COMMAND_MAX_RETRY_ATTEMPTS: 1, // comandos: sem retry em cadeia
 };
 
 // --- Confiabilidade de comandos (fila + timeout + retry) ---
@@ -5267,8 +5269,8 @@ async function sendHubitatCommand(deviceId, command, value) {
         requestUrl,
         { method: "GET", mode: "cors" },
         {
-          maxRetries: NETWORK_CONFIG.MAX_RETRY_ATTEMPTS,
-          timeoutMs: NETWORK_CONFIG.FETCH_TIMEOUT_PER_ATTEMPT,
+          maxRetries: NETWORK_CONFIG.COMMAND_MAX_RETRY_ATTEMPTS,
+          timeoutMs: NETWORK_CONFIG.COMMAND_TIMEOUT_PER_ATTEMPT,
         },
       );
 
