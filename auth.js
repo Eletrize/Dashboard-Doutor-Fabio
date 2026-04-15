@@ -3,7 +3,6 @@
   const PROTECTED_PATHS = new Set([
     "/polling",
     "/hubitat-proxy",
-    "/admin-access",
     "/session-bootstrap",
   ]);
 

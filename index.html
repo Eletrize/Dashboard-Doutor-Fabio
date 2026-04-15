@@ -1793,21 +1793,6 @@
         return scenesScriptPromise;
       }
 
-      let adminPermissionsScriptPromise = null;
-      function ensureAdminPermissionsScript() {
-        if (adminPermissionsScriptPromise) return adminPermissionsScriptPromise;
-        adminPermissionsScriptPromise = new Promise((resolve, reject) => {
-          const script = document.createElement("script");
-          script.src = "admin-permissions.js?v=1.0.1";
-          script.async = true;
-          script.onload = resolve;
-          script.onerror = () =>
-            reject(new Error("Falha ao carregar admin-permissions.js"));
-          document.head.appendChild(script);
-        });
-        return adminPermissionsScriptPromise;
-      }
-
       const CURTAIN_SECTIONS =
         typeof buildCurtainSectionsFromConfig === "function"
           ? buildCurtainSectionsFromConfig()
@@ -4068,46 +4053,6 @@
             </main>
         `,
 
-        "admin-permissoes": () => `
-             <main class="container admin-permissions-page-container">
-                <div class="page active admin-permissions-page" data-page="admin-permissions">
-                    <div class="admin-permissions-shell">
-                        <section class="admin-permissions-hero">
-                            <div class="admin-permissions-head">
-                                <h2 class="admin-permissions-title">Painel de permissoes</h2>
-                                <p class="admin-permissions-subtitle">Gerencie usuarios, perfis e ambientes liberados.</p>
-                            </div>
-
-                            <div class="admin-permissions-toolbar">
-                                <button type="button" id="admin-permissions-refresh" class="scenes-btn scenes-btn--secondary">
-                                    Atualizar
-                                </button>
-                            </div>
-                        </section>
-
-                        <div id="admin-permissions-feedback" class="admin-permissions-feedback" aria-live="polite"></div>
-
-                        <section class="admin-permissions-layout">
-                            <aside class="admin-permissions-users-card">
-                                <div class="admin-permissions-section-head">
-                                    <span class="admin-permissions-section-title">Usuarios</span>
-                                    <span id="admin-permissions-users-count" class="admin-permissions-chip admin-permissions-chip--muted">0</span>
-                                </div>
-                                <div id="admin-permissions-users" class="admin-permissions-users"></div>
-                            </aside>
-
-                            <section class="admin-permissions-detail-card">
-                                <div id="admin-permissions-empty" class="admin-permissions-empty">
-                                    Selecione um usuario para editar as permissoes.
-                                </div>
-                                <div id="admin-permissions-detail" hidden></div>
-                            </section>
-                        </section>
-                    </div>
-                </div>
-            </main>
-        `,
-
         home: () => `
             <div id="spa-home-widget" class="spa-home-widget">
               <div id="spa-weather-chip" class="spa-weather-chip" data-state="loading">
@@ -5787,8 +5732,7 @@
             page === "home" ||
             page === "ambientes" ||
             page === "curtains" ||
-            page === "scenes" ||
-            page === "admin-permissoes";
+            page === "scenes";
           if (staticTopbar)
             staticTopbar.classList.toggle("is-hidden", !showStaticChrome);
           if (staticHeader)
@@ -6065,18 +6009,6 @@
             );
         }
 
-        if (page === "admin-permissoes") {
-          ensureAdminPermissionsScript()
-            .then(() => {
-              if (typeof initAdminPermissionsPage === "function") {
-                initAdminPermissionsPage();
-              }
-            })
-            .catch((error) =>
-              console.error("Erro ao carregar admin-permissions.js", error),
-            );
-        }
-
         // Inicializa controlador de ar condicionado em Páginas *-conforto
         if (/^ambiente\d+-conforto$/.test(page)) {
           setTimeout(() => {
@@ -6123,10 +6055,7 @@
 
         const cmd = shouldTurnOn ? "on" : "off";
 
-        console.log(
-          `Master ${cmd} para ${ids.length} dispositivos:`,
-          ids,
-        );
+        console.log(`Master ${cmd} para ${ids.length} dispositivos:`, ids);
 
         // Marcar botão como pendente
 

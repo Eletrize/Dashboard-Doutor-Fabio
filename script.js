@@ -587,9 +587,7 @@ function detectDevice() {
   if (isApple || isAndroid) {
     document.documentElement.dataset.device = "mobile";
     console.log(
-      `📱 Dispositivo mobile detectado (${
-        isApple ? "Apple" : "Android"
-      })`,
+      `📱 Dispositivo mobile detectado (${isApple ? "Apple" : "Android"})`,
     );
   }
 }
@@ -696,9 +694,7 @@ function updateDeviceStyles() {
     const overlay = showOrientationOverlay();
     overlay.classList.add("active");
     document.documentElement.dataset.layoutState = "mobile-blocked";
-    console.log(
-      "📵 Celular em landscape no controle remoto - bloqueado",
-    );
+    console.log("📵 Celular em landscape no controle remoto - bloqueado");
   } else {
     const overlay = showOrientationOverlay();
     overlay.classList.remove("active");
@@ -2830,9 +2826,7 @@ function initVolumeSlider() {
     updatedSlider.style.setProperty("--volume-progress", percentage + "%");
 
     console.log(
-      `🎚️ Volume display atualizado: ${value} (${percentage.toFixed(
-        1,
-      )}%)`,
+      `🎚️ Volume display atualizado: ${value} (${percentage.toFixed(1)}%)`,
     );
   });
 
@@ -2840,9 +2834,7 @@ function initVolumeSlider() {
   updatedSlider.addEventListener("change", (e) => {
     const value = e.target.value;
 
-    console.log(
-      `🔊 Volume alterado para: ${value} - enviando para Denon AVR`,
-    );
+    console.log(`🔊 Volume alterado para: ${value} - enviando para Denon AVR`);
 
     // Enviar comando setVolume para o Denon AVR
     recentCommands.set(String(DENON_DEVICE_ID), Date.now());
@@ -4366,15 +4358,8 @@ const APP_VERSION = "1.0.0"; // 🎉 MARCO v1.0 - SISTEMA TOTALMENTE FUNCIONAL
 
       // Só recarregar se versão realmente mudou (não por tempo)
       if (lastVersion && lastVersion !== APP_VERSION) {
-        console.log(
-          "📱 Nova versão detectada - forçando reload cache",
-        );
-        console.log(
-          "📱 Versão anterior:",
-          lastVersion,
-          "Nova:",
-          APP_VERSION,
-        );
+        console.log("📱 Nova versão detectada - forçando reload cache");
+        console.log("📱 Versão anterior:", lastVersion, "Nova:", APP_VERSION);
 
         // Marcar que já foi recarregado para esta versão
         localStorage.setItem("app_version", APP_VERSION);
@@ -5197,10 +5182,7 @@ async function testHubitatConnection() {
     );
 
     const responseText = await response.text();
-    console.log(
-      "🔧 Conteúdo da resposta:",
-      responseText.substring(0, 300),
-    );
+    console.log("🔧 Conteúdo da resposta:", responseText.substring(0, 300));
 
     if (response.ok) {
       try {
@@ -6294,9 +6276,7 @@ function onHomeCurtainMasterClick(event, button) {
 
   // Verificar se já está carregando
   if (button.dataset.loading === "true") {
-    console.log(
-      "⏸️ Botão de cortina já está carregando, ignorando clique",
-    );
+    console.log("⏸️ Botão de cortina já está carregando, ignorando clique");
     return;
   }
 
@@ -6745,9 +6725,7 @@ function updateProgress(percentage, text) {
     }
 
     // Log para debug mobile
-    console.log(
-      `📊 Progresso: ${percentage}% - ${text || "Carregando..."}`,
-    );
+    console.log(`📊 Progresso: ${percentage}% - ${text || "Carregando..."}`);
   } catch (error) {
     console.warn("⚠️ Erro ao atualizar progresso:", error);
   }
@@ -6799,9 +6777,7 @@ async function loadAllDeviceStatesGlobally() {
   }
 
   if (!isProduction) {
-    console.log(
-      "💻 MODO DESENVOLVIMENTO ATIVO - carregando do localStorage",
-    );
+    console.log("💻 MODO DESENVOLVIMENTO ATIVO - carregando do localStorage");
     console.log("💻 ISSO PODE SER O PROBLEMA NO MOBILE!");
     console.log("📋 Dispositivos a carregar:", ALL_LIGHT_IDS.length);
     updateProgress(20, "Modo DEV - Estados salvos...");
@@ -6884,9 +6860,7 @@ async function loadAllDeviceStatesGlobally() {
     ) => {
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-          console.log(
-            `📡 Tentativa ${attempt}/${maxRetries} para ${url}`,
-          );
+          console.log(`📡 Tentativa ${attempt}/${maxRetries} para ${url}`);
           updateProgress(
             30 + (attempt - 1) * 5,
             `Tentativa ${attempt}/${maxRetries}...`,
@@ -6912,9 +6886,7 @@ async function loadAllDeviceStatesGlobally() {
           const response = await fetch(url, options);
           if (timeoutId) clearTimeout(timeoutId);
 
-          console.log(
-            `📡 Tentativa ${attempt} - Status: ${response.status}`,
-          );
+          console.log(`📡 Tentativa ${attempt} - Status: ${response.status}`);
 
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -6935,9 +6907,7 @@ async function loadAllDeviceStatesGlobally() {
             NETWORK_CONFIG.RETRY_DELAY_BASE * Math.pow(2, attempt - 1),
             NETWORK_CONFIG.RETRY_DELAY_MAX,
           );
-          console.log(
-            `⏳ Aguardando ${delay}ms antes da próxima tentativa...`,
-          );
+          console.log(`⏳ Aguardando ${delay}ms antes da próxima tentativa...`);
           updateProgress(
             30 + attempt * 5,
             `Reagendando em ${delay / 1000}s...`,
@@ -6998,9 +6968,7 @@ async function loadAllDeviceStatesGlobally() {
         );
 
         // FALLBACK AUTOMÁTICO: Usar API direta do Hubitat
-        console.log(
-          "🔄 Tentando API direta do Hubitat como fallback...",
-        );
+        console.log("🔄 Tentando API direta do Hubitat como fallback...");
         updateProgress(60, "Usando API direta como fallback...");
 
         try {
@@ -7048,9 +7016,7 @@ async function loadAllDeviceStatesGlobally() {
           console.error("⚠️Fallback também falhou:", fallbackError);
 
           // Último recurso: usar estados salvos
-          console.log(
-            "📦 Usando estados salvos como último recurso...",
-          );
+          console.log("📦 Usando estados salvos como último recurso...");
           ALL_LIGHT_IDS.forEach((deviceId) => {
             const storedState = getStoredState(deviceId) || "off";
             updateDeviceUI(deviceId, storedState, true);
@@ -8350,10 +8316,7 @@ function initMusicPlayerUI() {
       volumeSlider.value = 0;
       volumeSlider.setAttribute("disabled", "true");
       volumeSlider.style.pointerEvents = "none";
-      console.log(
-        "🔇 Volume mutado. Volume anterior:",
-        volumeBeforeMute,
-      );
+      console.log("🔇 Volume mutado. Volume anterior:", volumeBeforeMute);
       // Atualiza a barra visual para 0% quando mutado
       if (typeof updateVolumeBar === "function") updateVolumeBar();
       updateVolumeIcons(0, true);
@@ -8361,10 +8324,7 @@ function initMusicPlayerUI() {
       volumeSlider.value = volumeBeforeMute;
       volumeSlider.removeAttribute("disabled");
       volumeSlider.style.pointerEvents = "auto";
-      console.log(
-        "🔊 Volume desmutado. Volume restaurado:",
-        volumeBeforeMute,
-      );
+      console.log("🔊 Volume desmutado. Volume restaurado:", volumeBeforeMute);
       // Atualiza a barra visual para o valor restaurado
       if (typeof updateVolumeBar === "function") updateVolumeBar();
       updateVolumeIcons(parseInt(volumeSlider.value), false);
@@ -8462,9 +8422,7 @@ function initMusicPlayerUI() {
       DENON_MUSIC_DEVICE_ID,
     );
     sendHubitatCommand(DENON_MUSIC_DEVICE_ID, "previousTrack")
-      .then(() =>
-        console.log("✅ Comando previousTrack enviado com sucesso"),
-      )
+      .then(() => console.log("✅ Comando previousTrack enviado com sucesso"))
       .catch((err) =>
         console.error("⚠️Erro ao enviar comando previousTrack:", err),
       );
@@ -8502,12 +8460,7 @@ function initMusicPlayerUI() {
       const volumeDisplay = queryActiveMusic("#music-volume-display");
       if (volumeDisplay) volumeDisplay.textContent = value;
       updateVolumeIcons(value, isMuted);
-      console.log(
-        "🔊 Volume ajustado para:",
-        value,
-        "% -",
-        percent + "%",
-      );
+      console.log("🔊 Volume ajustado para:", value, "% -", percent + "%");
     }
 
     // Event listener para input (arrastar o slider)
@@ -8702,10 +8655,7 @@ function initUltraBasicMode() {
 
     // Verificar elementos básicos
     var controls = document.querySelectorAll(".room-control");
-    showMobileDebug(
-      "🔍 Encontrados " + controls.length + " controles",
-      "info",
-    );
+    showMobileDebug("🔍 Encontrados " + controls.length + " controles", "info");
 
     return true; // Sucesso
   } catch (error) {
@@ -8728,11 +8678,7 @@ function initSimpleMode() {
     console.log("📱 Atualizando progresso...");
     updateProgress(10, "Modo simples com polling ativo...");
 
-    console.log(
-      "📱 Processando",
-      ALL_LIGHT_IDS.length,
-      "dispositivos...",
-    );
+    console.log("📱 Processando", ALL_LIGHT_IDS.length, "dispositivos...");
 
     // Carregar estados básicos
     for (var i = 0; i < ALL_LIGHT_IDS.length; i++) {
@@ -9125,14 +9071,11 @@ function initializeApp() {
                 );
                 setTimeout(startPolling, pollingDelay);
               } else {
-                console.log(
-                  "⚠️POLLING NÃO INICIADO - não está em produção:",
-                  {
-                    isProduction: isProduction,
-                    hostname: location.hostname,
-                    isMobile: isMobile,
-                  },
-                );
+                console.log("⚠️POLLING NÃO INICIADO - não está em produção:", {
+                  isProduction: isProduction,
+                  hostname: location.hostname,
+                  isMobile: isMobile,
+                });
               }
 
               console.log("Aplicação totalmente inicializada!");

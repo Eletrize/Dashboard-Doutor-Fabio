@@ -20,7 +20,9 @@
   const readyResolvers = [];
 
   function normalizeValue(value) {
-    return String(value || "").trim().toLowerCase();
+    return String(value || "")
+      .trim()
+      .toLowerCase();
   }
 
   function toArray(value) {
@@ -392,13 +394,6 @@
     const normalizedRoute = normalizeValue(route);
     if (!normalizedRoute) return true;
 
-    if (
-      normalizedRoute === "admin-permissoes" ||
-      normalizedRoute === "admin-permissions"
-    ) {
-      return canAccessAdminPanel();
-    }
-
     if (state.unrestricted) return true;
 
     if (normalizedRoute === "home" || normalizedRoute === "ambientes") {
@@ -437,7 +432,9 @@
     }
 
     const preferredFallbacks = ["home", "ambientes", "curtains", "scenes"];
-    const fallback = preferredFallbacks.find((candidate) => canUseRoute(candidate));
+    const fallback = preferredFallbacks.find((candidate) =>
+      canUseRoute(candidate),
+    );
     if (fallback) {
       return fallback;
     }

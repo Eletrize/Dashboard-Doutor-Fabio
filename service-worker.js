@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v1.3.42";
+const CACHE_VERSION = "v1.3.43";
 const CACHE_NAME = `eletrize-${CACHE_VERSION}`;
 const PRECACHE_ASSETS = [
   "/",
@@ -8,7 +8,6 @@ const PRECACHE_ASSETS = [
   "/auth.js?v=1.0.0",
   "/access-control.js?v=1.0.1",
   "/config.js?v=1.0.21",
-  "/admin-permissions.js?v=1.0.1",
   "/fonts-raleway.css",
   "/manifest.json",
   "/images/pwa/app-icon-192.png",
@@ -31,7 +30,7 @@ self.addEventListener("install", (event) => {
       .open(CACHE_NAME)
       .then((cache) => cache.addAll(PRECACHE_ASSETS))
       .then(() => self.skipWaiting())
-      .catch((error) => log("precache error", error))
+      .catch((error) => log("precache error", error)),
   );
 });
 
@@ -43,10 +42,10 @@ self.addEventListener("activate", (event) => {
         Promise.all(
           keys
             .filter((key) => key !== CACHE_NAME)
-            .map((key) => caches.delete(key))
-        )
+            .map((key) => caches.delete(key)),
+        ),
       )
-      .then(() => self.clients.claim())
+      .then(() => self.clients.claim()),
   );
 });
 
@@ -69,10 +68,6 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (url.pathname.startsWith("/polling")) {
-    return;
-  }
-
-  if (url.pathname.startsWith("/admin-access")) {
     return;
   }
 
@@ -119,9 +114,9 @@ self.addEventListener("fetch", (event) => {
               new Response("Image not found", {
                 status: 404,
                 statusText: "Not Found",
-              })
-          )
-        )
+              }),
+          ),
+        ),
     );
     return;
   }
@@ -130,7 +125,9 @@ self.addEventListener("fetch", (event) => {
 });
 
 function fetchConfigNoStore(request) {
-  return fetch(request, { cache: "no-store" }).catch(() => caches.match(request));
+  return fetch(request, { cache: "no-store" }).catch(() =>
+    caches.match(request),
+  );
 }
 
 function htmlNetworkFirst(request) {

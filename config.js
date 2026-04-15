@@ -489,7 +489,7 @@ const CLIENT_CONFIG = {
         controls: { zoneSelector: false, aletas: true, windfree: false },
         temperature: { min: 18, max: 25, default: 22 },
       },
-      roku: [{ id: "20", name: "Roku" }],
+      roku: [{ id: "12675", name: "Roku" }],
       games: [{ id: "123", name: "Games" }],
       music: [
         {
@@ -886,20 +886,6 @@ const bottomNavConfig = {
       styleOverrides: {},
       ariaLabel: "Ir para Cenarios",
       tooltip: "Cenarios",
-    },
-    {
-      id: "admin-permissoes",
-      label: "Permissoes",
-      path: "admin-permissoes",
-      icon: "images/icons/icon-settings.svg",
-      visible: true,
-      disabled: false,
-      external: false,
-      order: 5,
-      styleOverrides: {},
-      ariaLabel: "Ir para Permissoes",
-      tooltip: "Permissoes",
-      adminOnly: true,
     },
   ],
 };

@@ -2,7 +2,7 @@
 -- Objetivo: configurar acesso do usuário fabio5snew@icloud.com
 -- Regras aplicadas:
 --   - Sem acesso de administrador
---   - Sem acesso a cenários (can_create_scenes = false)
+--   - Com acesso a cenários (can_create_scenes = true)
 --   - Acesso de visualização e controle para todos os ambientes
 
 begin;
@@ -72,7 +72,7 @@ begin
     ('ambiente3', '15', 'curtains', 'Central Direita'),
     ('ambiente3', '14', 'curtains', 'Corredor'),
     ('ambiente3', '16', 'comfort', 'Varanda'),
-    ('ambiente3', '20', 'roku', 'Roku'),
+    ('ambiente3', '12675', 'roku', 'Roku'),
     ('ambiente3', '123', 'games', 'Games'),
     ('ambiente3', '18', 'music', 'Denon'),
     ('ambiente3', '19', 'tv', 'Televisao'),
@@ -144,16 +144,16 @@ begin
     can_create_scenes
   )
   values
-    (v_user_id, 'ambiente1', true, true, false),
-    (v_user_id, 'ambiente2', true, true, false),
-    (v_user_id, 'ambiente3', true, true, false),
-    (v_user_id, 'ambiente4', true, true, false),
-    (v_user_id, 'ambiente5', true, true, false),
-    (v_user_id, 'ambiente6', true, true, false),
-    (v_user_id, 'ambiente7', true, true, false),
-    (v_user_id, 'ambiente8', true, true, false),
-    (v_user_id, 'ambiente9', true, true, false),
-    (v_user_id, 'ambiente10', true, true, false)
+    (v_user_id, 'ambiente1', true, true, true),
+    (v_user_id, 'ambiente2', true, true, true),
+    (v_user_id, 'ambiente3', true, true, true),
+    (v_user_id, 'ambiente4', true, true, true),
+    (v_user_id, 'ambiente5', true, true, true),
+    (v_user_id, 'ambiente6', true, true, true),
+    (v_user_id, 'ambiente7', true, true, true),
+    (v_user_id, 'ambiente8', true, true, true),
+    (v_user_id, 'ambiente9', true, true, true),
+    (v_user_id, 'ambiente10', true, true, true)
   on conflict (user_id, environment_key) do update
   set
     can_view = excluded.can_view,

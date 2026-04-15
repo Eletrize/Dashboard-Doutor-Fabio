@@ -2,16 +2,16 @@
 
 This project now supports per-user access by environment.
 
-It also includes an admin-only permissions panel in the app at `#admin-permissoes`.
-
 ## How it works
 
 There are 2 layers:
 
 1. Frontend
+
 - hides environments, routes, scenes and devices the user cannot use
 
 2. Backend
+
 - blocks `/hubitat-proxy` commands for device IDs outside the user's access
 - filters `/polling` so restricted users only receive allowed device IDs
 
@@ -27,12 +27,6 @@ This creates:
 - `user_environment_access`
 - `environment_device_registry`
 
-## Required Cloudflare variable for admin panel
-
-Set this in Cloudflare Pages > Settings > Variables and Secrets:
-
-- `SUPABASE_SERVICE_ROLE_KEY`
-
 ## Access model
 
 If a user has:
@@ -43,8 +37,7 @@ the app keeps that user unrestricted.
 
 Important:
 
-- users without profile row are unrestricted, but they do **not** gain access to the admin panel
-- the admin panel requires an explicit admin row (`is_admin = true` or `role = 'admin'`)
+- users without profile row are unrestricted
 
 Example explicit admin:
 
