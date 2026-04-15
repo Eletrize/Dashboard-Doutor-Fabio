@@ -3577,7 +3577,6 @@
           deviceId,
           deviceIds,
           title,
-          description,
           actionOpen,
           actionStop,
           actionClose,
@@ -3598,11 +3597,6 @@
         <article class="curtain-tile" data-device-id="${deviceId || ""}" data-device-ids="${deviceIds || ""}" data-environment="${environment}">
             <header class="curtain-tile__header">
                 <h3 class="curtain-tile__title">${title}</h3>
-                ${
-                  description
-                    ? `<p class="curtain-tile__subtitle">${description}</p>`
-                    : ""
-                }
             </header>
             <div class="curtain-tile__actions">
                 <button class="curtain-tile__btn" ${buttonDataAttrs} onclick="curtainAction(this, 'open')" aria-label="Abrir ${title}">
@@ -3619,21 +3613,31 @@
       }
 
       function renderCurtainSection(section) {
+        const roomPhotoUrl = getRoomBackgroundUrl(section?.key) || "";
+        const safeRoomPhotoUrl = roomPhotoUrl
+          ? String(roomPhotoUrl).replace(/'/g, "%27")
+          : "";
+        const summaryStyle = safeRoomPhotoUrl
+          ? `style="--curtain-drawer-photo:url('${safeRoomPhotoUrl}');"`
+          : "";
+
         return `
         <section class="curtain-section" data-section="${section.key}">
-            <div class="curtain-section__wrapper">
-                <header class="curtain-section__header">
-                    <h2 class="curtain-section__title">${section.name}</h2>
-                    <div class="curtain-section__line"></div>
-                </header>
-                <div class="curtain-section__grid">
-                    ${section.curtains
-                      .map((curtain) =>
-                        renderCurtainControlCard(curtain, section.name),
-                      )
-                      .join("")}
+          <details class="curtain-drawer" ontoggle="syncCurtainDrawers(this)">
+                <summary class="curtain-drawer__summary" ${summaryStyle} aria-label="${section.name}">
+                    <span class="curtain-drawer__title">${section.name}</span>
+                    <span class="curtain-drawer__chevron" aria-hidden="true"></span>
+                </summary>
+                <div class="curtain-drawer__content">
+                    <div class="curtain-section__grid">
+                        ${section.curtains
+                          .map((curtain) =>
+                            renderCurtainControlCard(curtain, section.name),
+                          )
+                          .join("")}
+                    </div>
                 </div>
-            </div>
+            </details>
         </section>`;
       }
 
@@ -6334,6 +6338,11 @@
         // Aguardar um pouco apÃƒÂ³s mudanÃƒÂ§a de orientaÃƒÂ§ÃƒÂ£o para garantir layout correto
 
         setTimeout(updatePageSelectorPosition, 300);
+      });
+
+      window.addEventListener("dashboard-access-ready", () => {
+        const currentRoute = window.location.hash.replace("#", "") || "home";
+        renderBottomNav(currentRoute);
       });
     </script>
   </body>

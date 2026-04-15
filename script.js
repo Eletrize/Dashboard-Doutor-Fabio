@@ -9265,6 +9265,23 @@ function handleMasterCurtainsClose() {
   );
 }
 
+function syncCurtainDrawers(currentDrawer) {
+  if (!currentDrawer || !currentDrawer.open) {
+    return;
+  }
+
+  const drawerContainer = currentDrawer.closest(".curtain-layout");
+  if (!drawerContainer) {
+    return;
+  }
+
+  drawerContainer.querySelectorAll(".curtain-drawer[open]").forEach((drawer) => {
+    if (drawer !== currentDrawer) {
+      drawer.open = false;
+    }
+  });
+}
+
 // Exportar funções usadas em onclick="" no HTML (necessário para IIFE)
 window.toggleRoomControl = toggleRoomControl;
 window.toggleLedModeControl = toggleLedModeControl;
@@ -9295,6 +9312,7 @@ window.suite2TvOn = suite2TvOn;
 window.suite2TvOff = suite2TvOff;
 window.tvCommand = tvCommand;
 window.curtainAction = curtainAction;
+window.syncCurtainDrawers = syncCurtainDrawers;
 window.spaNavigate = spaNavigate;
 window.handleMasterCurtainsOpen = handleMasterCurtainsOpen;
 window.handleMasterCurtainsClose = handleMasterCurtainsClose;

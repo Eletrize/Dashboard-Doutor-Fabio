@@ -432,7 +432,7 @@ const CLIENT_CONFIG = {
         screenRemote: "114",
         screenVolume: "18",
       },
-      curtainMotionType: "lateral",
+      curtainMotionType: "vertical",
       lights: [
         { id: "12248", name: "Spots" },
         { id: "12249", name: "Churrasqueira" },
