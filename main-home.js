@@ -59,7 +59,10 @@
       noite: ["Boa noite de ceu limpo!", "Noite limpa e agradavel!"],
     },
     partlyCloudy: {
-      madrugada: ["Madrugada com poucas nuvens!", "Nuvens leves nesta madrugada!"],
+      madrugada: [
+        "Madrugada com poucas nuvens!",
+        "Nuvens leves nesta madrugada!",
+      ],
       dia: ["Bom dia parcialmente nublado!", "Manha com sol entre nuvens!"],
       tarde: ["Tarde com nuvens leves!", "Boa tarde com sol e nuvens!"],
       noite: ["Noite parcialmente nublada!", "Ceu com nuvens leves a noite!"],
@@ -114,7 +117,8 @@
       destroyed: false,
     };
 
-    const NOW_PLAYING_DEVICE_STORAGE_KEY = "mainHome:lastNowPlayingMusicDeviceId";
+    const NOW_PLAYING_DEVICE_STORAGE_KEY =
+      "mainHome:lastNowPlayingMusicDeviceId";
     const NOW_PLAYING_REFRESH_MS = 8000;
     const ENABLE_HOME_NOW_PLAYING = false;
 
@@ -133,12 +137,16 @@
 
     function parseBooleanLike(value) {
       if (typeof value === "boolean") return value;
-      const v = String(value || "").trim().toLowerCase();
+      const v = String(value || "")
+        .trim()
+        .toLowerCase();
       return ["true", "1", "on", "yes", "sim", "muted"].includes(v);
     }
 
     function normalizeState(value) {
-      return String(value || "").trim().toLowerCase();
+      return String(value || "")
+        .trim()
+        .toLowerCase();
     }
 
     function isActiveState(value) {
@@ -189,20 +197,24 @@
       const now = new Date();
       const group = weatherGroupByCode(weatherCode);
       const period = getDayPeriod(now);
-      const options =
-        WEATHER_GREETING_VARIATIONS[group]?.[period] ||
-        WEATHER_GREETING_VARIATIONS.unknown[period] ||
-        ["Bom dia!"];
-      const seed = Math.floor(now.getTime() / 86400000) + now.getHours() + Number(weatherCode || 0);
+      const options = WEATHER_GREETING_VARIATIONS[group]?.[period] ||
+        WEATHER_GREETING_VARIATIONS.unknown[period] || ["Bom dia!"];
+      const seed =
+        Math.floor(now.getTime() / 86400000) +
+        now.getHours() +
+        Number(weatherCode || 0);
       return options[Math.abs(seed) % options.length];
     }
 
     function weatherIconByCode(code, isDay) {
       const n = Number(code);
       const day = Number(isDay) === 1;
-      if (n === 0) return day ? WEATHER_ICONS.clearDay : WEATHER_ICONS.clearNight;
+      if (n === 0)
+        return day ? WEATHER_ICONS.clearDay : WEATHER_ICONS.clearNight;
       if (n === 1 || n === 2)
-        return day ? WEATHER_ICONS.partlyCloudyDay : WEATHER_ICONS.partlyCloudyNight;
+        return day
+          ? WEATHER_ICONS.partlyCloudyDay
+          : WEATHER_ICONS.partlyCloudyNight;
       if (n === 3) return WEATHER_ICONS.cloudy;
       if (n === 45 || n === 48) return WEATHER_ICONS.fog;
       if ((n >= 51 && n <= 67) || (n >= 80 && n <= 82) || n === 85 || n === 86)
@@ -234,9 +246,14 @@
     }
 
     async function fetchWeather(force) {
-      const ttl = Math.max(1, Number(config.weather?.refreshMinutes) || 15) * 60 * 1000;
+      const ttl =
+        Math.max(1, Number(config.weather?.refreshMinutes) || 15) * 60 * 1000;
       const now = Date.now();
-      if (!force && state.weatherCache && now - state.weatherCache.fetchedAt < ttl) {
+      if (
+        !force &&
+        state.weatherCache &&
+        now - state.weatherCache.fetchedAt < ttl
+      ) {
         return state.weatherCache;
       }
       if (state.weatherFetchPromise) return state.weatherFetchPromise;
@@ -263,7 +280,10 @@
           state.weatherCache = result;
           return result;
         })
-        .catch((error) => ({ ok: false, error: String(error?.message || error) }))
+        .catch((error) => ({
+          ok: false,
+          error: String(error?.message || error),
+        }))
         .finally(() => {
           state.weatherFetchPromise = null;
         });
@@ -321,7 +341,9 @@
 
     function readRememberedNowPlayingDeviceId() {
       try {
-        return String(localStorage.getItem(NOW_PLAYING_DEVICE_STORAGE_KEY) || "").trim();
+        return String(
+          localStorage.getItem(NOW_PLAYING_DEVICE_STORAGE_KEY) || "",
+        ).trim();
       } catch {
         return "";
       }
@@ -348,7 +370,9 @@
       const normalizedFallback = normalizeState(fallback);
       const allowed = new Set((validRoutes || []).map(normalizeState));
       try {
-        const saved = normalizeState(localStorage.getItem("lastEnvironmentRoute"));
+        const saved = normalizeState(
+          localStorage.getItem("lastEnvironmentRoute"),
+        );
         if (saved && allowed.has(saved)) return saved;
       } catch {}
       return normalizedFallback;
@@ -378,7 +402,11 @@
           ? adapters.getVisibleEnvironments()
           : [];
 
-      const MEDIA_TYPES_THAT_IMPLY_TV = new Set(["clarotv", "appletv", "bluray"]);
+      const MEDIA_TYPES_THAT_IMPLY_TV = new Set([
+        "clarotv",
+        "appletv",
+        "bluray",
+      ]);
 
       return envs
         .map((env) => {
@@ -402,8 +430,12 @@
           };
 
           (env?.lights || []).forEach((d) => pushDevice("lights", d, "Luz"));
-          (env?.curtains || []).forEach((d) => pushDevice("curtains", d, "Cortina"));
-          ACTIVE_DEVICE_TYPES.forEach((type) => (env?.[type] || []).forEach((d) => pushDevice(type, d, type)));
+          (env?.curtains || []).forEach((d) =>
+            pushDevice("curtains", d, "Cortina"),
+          );
+          ACTIVE_DEVICE_TYPES.forEach((type) =>
+            (env?.[type] || []).forEach((d) => pushDevice(type, d, type)),
+          );
 
           // Se uma fonte de mídia estiver ligada, assumir a TV como ligada no card da Home.
           const hasActiveMediaThatImpliesTv = entries.some((entry) =>
@@ -412,10 +444,13 @@
 
           if (hasActiveMediaThatImpliesTv) {
             (env?.tv || []).forEach((tvDevice) => {
-              const tvId = String(tvDevice?.id || tvDevice?.deviceId || "").trim();
+              const tvId = String(
+                tvDevice?.id || tvDevice?.deviceId || "",
+              ).trim();
               if (!tvId) return;
               const alreadyListed = entries.some(
-                (entry) => entry.id === tvId && normalizeState(entry.type) === "tv",
+                (entry) =>
+                  entry.id === tvId && normalizeState(entry.type) === "tv",
               );
               if (alreadyListed) return;
               pushDevice("tv", tvDevice, "TV", { forceActive: true });
@@ -423,15 +458,27 @@
           }
 
           if (env?.airConditioner?.deviceId) {
-            pushDevice("comfort", { id: env.airConditioner.deviceId, name: "Ar Condicionado" }, "Ar Condicionado");
+            pushDevice(
+              "comfort",
+              { id: env.airConditioner.deviceId, name: "Ar Condicionado" },
+              "Ar Condicionado",
+            );
           }
           (env?.airConditioner?.zones || []).forEach((z) => {
             if (!z?.deviceId) return;
-            pushDevice("comfort", { id: z.deviceId, name: "Ar Condicionado" }, "Ar Condicionado");
+            pushDevice(
+              "comfort",
+              { id: z.deviceId, name: "Ar Condicionado" },
+              "Ar Condicionado",
+            );
           });
 
           if (!entries.length) return null;
-          return { envKey: env.key, envName: env.name || env.key, devices: entries };
+          return {
+            envKey: env.key,
+            envName: env.name || env.key,
+            devices: entries,
+          };
         })
         .filter(Boolean);
     }
@@ -460,7 +507,10 @@
     async function animateActiveDeviceItemRemoval(itemEl) {
       if (!itemEl || itemEl.dataset.removing === "true") return;
 
-      const height = Math.max(1, Math.ceil(itemEl.getBoundingClientRect().height));
+      const height = Math.max(
+        1,
+        Math.ceil(itemEl.getBoundingClientRect().height),
+      );
       itemEl.style.setProperty("--main-active-item-height", `${height}px`);
       itemEl.dataset.removing = "true";
 
@@ -476,7 +526,10 @@
 
         const onTransitionEnd = (event) => {
           if (event.target !== itemEl) return;
-          if (event.propertyName !== "max-height" && event.propertyName !== "opacity") {
+          if (
+            event.propertyName !== "max-height" &&
+            event.propertyName !== "opacity"
+          ) {
             return;
           }
           finish();
@@ -492,7 +545,10 @@
       });
     }
 
-    async function animateActiveDeviceItemsRemoval(itemElements, staggerMs = 36) {
+    async function animateActiveDeviceItemsRemoval(
+      itemElements,
+      staggerMs = 36,
+    ) {
       const items = Array.from(itemElements || []).filter(
         (item) => item && item.dataset?.removing !== "true",
       );
@@ -525,7 +581,8 @@
       if (!state.activeDevices.length) {
         card.dataset.state = "empty";
         offAllBtn.disabled = true;
-        list.innerHTML = '<p class="main-active-empty">Nenhum dispositivo ligado no momento.</p>';
+        list.innerHTML =
+          '<p class="main-active-empty">Nenhum dispositivo ligado no momento.</p>';
         syncActiveDevicesCardSize();
         return;
       }
@@ -636,15 +693,21 @@
     function parseAttrs(device, names) {
       const attrs = device?.attributes;
       if (Array.isArray(attrs)) {
-        const hit = attrs.find((a) => names.includes(String(a?.name || "").toLowerCase()));
+        const hit = attrs.find((a) =>
+          names.includes(String(a?.name || "").toLowerCase()),
+        );
         return hit?.currentValue ?? hit?.value ?? "";
       }
       if (attrs && typeof attrs === "object") {
-        const key = Object.keys(attrs).find((k) => names.includes(String(k).toLowerCase()));
+        const key = Object.keys(attrs).find((k) =>
+          names.includes(String(k).toLowerCase()),
+        );
         return key ? attrs[key] : "";
       }
       if (device && typeof device === "object") {
-        const key = Object.keys(device).find((k) => names.includes(String(k).toLowerCase()));
+        const key = Object.keys(device).find((k) =>
+          names.includes(String(k).toLowerCase()),
+        );
         if (key) return device[key];
       }
       return "";
@@ -686,13 +749,30 @@
 
     function buildNowPlayingSnapshot(device, fallbackId) {
       const id = resolveDeviceId(device, fallbackId);
-      const track = String(parseAttrs(device, ["trackdescription", "track", "title"]) || "").trim();
+      const track = String(
+        parseAttrs(device, ["trackdescription", "track", "title"]) || "",
+      ).trim();
       const artist = String(parseAttrs(device, ["artist"]) || "").trim();
       const album = String(parseAttrs(device, ["album"]) || "").trim();
       const status = normalizeState(
-        parseAttrs(device, ["status", "playbackstatus", "playerstatus", "transportstate", "state", "switch"]),
+        parseAttrs(device, [
+          "status",
+          "playbackstatus",
+          "playerstatus",
+          "transportstate",
+          "state",
+          "switch",
+        ]),
       );
-      const muted = parseBooleanLike(parseAttrs(device, ["mute", "muted", "ismuted", "isaudio_muted", "volumemute"]));
+      const muted = parseBooleanLike(
+        parseAttrs(device, [
+          "mute",
+          "muted",
+          "ismuted",
+          "isaudio_muted",
+          "volumemute",
+        ]),
+      );
       const albumArt = String(
         parseAttrs(device, ["albumart", "artwork", "image", "thumbnail"]) || "",
       ).trim();
@@ -701,8 +781,8 @@
         status.includes("play") || status === "tocando" || status === "on"
           ? "playing"
           : status.includes("pause") || status === "pausado"
-          ? "paused"
-          : "idle";
+            ? "paused"
+            : "idle";
 
       return {
         id,
@@ -723,10 +803,16 @@
       const playing = snapshots.find((item) => item.playing === "playing");
       if (playing) return playing;
 
-      const rememberedId = state.nowPlayingDeviceId || readRememberedNowPlayingDeviceId();
+      const rememberedId =
+        state.nowPlayingDeviceId || readRememberedNowPlayingDeviceId();
       if (rememberedId) {
         const remembered = snapshots.find((item) => item.id === rememberedId);
-        if (remembered && (remembered.playing === "paused" || remembered.hasMetadata || remembered.status)) {
+        if (
+          remembered &&
+          (remembered.playing === "paused" ||
+            remembered.hasMetadata ||
+            remembered.status)
+        ) {
           return remembered;
         }
       }
@@ -812,7 +898,18 @@
       const controls = byId("main-now-playing-controls");
       const playIcon = byId("main-now-playing-play-icon");
       const muteIcon = byId("main-now-playing-mute-icon");
-      if (!card || !stateLabel || !track || !artist || !album || !art || !controls || !playIcon || !muteIcon) return;
+      if (
+        !card ||
+        !stateLabel ||
+        !track ||
+        !artist ||
+        !album ||
+        !art ||
+        !controls ||
+        !playIcon ||
+        !muteIcon
+      )
+        return;
 
       const dashboard = config.mainDashboard || {};
       const preview = dashboard.previewNowPlaying || {};
@@ -826,7 +923,13 @@
         const isPaused = p === "paused" || p === "pausado";
         state.playing = isPlaying ? "playing" : isPaused ? "paused" : "idle";
         state.muted = preview.muted === true;
-        stateLabel.textContent = state.muted ? "Mutado" : isPlaying ? "Tocando" : isPaused ? "Pausado" : "Inativo";
+        stateLabel.textContent = state.muted
+          ? "Mutado"
+          : isPlaying
+            ? "Tocando"
+            : isPaused
+              ? "Pausado"
+              : "Inativo";
         track.textContent = preview.track || "Sem reproducao";
         artist.textContent = preview.artist || "Nenhum conteudo ativo";
         album.textContent = preview.album || "Aguardando player";
@@ -842,9 +945,12 @@
           const payload =
             typeof adapters.pollDevice === "function"
               ? await adapters.pollDevice(queryIds)
-              : await fetch(`/polling?devices=${encodeURIComponent(queryIds)}`, {
-                  cache: "no-store",
-                }).then((r) => r.json());
+              : await fetch(
+                  `/polling?devices=${encodeURIComponent(queryIds)}`,
+                  {
+                    cache: "no-store",
+                  },
+                ).then((r) => r.json());
 
           const list = normalizePollPayload(payload);
           const snapshots = candidates.map((id) =>
@@ -862,7 +968,13 @@
 
           state.playing = snapshot.playing;
           state.muted = snapshot.muted;
-          stateLabel.textContent = state.muted ? "Mutado" : state.playing === "playing" ? "Tocando" : state.playing === "paused" ? "Pausado" : "Inativo";
+          stateLabel.textContent = state.muted
+            ? "Mutado"
+            : state.playing === "playing"
+              ? "Tocando"
+              : state.playing === "paused"
+                ? "Pausado"
+                : "Inativo";
           track.textContent = snapshot.track || "Sem reproducao";
           artist.textContent = snapshot.artist || "Nenhum conteudo ativo";
           album.textContent = snapshot.album || "Aguardando player";
@@ -878,9 +990,16 @@
         }
       }
 
-      controls.hidden = !(state.playing === "playing" || state.playing === "paused");
-      playIcon.src = state.playing === "playing" ? NOW_PLAYING_ICONS.pause : NOW_PLAYING_ICONS.play;
-      muteIcon.src = state.muted ? NOW_PLAYING_ICONS.mute : NOW_PLAYING_ICONS.volume;
+      controls.hidden = !(
+        state.playing === "playing" || state.playing === "paused"
+      );
+      playIcon.src =
+        state.playing === "playing"
+          ? NOW_PLAYING_ICONS.pause
+          : NOW_PLAYING_ICONS.play;
+      muteIcon.src = state.muted
+        ? NOW_PLAYING_ICONS.mute
+        : NOW_PLAYING_ICONS.volume;
       card.dataset.state = "ready";
     }
 
@@ -889,8 +1008,15 @@
       const controls = dashboard.controls || {};
       const commands = controls.commands || {};
       const commandDeviceId = getNowPlayingCommandDeviceId();
-      const transportId = String(commandDeviceId || controls.transportDeviceId || dashboard.nowPlayingDeviceId || "29");
-      const audioId = String(commandDeviceId || controls.audioDeviceId || transportId);
+      const transportId = String(
+        commandDeviceId ||
+          controls.transportDeviceId ||
+          dashboard.nowPlayingDeviceId ||
+          "29",
+      );
+      const audioId = String(
+        commandDeviceId || controls.audioDeviceId || transportId,
+      );
 
       const run = async (deviceId, command) => {
         if (!deviceId || !command) return;
@@ -905,7 +1031,10 @@
 
       if (action === "playPause") {
         const play = state.playing !== "playing";
-        await run(transportId, play ? commands.play || "play" : commands.pause || "pause");
+        await run(
+          transportId,
+          play ? commands.play || "play" : commands.pause || "pause",
+        );
         state.playing = play ? "playing" : "paused";
       } else if (action === "next") {
         await run(transportId, commands.next || "nextTrack");
@@ -913,7 +1042,10 @@
         await run(transportId, commands.previous || "previousTrack");
       } else if (action === "muteToggle") {
         const mute = !state.muted;
-        await run(audioId, mute ? commands.mute || "mute" : commands.unmute || "unmute");
+        await run(
+          audioId,
+          mute ? commands.mute || "mute" : commands.unmute || "unmute",
+        );
         state.muted = mute;
       }
       await refreshNowPlaying();
@@ -950,10 +1082,16 @@
 
     function startTimers() {
       if (state.destroyed || state.paused) return;
-      const weatherMinutes = Math.max(1, Number(config.weather?.refreshMinutes) || 15);
-      state.weatherTimer = setInterval(() => {
-        refreshWeather(false).catch(console.warn);
-      }, weatherMinutes * 60 * 1000);
+      const weatherMinutes = Math.max(
+        1,
+        Number(config.weather?.refreshMinutes) || 15,
+      );
+      state.weatherTimer = setInterval(
+        () => {
+          refreshWeather(false).catch(console.warn);
+        },
+        weatherMinutes * 60 * 1000,
+      );
 
       if (ENABLE_HOME_NOW_PLAYING) {
         state.nowPlayingTimer = setInterval(() => {
@@ -1010,8 +1148,8 @@
 
             const rowsToAnimate = allRows.filter((row) => {
               const id = String(
-                row.querySelector(".main-active-device-off-btn")?.dataset?.deviceId ||
-                  "",
+                row.querySelector(".main-active-device-off-btn")?.dataset
+                  ?.deviceId || "",
               );
               return successfulIds.has(id);
             });
@@ -1076,4 +1214,3 @@
     createMainHomeRuntime,
   };
 })(window);
-

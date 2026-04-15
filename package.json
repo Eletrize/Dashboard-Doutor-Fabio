@@ -1,7 +1,7 @@
 ﻿{
     "name":  "dashboard-eletrize-base",
     "version":  "1.0.0",
-    "description":  "Dashboard de automaÃ§Ã£o residencial - Base Eletrize",
+    "description":  "Dashboard de automação residencial - Base Eletrize",
     "main":  "index.html",
     "scripts":  {
                     "dev":  "node server.js",

@@ -63,7 +63,7 @@ self.addEventListener("fetch", (event) => {
     /cloud\.hubitat\.com$/i.test(url.hostname) ||
     /\/apps\/api\//i.test(url.pathname);
 
-  // N�o interceptar chamadas ao proxy local do Hubitat � deixar ir direto � rede.
+  // Não interceptar chamadas ao proxy local do Hubitat - deixar ir direto à rede.
   if (url.pathname.startsWith("/hubitat-proxy")) {
     return;
   }
@@ -89,8 +89,8 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // config.js deve refletir altera��es imediatamente ap�s refresh.
-  // Evita stale-while-revalidate aqui (sen�o pode exigir 2 reloads).
+  // config.js deve refletir alterações imediatamente após refresh.
+  // Evita stale-while-revalidate aqui (senão pode exigir 2 reloads).
   if (url.pathname === "/config.js") {
     event.respondWith(fetchConfigNoStore(request));
     return;

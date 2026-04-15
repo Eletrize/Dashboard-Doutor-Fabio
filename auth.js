@@ -67,7 +67,9 @@
   }
 
   function setBusy(isBusy) {
-    const buttons = [dom.signInBtn, dom.signUpBtn, dom.googleBtn].filter(Boolean);
+    const buttons = [dom.signInBtn, dom.signUpBtn, dom.googleBtn].filter(
+      Boolean,
+    );
     buttons.forEach((button) => {
       button.disabled = Boolean(isBusy);
     });
@@ -138,7 +140,7 @@
         detail: {
           user: state.user,
         },
-      })
+      }),
     );
 
     authenticatedListeners.forEach((listener) => {
@@ -152,7 +154,8 @@
 
   function restorePendingHash() {
     try {
-      const storedHash = localStorage.getItem("dashboard_auth_return_hash") || "";
+      const storedHash =
+        localStorage.getItem("dashboard_auth_return_hash") || "";
       if (storedHash && !window.location.hash) {
         window.location.hash = storedHash;
       }
@@ -295,7 +298,7 @@
       if (!data?.session) {
         setStatus(
           "Conta criada. Verifique seu email para confirmar o acesso.",
-          "success"
+          "success",
         );
       } else {
         setStatus("Conta criada e autenticada.", "success");
@@ -317,7 +320,10 @@
     setStatus("Redirecionando para o Google...", "neutral");
 
     try {
-      localStorage.setItem("dashboard_auth_return_hash", window.location.hash || "#home");
+      localStorage.setItem(
+        "dashboard_auth_return_hash",
+        window.location.hash || "#home",
+      );
     } catch (error) {
       // noop
     }
@@ -443,12 +449,12 @@
             headers: {
               "Content-Type": "application/json",
             },
-          }
+          },
         );
       }
 
       const headers = new Headers(
-        init?.headers || (input instanceof Request ? input.headers : undefined)
+        init?.headers || (input instanceof Request ? input.headers : undefined),
       );
       headers.set("Authorization", `Bearer ${state.accessToken}`);
 
@@ -480,7 +486,10 @@
     setGateLocked(true);
 
     if (!window.supabase?.createClient) {
-      setStatus("Biblioteca de login indisponível. Recarregue a página.", "error");
+      setStatus(
+        "Biblioteca de login indisponível. Recarregue a página.",
+        "error",
+      );
       resolveReady();
       return;
     }
@@ -488,7 +497,7 @@
     if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) {
       setStatus(
         "Configuração de login incompleta. Defina auth.supabaseUrl e auth.supabaseAnonKey.",
-        "error"
+        "error",
       );
       resolveReady();
       return;
@@ -504,7 +513,7 @@
             persistSession: true,
             autoRefreshToken: true,
           },
-        }
+        },
       );
 
       state.client.auth.onAuthStateChange(async (_event, session) => {
@@ -537,4 +546,3 @@
     });
   }
 })();
-

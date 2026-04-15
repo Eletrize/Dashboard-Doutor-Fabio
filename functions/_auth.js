@@ -181,10 +181,12 @@ export function jsonResponse(payload, status) {
 }
 
 export function getHubitatCredentials(env) {
-  const hubitatBaseUrl =
-    String(env?.HUBITAT_BASE_URL || DEFAULT_HUBITAT_BASE_URL).trim();
-  const hubitatAccessToken =
-    String(env?.HUBITAT_ACCESS_TOKEN || DEFAULT_HUBITAT_ACCESS_TOKEN).trim();
+  const hubitatBaseUrl = String(
+    env?.HUBITAT_BASE_URL || DEFAULT_HUBITAT_BASE_URL,
+  ).trim();
+  const hubitatAccessToken = String(
+    env?.HUBITAT_ACCESS_TOKEN || DEFAULT_HUBITAT_ACCESS_TOKEN,
+  ).trim();
 
   if (!hubitatBaseUrl || !hubitatAccessToken) {
     return {
@@ -193,7 +195,7 @@ export function getHubitatCredentials(env) {
         {
           error: "Hubitat credentials are not configured",
         },
-        500
+        500,
       ),
     };
   }
@@ -222,12 +224,14 @@ function getBearerToken(request) {
 }
 
 function isUserAllowedByEmail(email, env) {
-  const normalizedEmail = String(email || "").trim().toLowerCase();
+  const normalizedEmail = String(email || "")
+    .trim()
+    .toLowerCase();
   if (!normalizedEmail) return false;
 
   const allowlistedEmails = normalizeCsv(env?.ALLOWED_EMAILS);
   const allowlistedDomains = normalizeCsv(env?.ALLOWED_EMAIL_DOMAINS).map(
-    (domain) => domain.replace(/^@/, "")
+    (domain) => domain.replace(/^@/, ""),
   );
 
   if (allowlistedEmails.length === 0 && allowlistedDomains.length === 0) {
@@ -245,7 +249,9 @@ function isUserAllowedByEmail(email, env) {
 }
 
 async function getSupabaseUserFromToken(accessToken, env) {
-  const supabaseUrl = String(env?.SUPABASE_URL || "").trim().replace(/\/$/, "");
+  const supabaseUrl = String(env?.SUPABASE_URL || "")
+    .trim()
+    .replace(/\/$/, "");
   const supabaseAnonKey = String(env?.SUPABASE_ANON_KEY || "").trim();
 
   if (!supabaseUrl || !supabaseAnonKey) {
@@ -285,7 +291,9 @@ async function getSupabaseUserFromToken(accessToken, env) {
 }
 
 function getSupabaseRestConfig(env) {
-  const supabaseUrl = String(env?.SUPABASE_URL || "").trim().replace(/\/$/, "");
+  const supabaseUrl = String(env?.SUPABASE_URL || "")
+    .trim()
+    .replace(/\/$/, "");
   const supabaseAnonKey = String(env?.SUPABASE_ANON_KEY || "").trim();
 
   if (!supabaseUrl || !supabaseAnonKey) {
@@ -335,7 +343,9 @@ async function fetchSupabaseRows(tableName, queryParams, accessToken, env) {
 }
 
 function normalizeAccessValue(value) {
-  return String(value || "").trim().toLowerCase();
+  return String(value || "")
+    .trim()
+    .toLowerCase();
 }
 
 function buildInFilter(values) {
@@ -380,7 +390,11 @@ async function fetchUserEnvironmentAccess(userId, accessToken, env) {
   );
 }
 
-async function fetchEnvironmentDeviceRegistry(environmentKeys, accessToken, env) {
+async function fetchEnvironmentDeviceRegistry(
+  environmentKeys,
+  accessToken,
+  env,
+) {
   const inFilter = buildInFilter(environmentKeys);
   if (!inFilter) return [];
 
@@ -413,7 +427,11 @@ export async function resolveUserAccessPolicy(context, authResult) {
     };
   }
 
-  if (authResult.authSkipped || !authResult.user?.id || !authResult.accessToken) {
+  if (
+    authResult.authSkipped ||
+    !authResult.user?.id ||
+    !authResult.accessToken
+  ) {
     return {
       ok: true,
       unrestricted: true,
@@ -427,7 +445,10 @@ export async function resolveUserAccessPolicy(context, authResult) {
   }
 
   pruneExpiredEntries(accessPolicyCache);
-  const cachedPolicy = getCachedEntry(accessPolicyCache, authResult.accessToken);
+  const cachedPolicy = getCachedEntry(
+    accessPolicyCache,
+    authResult.accessToken,
+  );
   if (cachedPolicy && cachedPolicy.userId === String(authResult.user.id)) {
     return fromPolicyCacheEntry(cachedPolicy);
   }
@@ -509,7 +530,10 @@ export async function resolveUserAccessPolicy(context, authResult) {
       const deviceId = String(row?.device_id || "").trim();
       if (!envKey || !deviceId) return;
 
-      if (viewEnvironmentKeys.has(envKey) || controlEnvironmentKeys.has(envKey)) {
+      if (
+        viewEnvironmentKeys.has(envKey) ||
+        controlEnvironmentKeys.has(envKey)
+      ) {
         viewDeviceIds.add(deviceId);
       }
       if (controlEnvironmentKeys.has(envKey)) {
@@ -570,7 +594,7 @@ export async function requireAuthenticatedUser(context) {
         {
           error: "Authentication required",
         },
-        401
+        401,
       ),
     };
   }
@@ -596,7 +620,9 @@ export async function requireAuthenticatedUser(context) {
     }
 
     const user = supabaseResult.user;
-    const email = String(user?.email || "").trim().toLowerCase();
+    const email = String(user?.email || "")
+      .trim()
+      .toLowerCase();
 
     if (!email) {
       return {
@@ -605,12 +631,15 @@ export async function requireAuthenticatedUser(context) {
           {
             error: "Authenticated user does not include email",
           },
-          403
+          403,
         ),
       };
     }
 
-    const requireVerifiedEmail = isFlagEnabled(env?.REQUIRE_EMAIL_VERIFIED, true);
+    const requireVerifiedEmail = isFlagEnabled(
+      env?.REQUIRE_EMAIL_VERIFIED,
+      true,
+    );
     if (requireVerifiedEmail && !user?.email_confirmed_at) {
       return {
         ok: false,
@@ -618,7 +647,7 @@ export async function requireAuthenticatedUser(context) {
           {
             error: "Email not verified",
           },
-          403
+          403,
         ),
       };
     }
@@ -630,7 +659,7 @@ export async function requireAuthenticatedUser(context) {
           {
             error: "Email is not allowlisted",
           },
-          403
+          403,
         ),
       };
     }
@@ -651,7 +680,7 @@ export async function requireAuthenticatedUser(context) {
           error: "Auth validation failed",
           message: error?.message || "Unexpected auth error",
         },
-        500
+        500,
       ),
     };
   }
@@ -712,4 +741,3 @@ export async function requireAdminUser(context) {
     };
   }
 }
-

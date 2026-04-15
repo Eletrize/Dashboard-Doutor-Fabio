@@ -1,19 +1,19 @@
-﻿# Dashboard Eletrize - Base GenÃ©rica
+﻿# Dashboard Eletrize - Base Genérica
 
-Dashboard modular para controle de automaÃ§Ã£o residencial via Hubitat. Este Ã© um template base pronto para ser customizado para qualquer cliente.
+Dashboard modular para controle de automação residencial via Hubitat. Este é um template base pronto para ser customizado para qualquer cliente.
 
-## ðŸ“‹ VisÃ£o Geral
+## 📋 Visão Geral
 
 Este dashboard oferece:
 
-- âœ… 6 ambientes genÃ©ricos configurÃ¡veis
-- âœ… Controle de luzes, ar condicionado e cortinas
-- âœ… 2 cenÃ¡rios customizÃ¡veis
-- âœ… Interface PWA instalÃ¡vel
-- âœ… Design glassmorphism responsivo
-- âœ… IntegraÃ§Ã£o com Hubitat via Cloudflare Functions
+- ✅ 6 ambientes genéricos configuráveis
+- ✅ Controle de luzes, ar condicionado e cortinas
+- ✅ 2 Cenários customizáveis
+- ✅ Interface PWA instalável
+- ✅ Design glassmorphism responsivo
+- ✅ Integração com Hubitat via Cloudflare Functions
 
-## ðŸš€ Setup RÃ¡pido para Novo Cliente
+## 🚀 Setup Rápido para Novo Cliente
 
 ### Build dos assets (CSS/JS)
 
@@ -27,16 +27,16 @@ npm run build:assets
 
 Isso recompila os assets otimizados antes de publicar.
 
-### 1. PersonalizaÃ§Ã£o BÃ¡sica
+### 1. Personalização Básica
 
-#### 1.1 InformaÃ§Ãµes do Projeto
+#### 1.1 Informações do Projeto
 
 Edite `package.json`:
 
 ```json
 {
   "name": "dashboard-[nome-cliente]",
-  "description": "Dashboard de automaÃ§Ã£o para [Nome Cliente]"
+  "description": "Dashboard de automação para [Nome Cliente]"
 }
 ```
 
@@ -50,8 +50,8 @@ PROJECT_NAME = "Dashboard [Nome Cliente]"
 #### 1.2 Branding
 
 - **Logo**: Substitua `images/icons/Eletrize.svg` pelo logo do cliente
-- **Ãcone PWA**: Substitua os arquivos em `images/pwa/` com os ícones do cliente
-- **TÃ­tulo**: Edite `index.html` e atualize todas as ocorrÃªncias de "Dashboard Eletrize"
+- **Ícone PWA**: Substitua os arquivos em `images/pwa/` com os ícones do cliente
+- **Título**: Edite `index.html` e atualize todas as ocorrências de "Dashboard Eletrize"
 
 #### 1.3 Fotos dos Ambientes
 
@@ -120,7 +120,7 @@ const rooms = [
 
 Para cada ambiente, edite as Páginas correspondentes em `index.html`:
 
-**Exemplo - Ambiente 1 (comeÃ§ando na linha ~1180):**
+**Exemplo - Ambiente 1 (começando na linha ~1180):**
 
 ```html
 <!-- Luzes -->
@@ -168,37 +168,37 @@ const CURTAIN_SECTIONS = [
 ];
 ```
 
-### 3. Configuração dos CenÃ¡rios
+### 3. Configuração dos Cenários
 
-Edite `scenes.js` para personalizar os dois cenÃ¡rios:
+Edite `scenes.js` para personalizar os dois Cenários:
 
-#### CenÃ¡rio 1 (linha ~163):
+#### Cenário 1 (linha ~163):
 
 ```javascript
 function executeCenario1() {
-  console.log("ðŸŒ… Iniciando cenÃ¡rio: Bom Dia");
+  console.log("🌅 Iniciando Cenário: Bom Dia");
 
   const salaLights = ["7", "8"]; // IDs das luzes da sala
   const quartoLights = ["11", "12"]; // IDs das luzes do quarto
   const cortinasAbrir = ["42", "43"]; // IDs das cortinas para abrir
 
-  // ... customize a lÃ³gica
+  // ... customize a lógica
 }
 ```
 
-#### CenÃ¡rio 2 (linha ~217):
+#### Cenário 2 (linha ~217):
 
 ```javascript
 function executeCenario2() {
-  console.log("ðŸŒ™ Iniciando cenÃ¡rio: Boa Noite");
+  console.log("🌙 Iniciando Cenário: Boa Noite");
 
   const lightsToKeepOn = ["35", "49"]; // Luzes que ficam acesas
 
-  // ... customize a lÃ³gica
+  // ... customize a lógica
 }
 ```
 
-**Atualize os rÃ³tulos** em `index.html` (linha ~620):
+**Atualize os rótulos** em `index.html` (linha ~620):
 
 ```html
 <div class="control-label">Bom Dia</div>
@@ -230,8 +230,8 @@ const ALL_LIGHT_IDS = [
 #### 5.1 Obter Credenciais
 
 1. Acesse seu Hubitat
-2. VÃ¡ em **Apps** â†’ **Maker API**
-3. Copie a URL completa que contÃ©m:
+2. Vá em **Apps** → **Maker API**
+3. Copie a URL completa que contém:
    - UUID do hub
    - ID do app
    - Access token
@@ -260,42 +260,42 @@ npm install
 npm run dev
 ```
 
-#### Deploy para ProduÃ§Ã£o
+#### Deploy para Produção
 
 ```bash
 wrangler pages deploy . --project-name dashboard-[nome-cliente]
 ```
 
-Veja `DEPLOY.md` para instruÃ§Ãµes completas.
+Veja `DEPLOY.md` para instruções completas.
 
-## ðŸ“ Estrutura de Arquivos
+## 📁 Estrutura de Arquivos
 
 ```
 /
-â”œâ”€â”€ index.html              # Página principal (edite aqui os ambientes)
-â”œâ”€â”€ script.js              # LÃ³gica de controle (edite IDs de dispositivos)
-â”œâ”€â”€ scenes.js              # CenÃ¡rios (customize aqui)
-â”œâ”€â”€ styles.css             # Estilos (normalmente nÃ£o precisa editar)
-â”œâ”€â”€ package.json           # Metadados do projeto
-â”œâ”€â”€ wrangler.toml          # Config Cloudflare
-â”œâ”€â”€ manifest.json          # Config PWA
-â”œâ”€â”€ functions/             # Cloudflare Functions (proxy Hubitat)
-â”œâ”€â”€ images/
-â”‚   â”œâ”€â”€ icons/            # Ãcones da UI
-â”‚   â”œâ”€â”€ pwa/              # Ãcones do app (substitua)
-â”‚   â””â”€â”€ Images/           # Fotos dos ambientes (adicione aqui)
-â””â”€â”€ fonts/                # Fontes Raleway
+├── index.html              # Página principal (edite aqui os ambientes)
+├── script.js              # Lógica de controle (edite IDs de dispositivos)
+├── scenes.js              # Cenários (customize aqui)
+├── styles.css             # Estilos (normalmente não precisa editar)
+├── package.json           # Metadados do projeto
+├── wrangler.toml          # Config Cloudflare
+├── manifest.json          # Config PWA
+├── functions/             # Cloudflare Functions (proxy Hubitat)
+├── images/
+│   ├── icons/            # Ícones da UI
+│   ├── pwa/              # Ícones do app (substitua)
+│   └── Images/           # Fotos dos ambientes (adicione aqui)
+└── fonts/                # Fontes Raleway
 ```
 
-## ðŸŽ¨ CustomizaÃ§Ã£o AvanÃ§ada
+## 🎨 Customização Avançada
 
 ### Cores e Tema
 
 Edite `styles.css` para alterar:
 
-- Cores de fundo (variÃ¡veis CSS no `:root`)
+- Cores de fundo (variáveis CSS no `:root`)
 - Opacidades do glassmorphism
-- AnimaÃ§Ãµes e transiÃ§Ãµes
+- Animações e transições
 
 ### Adicionar Mais Ambientes
 
@@ -308,7 +308,7 @@ Edite `styles.css` para alterar:
 
 1. Remova a entrada do array `rooms`
 2. Remova a Página correspondente de `index.html`
-3. Opcional: remova CSS especÃ­fico
+3. Opcional: remova CSS específico
 
 ### Controles Especiais
 
@@ -318,17 +318,17 @@ Para adicionar tipos diferentes de controles (ventiladores, TVs, etc.):
 2. Crie controle similar aos existentes
 3. Adicione handlers no `script.js`
 
-## ðŸ”§ Troubleshooting
+## 🔧 Troubleshooting
 
-### Dispositivos nÃ£o respondem
+### Dispositivos não respondem
 
-- Verifique se os IDs estÃ£o corretos no Hubitat
-- Confirme que as secrets do Cloudflare estÃ£o configuradas
+- Verifique se os IDs estão corretos no Hubitat
+- Confirme que as secrets do Cloudflare estão configuradas
 - Veja os logs: `wrangler tail`
 
 ### Cortinas invertidas
 
-Alguns dispositivos tÃªm comandos invertidos. Edite `script.js` (linha ~1122):
+Alguns dispositivos têm comandos invertidos. Edite `script.js` (linha ~1122):
 
 ```javascript
 if (deviceId === "40") {
@@ -337,34 +337,34 @@ if (deviceId === "40") {
 }
 ```
 
-### Caracteres especiais nÃ£o aparecem
+### Caracteres especiais não aparecem
 
-O dashboard já tem correção automÃ¡tica para caracteres com encoding incorreto.
-Edite `script.js` (linha ~717) se necessário adicionar mais correÃ§Ãµes.
+O dashboard já tem correção automática para caracteres com encoding incorreto.
+Edite `script.js` (linha ~717) se necessário adicionar mais correções.
 
-## ðŸ“± PWA - App InstalÃ¡vel
+## 📱 PWA - App Instalável
 
-Para ativar a instalaÃ§Ã£o como app:
+Para ativar a instalação como app:
 
-1. Edite `manifest.json` com nome e descriÃ§Ã£o do cliente
+1. Edite `manifest.json` com nome e Descrição do cliente
 2. Substitua os ícones em `images/pwa/`
-3. O service worker (`service-worker.js`) já estÃ¡ configurado
+3. O service worker (`service-worker.js`) já está configurado
 
-## ðŸ” SeguranÃ§a
+## 🔐 Segurança
 
-- âœ… Todas as credenciais ficam em secrets do Cloudflare
-- âœ… Proxy server-side para ocultar tokens do cliente
-- âœ… CORS configurado nas functions
-- âœ… Nenhuma credencial exposta no cÃ³digo frontend
+- ✅ Todas as credenciais ficam em secrets do Cloudflare
+- ✅ Proxy server-side para ocultar tokens do cliente
+- ✅ CORS configurado nas functions
+- ✅ Nenhuma credencial exposta no código frontend
 
-## ðŸ“ž Suporte
+## 📞 Suporte
 
-Para questÃµes tÃ©cnicas ou customizaÃ§Ãµes especiais, consulte:
+Para questões técnicas ou customizações especiais, consulte:
 
-- `DEPLOY.md` - InstruÃ§Ãµes de deploy
+- `DEPLOY.md` - Instruções de deploy
 - `VARIAVEIS_HUBITAT.md` - Setup do Hubitat
 - `app-info-menu-snippets.md` - Componentes de UI
 
 ---
 
-**Desenvolvido por Eletrize** ðŸ”Œ
+**Desenvolvido por Eletrize** 🔌

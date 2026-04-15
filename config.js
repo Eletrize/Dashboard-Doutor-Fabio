@@ -1,12 +1,12 @@
 ﻿/**
- * Dashboard Eletrize (Cloudflare) - ConfiguraÃ§Ã£o do cliente
+ * Dashboard Eletrize (Cloudflare) - Configuração do cliente
  *
  * Objetivo: permitir adicionar/remover ambientes e dispositivos editando apenas este arquivo,
  * similar ao modelo do LongPing, mas mantendo o funcionamento Cloudflare (Pages/Functions).
  */
 
 const CLIENT_CONFIG = {
-  // Modo de teste local: mantÃ©m estados no dashboard sem depender do Hubitat.
+  // Modo de teste local: mantém estados no dashboard sem depender do Hubitat.
   // Use false para voltar ao comportamento normal.
   development: {
     stateOnlyMode: false,
@@ -31,18 +31,18 @@ const CLIENT_CONFIG = {
     allowEmailSignUp: false,
     allowGoogleLogin: false,
     requireEmailConfirmation: true,
-    // ApÃ³s OAuth (Google), o usuÃ¡rio volta para esta URL.
+    // Após OAuth (Google), o usuário volta para esta URL.
     redirectTo: "",
   },
 
   clientInfo: {
     name: "Doutor Fabio",
     projectName: "Dashboard Residencial",
-    location: "RibeirÃ£o Preto, SP",
+    location: "Ribeirão Preto, SP",
     version: "1.5",
   },
 
-  // ConfiguraÃ§Ã£o da Maker API (Hubitat) centralizada no config.js
+  // Configuração da Maker API (Hubitat) centralizada no config.js
   makerApi: {
     cloud: {
       enabled: true,
@@ -53,7 +53,7 @@ const CLIENT_CONFIG = {
       accessToken: "c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
       // Quais dispositivos devem usar a nuvem: "*"/"all" para todos ou uma lista de IDs
       deviceIds: "*",
-      // Endpoints diretos Ãºteis (mantidos aqui para fÃ¡cil consulta)
+      // Endpoints diretos úteis (mantidos aqui para fácil consulta)
       endpoints: {
         devices:
           "https://cloud.hubitat.com/api/917e2dba-9f0d-49ab-905f-b3e1a7f7c4ad/apps/7/devices?access_token=c5a8aac8-69cc-42e2-84dc-c0b6519d72bd",
@@ -89,12 +89,12 @@ const CLIENT_CONFIG = {
     },
   },
 
-  // Overrides globais de Ã­cones (vale para TODOS os botÃµes)
+  // Overrides globais de ícones (vale para TODOS os botões)
   // Chave: caminho atual (ex.: "images/icons/icon-mute.svg")
   // Valor: novo caminho (ex.: "images/icons/whatsapp.svg")
-  // Dica: isso tambÃ©m cobre botÃµes estÃ¡ticos (mÃºsica, cortinas, AC, etc.).
+  // Dica: isso também cobre botões estáticos (música, cortinas, AC, etc.).
   ui: {
-    // Itens de UI reutilizÃ¡veis (nome + Ã­cone) para abas/botÃµes principais
+    // Itens de UI reutilizáveis (nome + ícone) para abas/botões principais
     // Use as chaves abaixo no app: lights, curtains, comfort, music, tv, htv, home, scenes
     items: {
       lights: { label: "Luzes", icon: "images/icons/icon-small-light-off.svg" },
@@ -103,11 +103,11 @@ const CLIENT_CONFIG = {
         label: "Ar Condicionado",
         icon: "images/icons/ar-condicionado.svg",
       },
-      music: { label: "MÃºsica", icon: "images/icons/icon-musica.svg" },
+      music: { label: "Música", icon: "images/icons/icon-musica.svg" },
       tv: { label: "Televisão", icon: "images/icons/icon-tv.svg" },
       htv: { label: "HTV", icon: "images/icons/icon-htv.svg" },
       home: { label: "Home", icon: "images/icons/icon-home.svg" },
-      scenes: { label: "CenÃ¡rios", icon: "images/icons/icon-scenes.svg" },
+      scenes: { label: "Cenários", icon: "images/icons/icon-scenes.svg" },
       bluray: { label: "Blu-ray", icon: "images/icons/icon-bluray.svg" },
       appletv: { label: "Apple TV", icon: "images/icons/icon-apple-tv.svg" },
       clarotv: { label: "Claro TV", icon: "images/icons/icon-clarotv.svg" },
@@ -119,7 +119,7 @@ const CLIENT_CONFIG = {
       },
     },
 
-    // Ãcones on/off padronizados por tipo (reutilizÃ¡veis em qualquer botão toggle)
+    // Ícones on/off padronizados por tipo (reutilizáveis em qualquer botão toggle)
     toggles: {
       light: {
         on: "images/icons/icon-small-light-on.svg",
@@ -147,7 +147,7 @@ const CLIENT_CONFIG = {
       },
     },
 
-    // Ãcones de aÃ§Ãµes (setas, voltar, stop etc.)
+    // Ícones de ações (setas, voltar, stop etc.)
     actions: {
       back: "images/icons/back-button.svg",
       curtainOpen: "images/icons/open-curtain.svg",
@@ -155,7 +155,7 @@ const CLIENT_CONFIG = {
       curtainClose: "images/icons/close-curtain.svg",
     },
 
-    // Ãcones por tipo de movimento de cortina (configurÃ¡vel por ambiente/cortina)
+    // Ícones por tipo de movimento de cortina (configurável por ambiente/cortina)
     curtainTypes: {
       lateral: {
         open: "images/icons/open-curtain.svg",
@@ -175,7 +175,7 @@ const CLIENT_CONFIG = {
       // "images/icons/arrow-up.svg": "images/icons/icon-ac-aleta-alta.svg",
     },
 
-    // Tabelas de comandos por controle (referÃªncia / logging)
+    // Tabelas de comandos por controle (referência / logging)
     controlCommands: {
       // Apple TV: comandos reconhecidos pelo hub (mesmo que nem todos tenham botão)
       appletv: [
@@ -372,7 +372,12 @@ const CLIENT_CONFIG = {
         { id: "12246", name: "Spots" },
         { id: "12247", name: "Sanca" },
         { id: "12233", name: "Lustre", type: "dimmer", defaultLevel: 60 },
-        { id: "12231", name: "Spots Dimmer", type: "dimmer", defaultLevel: 100 },
+        {
+          id: "12231",
+          name: "Spots Dimmer",
+          type: "dimmer",
+          defaultLevel: 100,
+        },
       ],
       quickActions: [
         {
@@ -589,14 +594,12 @@ const CLIENT_CONFIG = {
       ],
       airConditioner: {
         deviceId: "12638",
-        zones: [
-          { id: "suitemilena", name: "Suíte Milena", deviceId: "12638" },
-        ],
+        zones: [{ id: "suitemilena", name: "Suíte Milena", deviceId: "12638" }],
         controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
       tv: [{ id: "12636", name: "Televisão" }],
-      music: [{ id: "54", name: "MÃºsica" }],
+      music: [{ id: "54", name: "Música" }],
       clarotv: [{ id: "55", name: "Claro TV" }],
     },
 
@@ -609,9 +612,7 @@ const CLIENT_CONFIG = {
       curtains: [{ id: "12616", name: "Cortina" }],
       airConditioner: {
         deviceId: "12613",
-        zones: [
-          { id: "suitemaster", name: "Suíte Master", deviceId: "12613" },
-        ],
+        zones: [{ id: "suitemaster", name: "Suíte Master", deviceId: "12613" }],
         controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
@@ -626,9 +627,7 @@ const CLIENT_CONFIG = {
       curtains: [{ id: "12619", name: "Cortina" }],
       airConditioner: {
         deviceId: "12622",
-        zones: [
-          { id: "suitemaster", name: "Suíte Master", deviceId: "12622" },
-        ],
+        zones: [{ id: "suitemaster", name: "Suíte Master", deviceId: "12622" }],
         controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
@@ -733,7 +732,7 @@ const CLIENT_CONFIG = {
       ambiente1: ["5", "2", "12409", "7", "6", "4"],
     },
 
-    // O polling atual usa ALL_LIGHT_IDS tambÃ©m para volume do Denon
+    // O polling atual usa ALL_LIGHT_IDS também para volume do Denon
     extraPollingDevices: ["12409"],
   },
 };
@@ -804,21 +803,21 @@ const bottomNavConfig = {
     autoHideOnScroll: true,
     scrollDelta: 8,
     revealAtTop: 10,
-    // Atalho nas pÃ¡ginas de controle: recolhe a nav para um Ãºnico botão Home.
+    // Atalho nas páginas de controle: recolhe a nav para um único botão Home.
     controlHomeShortcut: {
       enabled: true,
-      // Aplicar atalho somente em pÃ¡ginas de controle (nÃ£o em qualquer rota).
+      // Aplicar atalho somente em páginas de controle (não em qualquer rota).
       onlyControlRoutes: true,
       includeRoutes: ["scenes-criar"],
-      // Rotas de controle seguem o padrÃ£o: ambiente{n}-{controle}
+      // Rotas de controle seguem o padrão: ambiente{n}-{controle}
       controlRoutePattern: "^ambiente\\d+-",
-      // Rotas principais que mantÃªm a barra completa no centro.
+      // Rotas principais que mantêm a barra completa no centro.
       // Todas as demais rotas entram no modo compacto de retorno.
       primaryRoutes: ["home", "ambientes", "curtains", "scenes"],
       // Como localizar o item de Home dentro de items[].
       homePath: "ambientes",
       homeId: "ambientes",
-      // No modo compacto, mantÃ©m sempre visÃ­vel (sem notch de scroll).
+      // No modo compacto, mantém sempre visível (sem notch de scroll).
       disableAutoHide: true,
       // Ajustes visuais do botão recolhido no canto inferior esquerdo.
       leftOffset: "16px",
@@ -977,7 +976,7 @@ function getMainDashboardConfig() {
 }
 
 // =========================
-// Helpers (API pÃºblica)
+// Helpers (API pública)
 // =========================
 
 function getDashboardAccessApi() {
@@ -1213,7 +1212,8 @@ function getCurtainCustomActionPlan(curtain, action) {
   const actionSuffix =
     actionName.charAt(0).toUpperCase() + actionName.slice(1).toLowerCase();
   const rawPlan =
-    curtain?.actionPlans?.[actionName] ?? curtain?.[`actionPlan${actionSuffix}`];
+    curtain?.actionPlans?.[actionName] ??
+    curtain?.[`actionPlan${actionSuffix}`];
 
   if (!Array.isArray(rawPlan)) return null;
 
@@ -1228,7 +1228,11 @@ function getCurtainCustomActionPlan(curtain, action) {
         command: String(command),
       };
 
-      if (item?.value !== undefined && item.value !== null && item.value !== "") {
+      if (
+        item?.value !== undefined &&
+        item.value !== null &&
+        item.value !== ""
+      ) {
         payload.value = item.value;
       }
 
@@ -1340,7 +1344,7 @@ function getAcDeviceIds() {
       : "";
     const resolvedAcId = explicitAcId || firstZoneId;
     if (resolvedAcId) {
-      // ConfiguraÃ§Ã£o por ambiente (deviceId/zones) tem precedÃªncia sobre mapa legado.
+      // Configuração por ambiente (deviceId/zones) tem precedência sobre mapa legado.
       ids[env.key] = resolvedAcId;
     }
   });
@@ -1507,7 +1511,7 @@ function generateLightsControls(envKey) {
       const deviceId = String(light.id);
       const isPoolLedControl = envKey === "ambiente4" && deviceId === "12450";
 
-      // Todas as luzes agora tÃªm Ã­cone de background (light-on com 60% opacity quando ligado)
+      // Todas as luzes agora têm ícone de background (light-on com 60% opacity quando ligado)
       const backgroundIcon = DEFAULT_ICON_ON;
 
       if (!dimmerEnabled) {
@@ -1522,7 +1526,9 @@ function generateLightsControls(envKey) {
         </div>
       `;
 
-        return isPoolLedControl ? `${lightCard}${buildLedModeCard(deviceId)}` : lightCard;
+        return isPoolLedControl
+          ? `${lightCard}${buildLedModeCard(deviceId)}`
+          : lightCard;
       }
 
       const sliderId = `${envKey}-${deviceId}-dimmer`;
@@ -1653,4 +1659,4 @@ window.generateLightsControls = generateLightsControls;
 window.generateCurtainsControls = generateCurtainsControls;
 window.getAuthConfig = getAuthConfig;
 
-console.log("âœ… CLIENT_CONFIG carregado:", CLIENT_CONFIG.clientInfo.name);
+console.log("✅ CLIENT_CONFIG carregado:", CLIENT_CONFIG.clientInfo.name);
