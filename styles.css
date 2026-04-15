@@ -5934,7 +5934,7 @@ body.orchestrated-animation.reveal-home .room-card {
   height: 10px;
   margin-left: auto;
   transform: rotate(45deg);
-  transition: transform 0.22s ease;
+  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
   width: 10px;
 }
 
@@ -5942,16 +5942,65 @@ body.orchestrated-animation.reveal-home .room-card {
   transform: rotate(-135deg);
 }
 
+.curtain-drawer {
+  --curtain-drawer-content-padding-open: 14px;
+  --curtain-drawer-content-padding-closed: 0 14px;
+}
+
 .curtain-drawer__content {
-  border-top: 1px solid #ffffff1f;
+  border-top: 1px solid transparent;
   background: #0f0f0fdb;
-  padding: 14px;
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  overflow: hidden;
+  padding: var(--curtain-drawer-content-padding-closed);
+  transform: translateY(-14px);
+  transition:
+    grid-template-rows 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.34s ease,
+    transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s ease;
+}
+
+.curtain-drawer:not([open]) > .curtain-drawer__content {
+  display: grid;
+  pointer-events: none;
+}
+
+.curtain-drawer[open] .curtain-drawer__content {
+  border-top-color: #ffffff1f;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  padding: var(--curtain-drawer-content-padding-open);
+  transform: translateY(0);
 }
 
 .curtain-section__grid {
   display: grid;
   gap: 16px;
   grid-template-columns: 1fr;
+  min-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-8px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.curtain-drawer[open] .curtain-section__grid {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .curtain-drawer__content,
+  .curtain-section__grid,
+  .curtain-drawer__chevron {
+    transition: none;
+  }
 }
 
 @media (width>=600px) {
@@ -5960,8 +6009,9 @@ body.orchestrated-animation.reveal-home .room-card {
     padding: 18px 22px;
   }
 
-  .curtain-drawer__content {
-    padding: 16px 20px 20px;
+  .curtain-drawer {
+    --curtain-drawer-content-padding-open: 16px 20px 20px;
+    --curtain-drawer-content-padding-closed: 0 20px;
   }
 
   .curtain-section__grid {
