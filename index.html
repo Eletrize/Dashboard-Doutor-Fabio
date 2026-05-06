@@ -1812,6 +1812,7 @@
             if (!item || !item.id) return null;
             const baseId = String(item.id);
             return {
+              ...item,
               id: baseId,
               name: item.name || "",
               metadataId: item.metadataDeviceId || item.metadataId || baseId,
@@ -2022,30 +2023,68 @@
         const powerId = String(device.powerId || controlId);
         const volumeId = String(device.volumeId || controlId);
         const deviceId = controlId;
+        const commandMap =
+          device.commandMap && typeof device.commandMap === "object"
+            ? device.commandMap
+            : {};
+        const hasCustomCommandMap = Object.keys(commandMap).length > 0;
+        const useStepVolumeButtons =
+          String(device.volumeControl || "")
+            .trim()
+            .toLowerCase() === "stepbuttons";
+        const resolveMappedCommand = (key, fallback = "") =>
+          String(commandMap[key] || fallback || "");
         const isClaroTv = typeKey === "clarotv";
         const isRoku = typeKey === "roku";
         const useClaroLayout = isClaroTv || isRoku;
         const layoutTypeKey = useClaroLayout ? "clarotv" : typeKey;
         const isBluray = typeKey === "bluray";
+        const isCustomMappedTv = typeKey === "tv" && hasCustomCommandMap;
         const isMusicPage = /m\u00fasica/i.test(String(headingLabel || ""));
         const isPortraitEnabled = !isMusicPage;
         const powerOnLabel = useClaroLayout ? "On" : "ON";
         const powerOffLabel = useClaroLayout ? "Off" : "OFF";
-        const directionalCenterCommand = isRoku ? "cursorOK" : "cursorCenter";
+        const directionalCenterCommand = isRoku
+          ? "cursorOK"
+          : resolveMappedCommand("ok", "cursorCenter");
         const portraitSecondaryPanelLabel = isRoku
           ? "Atalhos"
           : "N&uacute;meros";
         const isTvControl = typeKey === "tv";
         const powerOnCommand = useClaroLayout
           ? "on"
+          : isCustomMappedTv
+            ? resolveMappedCommand("powerOn", "on")
           : isTvControl
             ? "powerOn"
             : "on";
         const powerOffCommand = useClaroLayout
           ? "off"
+          : isCustomMappedTv
+            ? resolveMappedCommand("powerOff", "off")
           : isTvControl
             ? "powerOff"
             : "off";
+        const customTvCommandsMarkup = `
+                    <button class="tv-btn tv-btn--icon-only tv-btn--voltar" onclick="tvCommand(this, '${resolveMappedCommand("back", "tvReturn")}')" data-device-id="${deviceId}" aria-label="Voltar">
+                        <img src="images/icons/arrow-left.svg" alt="Voltar">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveMappedCommand("exit", "exit")}')" data-device-id="${deviceId}" aria-label="Sair">
+                        <img src="images/icons/icon-exit.svg" alt="Sair">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveMappedCommand("home", "home")}')" data-device-id="${deviceId}" aria-label="Home">
+                        <img src="images/icons/icon-home.svg" alt="Home">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveMappedCommand("info", "info")}')" data-device-id="${deviceId}" aria-label="Info">
+                        <img src="images/icons/icon-info.svg" alt="Info">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveMappedCommand("menu", "menu")}')" data-device-id="${deviceId}" aria-label="Menu">
+                        <img src="images/icons/icon-menu.svg" alt="Menu">
+                    </button>
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveMappedCommand("mute", "mute")}')" data-device-id="${deviceId}" aria-label="Mudo">
+                        <img src="images/icons/icon-mute.svg" alt="Mudo">
+                    </button>
+                `;
         const tvCommandsMarkup = `
                     <button class="tv-btn tv-btn--icon-only tv-btn--voltar" onclick="tvCommand(this, 'voltar')" data-device-id="${deviceId}" aria-label="Voltar">
                         <img src="images/icons/arrow-left.svg" alt="Voltar">
@@ -2163,6 +2202,8 @@
                         <img src="images/icons/arrow-left.svg" alt="Voltar">
                     </button>
                 `
+              : isCustomMappedTv
+                ? customTvCommandsMarkup
               : isBluray
                 ? blurayCommandsMarkup
                 : isTvControl
@@ -2206,6 +2247,21 @@
                   >
                 </div>
             `;
+        const stepVolumeControlMarkup = `
+                <header class="tv-section-header">
+                  <h3 class="tv-section-title">Volume</h3>
+                  <span class="sr-only" id="tv-volume-display">50</span>
+                  <div class="tv-section-line"></div>
+                </header>
+                <div class="tv-control-group tv-step-volume-controls" data-volume-mode="stepButtons" data-device-id="${volumeId}" data-volume-storage-key="${String(device.volumeStorageKey || `${envKey}-${deviceId}-volume`)}" data-volume-command-up="${resolveMappedCommand("volumeUp", "volumeUp")}" data-volume-command-down="${resolveMappedCommand("volumeDown", "volumeDown")}">
+                  <button class="tv-btn-square tv-step-volume-btn" type="button" onclick="handleTvStepVolume(this, 'down')" data-device-id="${volumeId}" aria-label="Diminuir volume">
+                    <img src="images/icons/icon-previous-track.svg" alt="Diminuir volume" class="tv-btn-icon-img">
+                  </button>
+                  <button class="tv-btn-square tv-step-volume-btn" type="button" onclick="handleTvStepVolume(this, 'up')" data-device-id="${volumeId}" aria-label="Aumentar volume">
+                    <img src="images/icons/icon-next-track.svg" alt="Aumentar volume" class="tv-btn-icon-img">
+                  </button>
+                </div>
+            `;
         const commandsControlMarkup = `
                 <header class="tv-section-header">
                   <h3 class="tv-section-title">Comandos</h3>
@@ -2215,6 +2271,28 @@
                   ${commandsMarkup}
                 </div>
             `;
+        const customTvMediaMarkup = `
+                <div class="tv-control-section tv-control-section--media" data-portrait-section="media">
+                    <header class="tv-section-header">
+                        <h3 class="tv-section-title">Entradas</h3>
+                        <div class="tv-section-line"></div>
+                    </header>
+                    <div class="tv-control-group tv-media-grid tv-media-grid--custom-tv">
+                        <button class="tv-btn-square" onclick="tvCommand(this, '${resolveMappedCommand("hdmi1", "hdmi1")}')" data-device-id="${deviceId}" aria-label="HDMI 1">
+                            <span class="tv-btn-square-label">HDMI 1</span>
+                        </button>
+                        <button class="tv-btn-square" onclick="tvCommand(this, '${resolveMappedCommand("hdmi2", "hdmi2")}')" data-device-id="${deviceId}" aria-label="HDMI 2">
+                            <span class="tv-btn-square-label">HDMI 2</span>
+                        </button>
+                        <button class="tv-btn-square" onclick="tvCommand(this, '${resolveMappedCommand("hdmi3", "hdmi3")}')" data-device-id="${deviceId}" aria-label="HDMI 3">
+                            <span class="tv-btn-square-label">HDMI 3</span>
+                        </button>
+                        <button class="tv-btn-square" onclick="tvCommand(this, '${resolveMappedCommand("tools", "tools")}')" data-device-id="${deviceId}" aria-label="Tools">
+                            <span class="tv-btn-square-label">Tools</span>
+                        </button>
+                    </div>
+                </div>
+                `;
         const commandsSectionMarkup = `
                 <div class="tv-control-section tv-control-section--commands" data-portrait-section="commands">
                   ${commandsControlMarkup}
@@ -2310,6 +2388,8 @@
                     </div>
                 </div>
                 `
+            : isCustomMappedTv
+              ? customTvMediaMarkup
             : isBluray
               ? ""
               : `
@@ -2626,7 +2706,7 @@
         <h1 class="page-title">${title}</h1>
     </div>
 
-    <div class="tv-control-wrapper" data-control-type="${layoutTypeKey}" data-device-type="${typeKey}"${isPortraitEnabled ? ' data-portrait-panel="control"' : ""}>
+    <div class="tv-control-wrapper" data-control-type="${layoutTypeKey}" data-device-type="${typeKey}" data-volume-mode="${useStepVolumeButtons ? "stepButtons" : "slider"}"${commandMap.soundbarPower ? ` data-extra-power-command="${String(commandMap.soundbarPower)}"` : ""}${isPortraitEnabled ? ' data-portrait-panel="control"' : ""}>
         ${portraitTopMarkup}
         ${rokuPortraitFixedCommandsMarkup}
         ${portraitTabsMarkup}
@@ -2654,7 +2734,7 @@
                 
                 <!-- BLOCO 4: VOLUME -->
                 <div class="tv-control-section tv-control-section--volume">
-                  ${isMusicPage ? commandsControlMarkup : volumeControlMarkup}
+                  ${isMusicPage ? commandsControlMarkup : useStepVolumeButtons ? stepVolumeControlMarkup : volumeControlMarkup}
                 </div>
 
                 <!-- BLOCO 5: CANAIS / MIDIA -->
@@ -5869,11 +5949,19 @@
 
         setupAppInfoMenu();
 
-        // Inicializar slider de volume se estiver na p?gina de controle remoto
+        // Inicializar controles de volume se estiver na página de controle remoto
         if (document.getElementById("tv-volume-slider")) {
           setTimeout(() => {
             if (typeof initVolumeSlider === "function") {
               initVolumeSlider();
+            }
+          }, 100);
+        }
+
+        if (document.querySelector('[data-volume-mode="stepButtons"]')) {
+          setTimeout(() => {
+            if (typeof initTvStepVolumeControls === "function") {
+              initTvStepVolumeControls();
             }
           }, 100);
         }

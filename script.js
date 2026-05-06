@@ -1940,8 +1940,13 @@ function tvCommand(el, command) {
   if (!command || !deviceId) return;
   const wrapper = el.closest?.(".tv-control-wrapper");
   const envKey = getEnvironmentKeyFromRouteHash(window.location.hash) || "";
+  const volumeMode = String(wrapper?.dataset?.volumeMode || "").toLowerCase();
+  const normalizedCommand = String(command || "").trim().toLowerCase();
+  const extraPowerCommand = String(
+    wrapper?.dataset?.extraPowerCommand || "",
+  ).trim();
 
-  if (command === "mute") {
+  if (normalizedCommand === "mute" && volumeMode !== "stepbuttons") {
     const slider = document.getElementById("tv-volume-slider");
     if (slider) {
       slider.value = "0";
@@ -1960,13 +1965,34 @@ function tvCommand(el, command) {
   if (isClaroTv && command === "returnButton") {
     commandsToSend.push("voltar");
   }
+  if (
+    extraPowerCommand &&
+    [
+      "on",
+      "poweron",
+      "commandon",
+      "off",
+      "poweroff",
+      "commandoff",
+    ].includes(normalizedCommand)
+  ) {
+    commandsToSend.push(extraPowerCommand);
+  }
 
   // Controlar estado de poder
   let optimisticPowerState = null;
-  if (command === "on" || command === "powerOn") {
+  if (
+    normalizedCommand === "on" ||
+    normalizedCommand === "poweron" ||
+    normalizedCommand === "commandon"
+  ) {
     optimisticPowerState = "on";
     updateTVPowerState("on", { wrapper });
-  } else if (command === "off" || command === "powerOff") {
+  } else if (
+    normalizedCommand === "off" ||
+    normalizedCommand === "poweroff" ||
+    normalizedCommand === "commandoff"
+  ) {
     optimisticPowerState = "off";
     updateTVPowerState("off", { wrapper });
   }
@@ -1976,7 +2002,7 @@ function tvCommand(el, command) {
   }
 
   // Home Theater: ao ligar, chavear receiver e HDMI conforme controle
-  if (command === "on" || command === "powerOn") {
+  if (normalizedCommand === "on" || normalizedCommand === "poweron") {
     const mediaControlTypes = ["tv", "appletv", "clarotv", "bluray"];
     if (envKey === "ambiente1" && mediaControlTypes.includes(controlType)) {
       const receiverId =
@@ -2881,6 +2907,208 @@ function fireTVMacro() {
     .catch((error) => {
       console.error("❌ Erro na macro Fire TV:", error);
     });
+}
+
+function clampTvVolumeDisplayValue(value) {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return 50;
+  return Math.max(0, Math.min(100, parsed));
+}
+
+function getTvStepVolumeStorageKey(container, deviceId) {
+  const explicitKey = String(
+    container?.dataset?.volumeStorageKey || "",
+  ).trim();
+  if (explicitKey) return `tv-step-volume:${explicitKey}`;
+  return `tv-step-volume:${String(deviceId || "").trim()}`;
+}
+
+function readStoredTvStepVolumeValue(storageKey) {
+  if (!storageKey) return null;
+  try {
+    const rawValue = localStorage.getItem(storageKey);
+    if (rawValue === null || rawValue === undefined || rawValue === "") {
+      return null;
+    }
+    return clampTvVolumeDisplayValue(rawValue);
+  } catch (_) {
+    return null;
+  }
+}
+
+function persistTvStepVolumeValue(storageKey, value) {
+  if (!storageKey) return;
+  try {
+    localStorage.setItem(
+      storageKey,
+      String(clampTvVolumeDisplayValue(value)),
+    );
+  } catch (_) {}
+}
+
+function updateTvStepVolumeDisplay(container, value) {
+  if (!container) return;
+  const display =
+    container
+      .closest(".tv-control-section--volume")
+      ?.querySelector("#tv-volume-display") ||
+    document.getElementById("tv-volume-display");
+  if (!display) return;
+
+  const normalizedValue = clampTvVolumeDisplayValue(value);
+  display.textContent = String(normalizedValue);
+  persistTvStepVolumeValue(
+    getTvStepVolumeStorageKey(container, container.dataset.deviceId),
+    normalizedValue,
+  );
+}
+
+function extractVolumeValueFromDevicePayload(payload) {
+  if (!payload || typeof payload !== "object") return null;
+
+  let volume =
+    payload.volume ??
+    payload.level ??
+    (payload.attributes && payload.attributes.volume) ??
+    (payload.attributes && payload.attributes.level);
+
+  if (volume === null || volume === undefined) {
+    const attributes = payload.attributes;
+    if (Array.isArray(attributes)) {
+      const volumeAttr = attributes.find(
+        (attr) => attr?.name === "volume" || attr?.name === "level",
+      );
+      volume = volumeAttr?.currentValue ?? volumeAttr?.value ?? null;
+    }
+  }
+
+  if (volume === null || volume === undefined || volume === "") {
+    return null;
+  }
+
+  const parsedValue = Number.parseInt(volume, 10);
+  return Number.isFinite(parsedValue)
+    ? clampTvVolumeDisplayValue(parsedValue)
+    : null;
+}
+
+async function fetchTvStepVolumeValue(deviceId) {
+  const normalizedDeviceId = String(deviceId || "").trim();
+  if (!normalizedDeviceId || isHubitatBypassMode() || !isProduction) {
+    return null;
+  }
+
+  const response = await fetch(
+    `${POLLING_URL}?devices=${encodeURIComponent(normalizedDeviceId)}`,
+  );
+  if (!response.ok) {
+    throw new Error(`Polling failed: ${response.status}`);
+  }
+
+  const payload = await response.json();
+  if (
+    payload?.devices &&
+    Object.prototype.hasOwnProperty.call(payload.devices, normalizedDeviceId)
+  ) {
+    return extractVolumeValueFromDevicePayload(payload.devices[normalizedDeviceId]);
+  }
+
+  if (Array.isArray(payload?.data)) {
+    const matchedDevice = payload.data.find(
+      (item) => String(item?.id || "") === normalizedDeviceId,
+    );
+    return extractVolumeValueFromDevicePayload(matchedDevice);
+  }
+
+  return null;
+}
+
+async function syncTvStepVolumeControl(container, options = {}) {
+  if (!container) return;
+
+  const deviceId = String(container.dataset.deviceId || "").trim();
+  const storageKey = getTvStepVolumeStorageKey(container, deviceId);
+  const fallbackValue =
+    options.fallbackValue !== undefined && options.fallbackValue !== null
+      ? clampTvVolumeDisplayValue(options.fallbackValue)
+      : readStoredTvStepVolumeValue(storageKey);
+
+  if (fallbackValue !== null && fallbackValue !== undefined) {
+    updateTvStepVolumeDisplay(container, fallbackValue);
+  }
+
+  try {
+    const serverValue = await fetchTvStepVolumeValue(deviceId);
+    if (serverValue !== null && serverValue !== undefined) {
+      updateTvStepVolumeDisplay(container, serverValue);
+      return serverValue;
+    }
+  } catch (error) {
+    console.warn("⚠️ Não foi possível sincronizar volume da TV:", error);
+  }
+
+  if (fallbackValue === null || fallbackValue === undefined) {
+    updateTvStepVolumeDisplay(container, 50);
+    return 50;
+  }
+
+  return fallbackValue;
+}
+
+function initTvStepVolumeControls() {
+  const container = document.querySelector(
+    '.tv-step-volume-controls[data-volume-mode="stepButtons"]',
+  );
+  if (!container) return;
+
+  syncTvStepVolumeControl(container).catch((error) => {
+    console.warn("⚠️ Falha ao iniciar volume por passos da TV:", error);
+  });
+}
+
+function handleTvStepVolume(button, direction) {
+  const container = button?.closest?.(
+    '.tv-step-volume-controls[data-volume-mode="stepButtons"]',
+  );
+  if (!container) return;
+
+  const deviceId = String(
+    button?.dataset?.deviceId || container.dataset.deviceId || "",
+  ).trim();
+  if (!deviceId) return;
+
+  const storageKey = getTvStepVolumeStorageKey(container, deviceId);
+  const displayEl =
+    container
+      .closest(".tv-control-section--volume")
+      ?.querySelector("#tv-volume-display") ||
+    document.getElementById("tv-volume-display");
+  const currentValue = clampTvVolumeDisplayValue(displayEl?.textContent || 50);
+  const delta = String(direction || "").toLowerCase() === "down" ? -1 : 1;
+  const nextValue = clampTvVolumeDisplayValue(currentValue + delta);
+  const command =
+    delta < 0
+      ? String(container.dataset.volumeCommandDown || "volumeDown")
+      : String(container.dataset.volumeCommandUp || "volumeUp");
+
+  updateTvStepVolumeDisplay(container, nextValue);
+  persistTvStepVolumeValue(storageKey, nextValue);
+  recentCommands.set(deviceId, Date.now());
+
+  sendHubitatCommand(deviceId, command).catch((error) => {
+    console.error(`⚠️ Erro ao enviar comando ${command} para a TV:`, error);
+  });
+
+  window.setTimeout(() => {
+    syncTvStepVolumeControl(container, { fallbackValue: nextValue }).catch(
+      () => {},
+    );
+  }, 350);
+}
+
+if (typeof window !== "undefined") {
+  window.initTvStepVolumeControls = initTvStepVolumeControls;
+  window.handleTvStepVolume = handleTvStepVolume;
 }
 
 // Controle do Slider de Volume
@@ -4601,8 +4829,9 @@ function deriveSwitchStateFromCommand(command, value) {
     .toLowerCase();
   if (!cmd) return null;
 
-  if (cmd === "on" || cmd === "poweron") return "on";
-  if (cmd === "off" || cmd === "poweroff") return "off";
+  if (cmd === "on" || cmd === "poweron" || cmd === "commandon") return "on";
+  if (cmd === "off" || cmd === "poweroff" || cmd === "commandoff")
+    return "off";
 
   if (cmd === "setlevel") {
     const level = Number(value);

@@ -7687,8 +7687,26 @@ body:not(.tv-controls-on)
   flex: 1;
   display: grid;
 }
+.tv-media-grid--custom-tv {
+  align-items: stretch;
+}
 .tv-media-grid .tv-btn-square {
   height: 100%;
+}
+.tv-step-volume-controls {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  flex: 1;
+  display: grid;
+}
+.tv-step-volume-controls .tv-btn-square {
+  width: 100%;
+  height: 100%;
+}
+.tv-step-volume-btn .tv-btn-icon-img {
+  width: 34px;
+  height: 34px;
 }
 .tv-control-wrapper[data-control-type="clarotv"] .tv-media-grid {
   grid-template-columns: repeat(2, 1fr);
