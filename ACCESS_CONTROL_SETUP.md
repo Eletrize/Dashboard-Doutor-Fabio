@@ -19,7 +19,7 @@ There are 2 layers:
 
 Run:
 
-- `SUPABASE_ACCESS_CONTROL.sql`
+- `sql/supabase/migrations/SUPABASE_ACCESS_CONTROL.sql`
 
 This creates:
 
@@ -92,4 +92,4 @@ set
 - `can_create_scenes`: user can use that environment inside the scenes builder
 - inside the admin panel, `can_create_scenes` implies `can_control`, and `can_control` implies `can_view`
 
-If you change device IDs in `config.js`, rerun the seed part of `SUPABASE_ACCESS_CONTROL.sql` so the backend registry stays in sync.
+If you change device IDs in `config.js`, rerun the seed part of `sql/supabase/migrations/SUPABASE_ACCESS_CONTROL.sql` so the backend registry stays in sync.

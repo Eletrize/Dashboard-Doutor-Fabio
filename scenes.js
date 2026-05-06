@@ -52,17 +52,27 @@
     hidromassagem: "Hidromassagem",
   };
 
+  const SCENE_COMMAND_PRESETS_BY_TYPE = {
+    comfort: ["on", "off"],
+    bluray: ["on"],
+    appletv: ["on"],
+    clarotv: ["on"],
+    roku: ["on"],
+  };
+
+  const HOME_THEATER_MEDIA_TYPES = new Set(["tv", "appletv", "clarotv", "bluray"]);
+
   const DEFAULT_COMMANDS_BY_TYPE = {
     lights: ["on", "off", "setLevel"],
     curtains: ["open", "stop", "close"],
-    comfort: ["on", "off", "temp22", "swingOn", "swingOff"],
+    comfort: ["on", "off"],
     tv: ["powerOn", "powerOff", "mute", "home", "returnButton", "hdmi2", "hdmi3"],
     htv: ["on", "off", "home", "menu"],
-    bluray: ["on", "off", "play", "pause", "stop"],
-    appletv: ["on", "off", "play", "pause", "menu"],
-    clarotv: ["on", "off", "channelUp", "channelDown", "menu"],
+    bluray: ["on"],
+    appletv: ["on"],
+    clarotv: ["on"],
     music: ["on", "off", "play", "pause", "nextTrack", "previousTrack", "mute", "unmute"],
-    roku: ["on", "off", "home", "play", "back"],
+    roku: ["on"],
     games: ["on", "off"],
     hidromassagem: ["on", "off"],
   };
@@ -267,6 +277,11 @@
     return filterSceneCommands([...mapped, ...DEFAULT_COMMANDS_BY_TYPE.curtains]);
   }
 
+  function getSceneCommandPreset(type) {
+    const normalizedType = normalizeText(type);
+    return toArray(SCENE_COMMAND_PRESETS_BY_TYPE[normalizedType]);
+  }
+
   function resolveLightCommands(light) {
     const commands = ["on", "off"];
     const type = normalizeText(light?.type || light?.class);
@@ -277,12 +292,22 @@
   }
 
   function resolveRemoteCommands(type, commandMap) {
+    const preset = getSceneCommandPreset(type);
+    if (preset.length > 0) {
+      return uniqueList(preset);
+    }
+
     const configured = toArray(commandMap?.[type]);
     const defaults = toArray(DEFAULT_COMMANDS_BY_TYPE[type]);
     return filterSceneCommands([...configured, ...defaults]);
   }
 
   function resolveAcCommands(env, acBrandProfiles) {
+    const preset = getSceneCommandPreset("comfort");
+    if (preset.length > 0) {
+      return uniqueList(preset);
+    }
+
     const acConfig = env?.airConditioner || {};
     const brandKey = normalizeText(acConfig?.brand || "default");
     const brand = acBrandProfiles?.[brandKey] || acBrandProfiles?.default || {};
@@ -1002,7 +1027,15 @@
 
   function getAvailableCommands(device) {
     if (!device) return [];
-    return filterSceneCommands([...toArray(device.commands), CUSTOM_COMMAND_TOKEN]);
+
+    const baseCommands = filterSceneCommands(toArray(device.commands));
+    const preset = getSceneCommandPreset(device.type);
+
+    if (preset.length > 0) {
+      return uniqueList(baseCommands.length ? baseCommands : preset);
+    }
+
+    return filterSceneCommands([...baseCommands, CUSTOM_COMMAND_TOKEN]);
   }
 
   function getResolvedSelectedCommand() {
@@ -1556,6 +1589,106 @@
     return fallbackId;
   }
 
+  function isScenePowerOnCommand(normalizedCommand) {
+    return normalizedCommand === "on" || normalizedCommand === "poweron";
+  }
+
+  async function runSceneHomeTheaterPowerMacro(device, deviceType, envKey, normalizedCommand) {
+    if (envKey !== "ambiente1") return;
+    if (!isScenePowerOnCommand(normalizedCommand)) return;
+    if (!HOME_THEATER_MEDIA_TYPES.has(deviceType)) return;
+
+    const receiverId = String(
+      device?.receiverId ||
+        (typeof getEnvironmentControlId === "function"
+          ? getEnvironmentControlId(envKey, "receiver")
+          : ""),
+    ).trim();
+    const displayId = String(
+      device?.displayId ||
+        (typeof getEnvironmentDeviceBinding === "function"
+          ? getEnvironmentDeviceBinding(envKey, "tv", "display")
+          : ""),
+    ).trim();
+
+    const inputByType = {
+      clarotv: "DVD",
+      appletv: "GAME",
+      bluray: "BD",
+      tv: "TV",
+    };
+    const input = inputByType[deviceType];
+
+    if (receiverId) {
+      await Promise.allSettled([sendHubitatCommand(receiverId, "on")]);
+    }
+
+    if (!input || !receiverId) return;
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, 350);
+    });
+
+    const routeCommands = [sendHubitatCommand(receiverId, "setInputSource", input)];
+    if (deviceType !== "tv" && displayId) {
+      routeCommands.push(sendHubitatCommand(displayId, "hdmi3"));
+    }
+
+    await Promise.allSettled(routeCommands);
+  }
+
+  async function runSceneVarandaPowerMacro(deviceType, envKey, normalizedCommand) {
+    if (envKey !== "ambiente3") return;
+    if (!isScenePowerOnCommand(normalizedCommand)) return;
+    if (deviceType !== "tv" && deviceType !== "roku") return;
+
+    const varandaTvId = String(
+      (typeof getEnvironmentDeviceBinding === "function"
+        ? getEnvironmentDeviceBinding(envKey, "tv", "power")
+        : "") ||
+        (typeof getEnvironmentDeviceBinding === "function"
+          ? getEnvironmentDeviceBinding(envKey, "tv", "id")
+          : ""),
+    ).trim();
+
+    const varandaDenonId = String(
+      (typeof getEnvironmentDeviceBinding === "function"
+        ? getEnvironmentDeviceBinding(envKey, "music", "power")
+        : "") ||
+        (typeof getEnvironmentControlId === "function"
+          ? getEnvironmentControlId(envKey, "screenReceiver")
+          : ""),
+    ).trim();
+
+    const commands = [];
+
+    if (varandaTvId) {
+      commands.push(sendHubitatCommand(varandaTvId, "on"));
+    }
+
+    if (deviceType === "roku") {
+      if (varandaDenonId) {
+        commands.push(sendHubitatCommand(varandaDenonId, "mediaplayer"));
+      }
+      if (varandaTvId) {
+        commands.push(sendHubitatCommand(varandaTvId, "hdmi3"));
+      }
+    }
+
+    if (deviceType === "tv" && varandaDenonId) {
+      commands.push(sendHubitatCommand(varandaDenonId, "tvAudio"));
+    }
+
+    if (commands.length > 0) {
+      await Promise.allSettled(commands);
+    }
+  }
+
+  async function runScenePowerOnMacros(device, deviceType, envKey, normalizedCommand) {
+    await runSceneHomeTheaterPowerMacro(device, deviceType, envKey, normalizedCommand);
+    await runSceneVarandaPowerMacro(deviceType, envKey, normalizedCommand);
+  }
+
   async function executeSceneStep(step) {
     const device = resolveSceneDevice(step);
     const deviceType = normalizeText(step?.deviceType || device?.type);
@@ -1577,42 +1710,7 @@
       return sendHubitatCommand(targetId, "setVolume", "0");
     }
 
-    if (
-      envKey === "ambiente1" &&
-      (normalizedCommand === "on" || normalizedCommand === "poweron")
-    ) {
-      const receiverId = String(
-        device?.receiverId ||
-          (typeof getEnvironmentControlId === "function"
-            ? getEnvironmentControlId(envKey, "receiver")
-            : ""),
-      ).trim();
-      const displayId = String(
-        device?.displayId ||
-          (typeof getEnvironmentDeviceBinding === "function"
-            ? getEnvironmentDeviceBinding(envKey, "tv", "display")
-            : ""),
-      ).trim();
-      const inputByType = {
-        clarotv: "DVD",
-        appletv: "GAME",
-        bluray: "BD",
-        tv: "TV",
-      };
-      const input = inputByType[deviceType];
-
-      if (input && receiverId) {
-        const auxiliaryCommands = [
-          sendHubitatCommand(receiverId, "setInputSource", input),
-        ];
-
-        if (deviceType !== "tv" && displayId) {
-          auxiliaryCommands.push(sendHubitatCommand(displayId, "hdmi3"));
-        }
-
-        await Promise.allSettled(auxiliaryCommands);
-      }
-    }
+    await runScenePowerOnMacros(device, deviceType, envKey, normalizedCommand);
 
     return sendHubitatCommand(
       targetId,

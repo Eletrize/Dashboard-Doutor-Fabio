@@ -5448,6 +5448,52 @@
               return null;
             },
             async pollDevice(deviceId) {
+              const shouldBypassHubitat =
+                (typeof window.isHubitatBypassMode === "function" &&
+                  window.isHubitatBypassMode()) ||
+                (typeof window.isCinematicModeEnabled === "function" &&
+                  window.isCinematicModeEnabled());
+
+              if (shouldBypassHubitat) {
+                const ids = String(deviceId || "")
+                  .split(",")
+                  .map((id) => String(id || "").trim())
+                  .filter(Boolean);
+
+                const devices = ids.reduce((acc, id) => {
+                  let state = "off";
+
+                  if (typeof window.getStoredState === "function") {
+                    state = String(window.getStoredState(id) || "off");
+                  } else {
+                    try {
+                      const rawState = localStorage.getItem(`deviceState:${id}`);
+                      state = rawState ? String(rawState) : "off";
+                    } catch (error) {
+                      state = "off";
+                    }
+                  }
+
+                  acc[id] = {
+                    id,
+                    success: true,
+                    state,
+                    switch: state,
+                    attributes: {
+                      switch: state,
+                    },
+                  };
+
+                  return acc;
+                }, {});
+
+                return {
+                  success: true,
+                  devices,
+                  data: Object.values(devices),
+                };
+              }
+
               const response = await fetch(
                 `/polling?devices=${encodeURIComponent(String(deviceId))}`,
                 {

@@ -1939,6 +1939,7 @@ function tvCommand(el, command) {
   const deviceId = el.dataset.deviceId;
   if (!command || !deviceId) return;
   const wrapper = el.closest?.(".tv-control-wrapper");
+  const envKey = getEnvironmentKeyFromRouteHash(window.location.hash) || "";
 
   if (command === "mute") {
     const slider = document.getElementById("tv-volume-slider");
@@ -1976,8 +1977,6 @@ function tvCommand(el, command) {
 
   // Home Theater: ao ligar, chavear receiver e HDMI conforme controle
   if (command === "on" || command === "powerOn") {
-    const route = (window.location.hash || "").replace("#", "");
-    const envKey = route.split("-")[0] || "";
     const mediaControlTypes = ["tv", "appletv", "clarotv", "bluray"];
     if (envKey === "ambiente1" && mediaControlTypes.includes(controlType)) {
       const receiverId =
@@ -2058,6 +2057,11 @@ function tvCommand(el, command) {
 
   // Marcar comando recente
   recentCommands.set(deviceId, Date.now());
+
+  if (shouldUseHomeTheaterMasterOff(envKey, controlType, command)) {
+    executeHomeTheaterMasterOff(controlType || "Home Theater");
+    return;
+  }
 
   commandsToSend.forEach((cmd) => {
     console.log(`📺 Enviando comando ${cmd} para dispositivo ${deviceId}`);
@@ -2340,6 +2344,123 @@ function getHomeTheaterControlIds() {
   };
 }
 
+const HOME_THEATER_MASTER_OFF_CONTROL_TYPES = new Set([
+  "tv",
+  "htv",
+  "bluray",
+  "appletv",
+  "clarotv",
+  "music",
+  "games",
+]);
+
+function getHomeTheaterMasterOffPlan() {
+  const plan = [];
+  const seen = new Set();
+
+  const addPlanItem = (deviceId, command, label) => {
+    const normalizedDeviceId = String(deviceId || "").trim();
+    const normalizedCommand = String(command || "").trim();
+    if (!normalizedDeviceId || !normalizedCommand) return;
+
+    const dedupeKey = `${normalizedDeviceId}:${normalizedCommand.toLowerCase()}`;
+    if (seen.has(dedupeKey)) return;
+    seen.add(dedupeKey);
+
+    plan.push({
+      deviceId: normalizedDeviceId,
+      command: normalizedCommand,
+      label: label || normalizedDeviceId,
+    });
+  };
+
+  addPlanItem(
+    getConfiguredEnvironmentBinding("ambiente1", "tv", "power", "4") ||
+      getConfiguredEnvironmentControlId("ambiente1", "tvControl", "4"),
+    "powerOff",
+    "Televisão",
+  );
+  addPlanItem(
+    getConfiguredEnvironmentBinding("ambiente1", "music", "power", "12409") ||
+      getConfiguredEnvironmentControlId("ambiente1", "receiver", "12409"),
+    "off",
+    "Receiver",
+  );
+  addPlanItem(
+    getConfiguredEnvironmentBinding("ambiente1", "appletv", "power", "6") ||
+      getConfiguredEnvironmentBinding("ambiente1", "appletv", "control", "6") ||
+      getConfiguredEnvironmentBinding("ambiente1", "appletv", "id", "6"),
+    "off",
+    "Apple TV",
+  );
+  addPlanItem(
+    getConfiguredEnvironmentBinding("ambiente1", "clarotv", "power", "7") ||
+      getConfiguredEnvironmentBinding("ambiente1", "clarotv", "control", "7") ||
+      getConfiguredEnvironmentBinding("ambiente1", "clarotv", "id", "7"),
+    "off",
+    "Claro TV",
+  );
+  addPlanItem(
+    getConfiguredEnvironmentBinding("ambiente1", "bluray", "power", "5") ||
+      getConfiguredEnvironmentBinding("ambiente1", "bluray", "control", "5") ||
+      getConfiguredEnvironmentBinding("ambiente1", "bluray", "id", "5"),
+    "off",
+    "Blu-ray",
+  );
+
+  return plan;
+}
+
+function shouldUseHomeTheaterMasterOff(envKey, controlType, command) {
+  const normalizedEnvKey = String(envKey || "").trim().toLowerCase();
+  const normalizedType = String(controlType || "").trim().toLowerCase();
+  const normalizedCommand = String(command || "").trim().toLowerCase();
+
+  if (normalizedEnvKey !== "ambiente1") return false;
+  if (normalizedCommand !== "off" && normalizedCommand !== "poweroff") {
+    return false;
+  }
+
+  return HOME_THEATER_MASTER_OFF_CONTROL_TYPES.has(normalizedType);
+}
+
+function executeHomeTheaterMasterOff(contextLabel = "Home Theater") {
+  const offPlan = getHomeTheaterMasterOffPlan();
+  if (!offPlan.length) {
+    console.warn("⚠️ Master OFF do Home Theater sem dispositivos configurados");
+    return Promise.resolve([]);
+  }
+
+  console.log(
+    `🛑 Master OFF ${contextLabel}:`,
+    offPlan.map(({ label, deviceId, command }) => ({
+      label,
+      deviceId,
+      command,
+    })),
+  );
+
+  return Promise.allSettled(
+    offPlan.map(({ deviceId, command, label }) => {
+      recentCommands.set(String(deviceId), Date.now());
+      return sendHubitatCommand(deviceId, command)
+        .then((result) => {
+          console.log(
+            `✅ Master OFF ${contextLabel}: ${label} (${deviceId}) -> ${command}`,
+          );
+          return result;
+        })
+        .catch((error) => {
+          console.error(
+            `❌ Master OFF ${contextLabel}: erro em ${label} (${deviceId}) -> ${command}`,
+            error,
+          );
+          throw error;
+        });
+    }),
+  );
+}
+
 function getPoolScreenControlIds() {
   return {
     screenId:
@@ -2480,21 +2601,7 @@ function telaoMacroOff() {
 
 // Macro para desligar TV e Receiver
 function htvMacroOff() {
-  const { tvControlId: TV_ID, receiverId: RECEIVER_ID } =
-    getHomeTheaterControlIds();
-
-  console.log("🎬 Macro HTV: Desligando TV e Receiver...");
-
-  Promise.all([
-    sendHubitatCommand(TV_ID, "off"),
-    sendHubitatCommand(RECEIVER_ID, "off"),
-  ])
-    .then(() => {
-      console.log("✅ TV e Receiver desligados");
-    })
-    .catch((error) => {
-      console.error("❌ Erro ao desligar TV/Receiver:", error);
-    });
+  executeHomeTheaterMasterOff("HTV");
 }
 
 // ============================================
@@ -2749,21 +2856,7 @@ function tvMacroOn() {
 
 // Macro para desligar TV e Receiver
 function tvMacroOff() {
-  const { tvControlId: TV_ID, receiverId: RECEIVER_ID } =
-    getHomeTheaterControlIds();
-
-  console.log("🎬 Macro TV: Desligando TV e Receiver...");
-
-  Promise.all([
-    sendHubitatCommand(TV_ID, "off"),
-    sendHubitatCommand(RECEIVER_ID, "off"),
-  ])
-    .then(() => {
-      console.log("✅ TV e Receiver desligados");
-    })
-    .catch((error) => {
-      console.error("❌ Erro ao desligar TV/Receiver:", error);
-    });
+  executeHomeTheaterMasterOff("TV");
 }
 
 // Macro para ativar Fire TV (HDMI 2 + BD no Receiver)
@@ -2877,6 +2970,11 @@ async function updateDenonVolumeFromServer() {
       : document.querySelector(".volume-icon-muted");
 
   try {
+    if (isHubitatBypassMode()) {
+      debugLog(() => ["updateDenonVolumeFromServer skipped (Hubitat bypass)"]);
+      return;
+    }
+
     const pollingUrl = isProduction
       ? `${POLLING_URL}?devices=${DENON_DEVICE_ID}`
       : null;
@@ -4078,6 +4176,11 @@ function initAirConditionerControl() {
     needSwing = true,
   } = {}) {
     try {
+      if (isHubitatBypassMode()) {
+        debugLog(() => ["AC polling skipped (Hubitat bypass mode)"]);
+        return;
+      }
+
       const deviceId = getPrimaryDeviceId();
       if (!deviceId) return;
       const url = `/polling?devices=${encodeURIComponent(deviceId)}`;
@@ -4565,6 +4668,145 @@ if (typeof window !== "undefined") {
   }
   window.isStateOnlyDevMode = isStateOnlyDevMode;
   window.setStateOnlyDevMode = setStateOnlyDevMode;
+}
+
+const CINEMATIC_MODE_STORAGE_KEY = "dashboard_cinematic_mode";
+const CINEMATIC_MODE_DEFAULT = Boolean(
+  typeof window !== "undefined" &&
+    window.CLIENT_CONFIG?.development?.cinematicMode === true,
+);
+const CINEMATIC_MODE_TOAST_ID = "cinematic-mode-toast";
+const CINEMATIC_HOME_HOLD_MS = 4000;
+
+function isCinematicModeEnabled() {
+  try {
+    const raw = localStorage.getItem(CINEMATIC_MODE_STORAGE_KEY);
+    if (raw === "1") return true;
+    if (raw === "0") return false;
+  } catch (_) {}
+  return CINEMATIC_MODE_DEFAULT;
+}
+
+function isHubitatBypassMode() {
+  return isStateOnlyDevMode() || isCinematicModeEnabled();
+}
+
+function syncCinematicModeDomState() {
+  if (typeof document === "undefined") return;
+  const enabled = isCinematicModeEnabled();
+  document.body?.classList.toggle("cinematic-mode", enabled);
+  document.documentElement?.setAttribute(
+    "data-cinematic-mode",
+    enabled ? "true" : "false",
+  );
+}
+
+function showCinematicModeFeedback(enabled) {
+  if (typeof document === "undefined") return;
+
+  let toast = document.getElementById(CINEMATIC_MODE_TOAST_ID);
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = CINEMATIC_MODE_TOAST_ID;
+    toast.style.cssText = [
+      "position: fixed",
+      "left: 50%",
+      "bottom: calc(env(safe-area-inset-bottom, 0px) + 92px)",
+      "transform: translate(-50%, 12px)",
+      "z-index: 12000",
+      "padding: 10px 14px",
+      "border-radius: 12px",
+      "font-size: 0.86rem",
+      "font-weight: 700",
+      "line-height: 1.25",
+      "text-align: center",
+      "color: #ffffff",
+      "background: rgba(8, 14, 32, 0.92)",
+      "border: 1px solid rgba(255, 255, 255, 0.22)",
+      "box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35)",
+      "backdrop-filter: blur(8px)",
+      "opacity: 0",
+      "transition: opacity 220ms ease, transform 220ms ease",
+      "pointer-events: none",
+      "max-width: min(88vw, 520px)",
+    ].join(";");
+    document.body.appendChild(toast);
+  }
+
+  toast.textContent = enabled
+    ? "Modo cinematografico ativado (sem comandos Hubitat)."
+    : "Modo cinematografico desativado.";
+
+  if (toast._cinematicHideTimeout) {
+    clearTimeout(toast._cinematicHideTimeout);
+  }
+
+  toast.style.opacity = "1";
+  toast.style.transform = "translate(-50%, 0)";
+
+  toast._cinematicHideTimeout = setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translate(-50%, 12px)";
+  }, 2600);
+}
+
+function setCinematicModeEnabled(enabled, options = {}) {
+  const next = Boolean(enabled);
+  const persist = options?.persist !== false;
+  const silent = options?.silent === true;
+
+  if (persist) {
+    try {
+      localStorage.setItem(CINEMATIC_MODE_STORAGE_KEY, next ? "1" : "0");
+    } catch (_) {}
+  }
+
+  syncCinematicModeDomState();
+
+  if (next) {
+    if (pollingAbortController) {
+      pollingAbortController.abort();
+    }
+    stopPolling();
+  } else if (
+    isProduction &&
+    typeof document !== "undefined" &&
+    document.visibilityState === "visible"
+  ) {
+    startPolling();
+  }
+
+  if (typeof syncAllVisibleControls === "function") {
+    setTimeout(() => syncAllVisibleControls(true), 0);
+  }
+
+  if (!silent) {
+    showCinematicModeFeedback(next);
+  }
+
+  try {
+    document.dispatchEvent(
+      new CustomEvent("dashboard:cinematic-mode-changed", {
+        detail: { enabled: next },
+      }),
+    );
+  } catch (_) {}
+
+  console.warn(
+    `[CINEMA] modo cinematografico ${next ? "ativado" : "desativado"}`,
+  );
+  return next;
+}
+
+function toggleCinematicMode() {
+  return setCinematicModeEnabled(!isCinematicModeEnabled());
+}
+
+if (typeof window !== "undefined") {
+  window.isCinematicModeEnabled = isCinematicModeEnabled;
+  window.isHubitatBypassMode = isHubitatBypassMode;
+  window.setCinematicModeEnabled = setCinematicModeEnabled;
+  window.toggleCinematicMode = toggleCinematicMode;
 }
 
 const DEFAULT_MQTT_STATE_CONFIG = {
@@ -5224,24 +5466,29 @@ async function sendHubitatCommand(deviceId, command, value) {
     );
     const commandState = deriveSwitchStateFromCommand(command, value);
     const normalizedDeviceId = String(deviceId);
+    const bypassHubitat = isHubitatBypassMode();
 
     try {
-      if (!canControlDeviceId(normalizedDeviceId)) {
+      if (!bypassHubitat && !canControlDeviceId(normalizedDeviceId)) {
         throw new Error("Acesso negado para este dispositivo");
       }
 
-      if (isStateOnlyDevMode()) {
+      if (bypassHubitat) {
         if (commandState !== null) {
           setStoredState(normalizedDeviceId, commandState);
         }
+        const modeTag = isCinematicModeEnabled()
+          ? "CINEMA local"
+          : "DEV state-only";
         console.warn(
-          `🧪 [DEV state-only] Comando simulado: ${command} -> dispositivo ${deviceId}${
+          `🧪 [${modeTag}] Comando simulado: ${command} -> dispositivo ${deviceId}${
             value !== undefined ? ` (valor ${value})` : ""
           }`,
         );
         return {
           ok: true,
           simulated: true,
+          mode: isCinematicModeEnabled() ? "cinematic" : "state-only-dev",
           deviceId: String(deviceId),
           command: String(command),
           value: value !== undefined ? value : null,
@@ -5564,8 +5811,8 @@ function scheduleNextPollingRun(delay) {
 function startPolling() {
   if (pollingActive) return;
 
-  if (isStateOnlyDevMode()) {
-    debugLog(() => ["Polling desativado em modo DEV state-only"]);
+  if (isHubitatBypassMode()) {
+    debugLog(() => ["Polling desativado em modo local (cinematic/state-only)"]);
     return;
   }
 
@@ -5625,8 +5872,8 @@ async function updateDeviceStatesFromServer(options = {}) {
   try {
     cleanupExpiredCommands();
 
-    if (isStateOnlyDevMode()) {
-      debugLog(() => ["Polling skipped (DEV state-only mode)"]);
+    if (isHubitatBypassMode()) {
+      debugLog(() => ["Polling skipped (Hubitat bypass mode)"]);
       return;
     }
 
@@ -6750,11 +6997,19 @@ async function loadAllDeviceStatesGlobally() {
   // Mobile e desktop usam EXATAMENTE o mesmo carregamento
   console.log("🌍 Carregamento universal (desktop e mobile idênticos)");
 
-  if (isStateOnlyDevMode()) {
+  if (isHubitatBypassMode()) {
+    const bypassModeLabel = isCinematicModeEnabled()
+      ? "🎬 [CINEMA]"
+      : "🧪 [DEV state-only]";
     console.warn(
-      "🧪 [DEV state-only] Carregando estados apenas do storage local",
+      `${bypassModeLabel} Carregando estados apenas do storage local`,
     );
-    updateProgress(20, "Modo DEV local ativo...");
+    updateProgress(
+      20,
+      isCinematicModeEnabled()
+        ? "Modo cinematografico ativo..."
+        : "Modo DEV local ativo...",
+    );
 
     let loadedCount = 0;
     ALL_LIGHT_IDS.forEach((deviceId, index) => {
@@ -6770,9 +7025,14 @@ async function loadAllDeviceStatesGlobally() {
     });
 
     console.log(
-      `🧪 [DEV state-only] Estados carregados localmente: ${loadedCount}/${ALL_LIGHT_IDS.length}`,
+      `${bypassModeLabel} Estados carregados localmente: ${loadedCount}/${ALL_LIGHT_IDS.length}`,
     );
-    updateProgress(100, "Modo DEV local pronto!");
+    updateProgress(
+      100,
+      isCinematicModeEnabled()
+        ? "Modo cinematografico pronto!"
+        : "Modo DEV local pronto!",
+    );
     return true;
   }
 
@@ -7679,6 +7939,11 @@ function updateDenonMetadata() {
     window.location.hash,
   );
 
+  if (isHubitatBypassMode()) {
+    debugLog(() => ["updateDenonMetadata skipped (Hubitat bypass mode)"]);
+    return;
+  }
+
   // Pedir ao Cloudflare function para retornar o JSON completo do Hubitat
   // (a function usa a variável HUBITAT_FULL_URL do ambiente quando configurada)
   fetch(`${POLLING_URL}?full=1`)
@@ -8564,18 +8829,30 @@ function initMusicPlayerUI() {
     });
 
     masterOffBtn.addEventListener("click", () => {
-      if (isPowerOn) {
-        console.log(
-          `Power OFF clicked - enviando comando "off" para device ${DENON_CMD_DEVICE_ID}`,
-        );
-        recentCommands.set(DENON_CMD_DEVICE_ID, Date.now());
-        sendHubitatCommand(DENON_CMD_DEVICE_ID, "off")
+      const currentEnvKey = getEnvironmentKeyFromRouteHash(window.location.hash);
+      if (currentEnvKey === "ambiente1") {
+        executeHomeTheaterMasterOff("Música")
           .then(() => {
-            console.log("✅ Comando off enviado com sucesso");
             setMasterPower(false);
           })
-          .catch((err) => console.error("⚠️Erro ao enviar comando off:", err));
+          .catch((err) =>
+            console.error("⚠️Erro ao executar master off do Home Theater:", err),
+          );
+        return;
       }
+
+      if (!isPowerOn) return;
+
+      console.log(
+        `Power OFF clicked - enviando comando "off" para device ${DENON_CMD_DEVICE_ID}`,
+      );
+      recentCommands.set(DENON_CMD_DEVICE_ID, Date.now());
+      sendHubitatCommand(DENON_CMD_DEVICE_ID, "off")
+        .then(() => {
+          console.log("✅ Comando off enviado com sucesso");
+          setMasterPower(false);
+        })
+        .catch((err) => console.error("⚠️Erro ao enviar comando off:", err));
     });
   }
 
@@ -9330,8 +9607,148 @@ function setupPremiumPressFeedback() {
   }
 }
 
+let cinematicHomeLongPressBound = false;
+
+function setupCinematicHomeLongPress() {
+  if (cinematicHomeLongPressBound) return;
+  cinematicHomeLongPressBound = true;
+
+  const pressState = {
+    timer: null,
+    target: null,
+    pointerId: null,
+    suppressClick: false,
+    suppressResetTimer: null,
+  };
+
+  const clearPressTimer = () => {
+    if (pressState.timer) {
+      clearTimeout(pressState.timer);
+      pressState.timer = null;
+    }
+  };
+
+  const clearSuppressedClick = () => {
+    pressState.suppressClick = false;
+    if (pressState.suppressResetTimer) {
+      clearTimeout(pressState.suppressResetTimer);
+      pressState.suppressResetTimer = null;
+    }
+  };
+
+  const resetPressState = () => {
+    clearPressTimer();
+    pressState.target = null;
+    pressState.pointerId = null;
+  };
+
+  const armSuppressedClick = () => {
+    clearSuppressedClick();
+    pressState.suppressClick = true;
+    pressState.suppressResetTimer = setTimeout(() => {
+      clearSuppressedClick();
+    }, 1400);
+  };
+
+  const isHomeButton = (button) => {
+    if (!button || !button.classList?.contains("nav-item")) return false;
+
+    const page = String(button.dataset?.page || "")
+      .trim()
+      .toLowerCase();
+    const navId = String(button.dataset?.navId || "")
+      .trim()
+      .toLowerCase();
+
+    if (page === "home" || navId === "home") return true;
+
+    const ariaLabel = String(button.getAttribute("aria-label") || "")
+      .trim()
+      .toLowerCase();
+    if (ariaLabel.includes("home")) return true;
+
+    const nav = button.closest("#spa-navbar");
+    return Boolean(nav?.classList?.contains("is-control-home-mode"));
+  };
+
+  const resolveHomeButtonFromEvent = (event) => {
+    const candidate = event?.target?.closest?.("#spa-navbar .nav-item");
+    if (!candidate) return null;
+    return isHomeButton(candidate) ? candidate : null;
+  };
+
+  const onPointerDown = (event) => {
+    const button = resolveHomeButtonFromEvent(event);
+    if (!button) return;
+    if (button.disabled || button.classList.contains("is-disabled")) return;
+
+    clearPressTimer();
+    pressState.target = button;
+    pressState.pointerId =
+      event && Number.isFinite(event.pointerId) ? event.pointerId : null;
+
+    pressState.timer = setTimeout(() => {
+      pressState.timer = null;
+
+      if (!pressState.target || !pressState.target.isConnected) return;
+
+      armSuppressedClick();
+      toggleCinematicMode();
+      debugLog(() => [
+        "cinematicModeLongPress",
+        { enabled: isCinematicModeEnabled() },
+      ]);
+    }, CINEMATIC_HOME_HOLD_MS);
+  };
+
+  const onPointerEnd = (event) => {
+    if (
+      pressState.pointerId !== null &&
+      Number.isFinite(event?.pointerId) &&
+      event.pointerId !== pressState.pointerId
+    ) {
+      return;
+    }
+    resetPressState();
+  };
+
+  const onClickCapture = (event) => {
+    if (!pressState.suppressClick) return;
+
+    const button = resolveHomeButtonFromEvent(event);
+    if (!button) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === "function") {
+      event.stopImmediatePropagation();
+    }
+
+    clearSuppressedClick();
+  };
+
+  document.addEventListener("pointerdown", onPointerDown, true);
+  document.addEventListener("pointerup", onPointerEnd, true);
+  document.addEventListener("pointercancel", onPointerEnd, true);
+  document.addEventListener("click", onClickCapture, true);
+
+  window.addEventListener("blur", () => {
+    resetPressState();
+    clearSuppressedClick();
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") {
+      resetPressState();
+      clearSuppressedClick();
+    }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  syncCinematicModeDomState();
   setupPremiumPressFeedback();
+  setupCinematicHomeLongPress();
 });
 
 console.log("📜 SCRIPT.JS CARREGADO COMPLETAMENTE!");
