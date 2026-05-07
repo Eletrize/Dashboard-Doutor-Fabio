@@ -1945,6 +1945,12 @@ function tvCommand(el, command) {
   const extraPowerCommand = String(
     wrapper?.dataset?.extraPowerCommand || "",
   ).trim();
+  const audioMuteDeviceId = String(
+    wrapper?.dataset?.audioMuteDeviceId || "",
+  ).trim();
+  const audioMuteCommand = String(
+    wrapper?.dataset?.audioMuteCommand || "mute",
+  ).trim();
 
   if (normalizedCommand === "mute" && volumeMode !== "stepbuttons") {
     const slider = document.getElementById("tv-volume-slider");
@@ -1953,6 +1959,21 @@ function tvCommand(el, command) {
       slider.dispatchEvent(new Event("input", { bubbles: true }));
       slider.dispatchEvent(new Event("change", { bubbles: true }));
     }
+    return;
+  }
+
+  if (
+    normalizedCommand === "mute" &&
+    volumeMode === "stepbuttons" &&
+    audioMuteDeviceId
+  ) {
+    recentCommands.set(audioMuteDeviceId, Date.now());
+    sendHubitatCommand(audioMuteDeviceId, audioMuteCommand).catch((error) => {
+      console.error(
+        `⚠️ Erro ao enviar comando ${audioMuteCommand} para o áudio do ambiente:`,
+        error,
+      );
+    });
     return;
   }
 
