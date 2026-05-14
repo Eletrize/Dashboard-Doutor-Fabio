@@ -2044,6 +2044,7 @@
           String(device.volumeControl || "")
             .trim()
             .toLowerCase() === "stepbuttons";
+        const hideMuteButton = Boolean(device.hideMuteButton);
         const resolveMappedCommand = (key, fallback = "") =>
           String(commandMap[key] || fallback || "");
         const isClaroTv = typeKey === "clarotv";
@@ -2110,9 +2111,10 @@
                     <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveMappedCommand("menu", "menu")}')" data-device-id="${deviceId}" aria-label="Menu">
                         <img src="images/icons/icon-menu.svg" alt="Menu">
                     </button>
+                    ${hideMuteButton ? "" : `
                     <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveMappedCommand("mute", "mute")}')" data-device-id="${deviceId}" aria-label="Mudo">
                         <img src="images/icons/icon-mute.svg" alt="Mudo">
-                    </button>
+                    </button>`}
                 `;
         const tvCommandsMarkup = `
                     <button class="tv-btn tv-btn--icon-only tv-btn--voltar" onclick="tvCommand(this, '${resolveButtonCommand("back", "voltar")}')" data-device-id="${deviceId}" aria-label="Voltar">
@@ -2130,9 +2132,10 @@
                     <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveButtonCommand("hdmi3", "hdmi3")}')" data-device-id="${deviceId}" aria-label="HDMI 3">
                         <img src="images/icons/icon-hdmi.svg" alt="HDMI 3">
                     </button>
+                    ${hideMuteButton ? "" : `
                     <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveButtonCommand("mute", "mute")}')" data-device-id="${deviceId}" aria-label="Mudo">
                         <img src="images/icons/icon-mute.svg" alt="Mudo">
-                    </button>
+                    </button>`}
                 `;
         const defaultCommandsMarkup = `
                     <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, 'returnButton')" data-device-id="${deviceId}" aria-label="Voltar">

@@ -2063,8 +2063,8 @@ function tvCommand(el, command) {
       (controlType === "tv" || controlType === "roku")
     ) {
       const varandaTvId =
-        getConfiguredEnvironmentBinding(envKey, "tv", "power", "19") ||
-        getConfiguredEnvironmentBinding(envKey, "tv", "id", "19");
+        getConfiguredEnvironmentBinding(envKey, "tv", "power", "12763") ||
+        getConfiguredEnvironmentBinding(envKey, "tv", "id", "12763");
       const varandaDenonId =
         getConfiguredEnvironmentBinding(envKey, "music", "power", "18") ||
         getConfiguredEnvironmentControlId(envKey, "screenReceiver", "18");
