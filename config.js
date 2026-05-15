@@ -248,7 +248,7 @@ const CLIENT_CONFIG = {
 
       // Roku: comandos suportados no controle da Varanda
       roku: [
-        "appleTv",
+        "appletv",
         "asterisco",
         "back",
         "channelDown",
