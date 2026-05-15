@@ -254,7 +254,7 @@ const CLIENT_CONFIG = {
         "channelDown",
         "channelUp",
         "configure",
-        "cursorDown",
+        "cursorDw",
         "cursorLeft",
         "cursorOk",
         "cursorRight",
@@ -574,7 +574,7 @@ const CLIENT_CONFIG = {
           volumeStorageKey: "ambiente3-audio-18-volume",
           commandMap: {
             volumeUp: "volUp",
-            volumeDown: "volDwn",
+            volumeDown: "volDw",
           },
         },
       ],
@@ -619,7 +619,7 @@ const CLIENT_CONFIG = {
           },
           commandMap: {
             volumeUp: "volUp",
-            volumeDown: "volDwn",
+            volumeDown: "volDw",
           },
         },
       ],

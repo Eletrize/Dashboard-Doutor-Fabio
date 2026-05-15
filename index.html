@@ -2047,6 +2047,8 @@
         const hideMuteButton = Boolean(device.hideMuteButton);
         const resolveMappedCommand = (key, fallback = "") =>
           String(commandMap[key] || fallback || "");
+        const resolveCustomTvButtonCommand = (key, fallback = "") =>
+          String(commandMap[key] || buttonCommandMap[key] || fallback || "");
         const isClaroTv = typeKey === "clarotv";
         const isRoku = typeKey === "roku";
         const useClaroLayout = isClaroTv || isRoku;
@@ -2061,9 +2063,11 @@
         const dpadUpCommand = isTvControl
           ? resolveButtonCommand("cursorUp", "cursorUp")
           : "cursorUp";
-        const dpadDownCommand = isTvControl
-          ? resolveButtonCommand("cursorDown", "cursorDown")
-          : "cursorDown";
+        const dpadDownCommand = isRoku
+          ? "cursorDw"
+          : isTvControl
+            ? resolveButtonCommand("cursorDown", "cursorDown")
+            : "cursorDown";
         const dpadLeftCommand = isTvControl
           ? resolveButtonCommand("cursorLeft", "cursorLeft")
           : "cursorLeft";
@@ -2096,23 +2100,23 @@
             ? resolveButtonCommand("powerOff", "powerOff")
             : "off";
         const customTvCommandsMarkup = `
-                    <button class="tv-btn tv-btn--icon-only tv-btn--voltar" onclick="tvCommand(this, '${resolveMappedCommand("back", "tvReturn")}')" data-device-id="${deviceId}" aria-label="Voltar">
+                    <button class="tv-btn tv-btn--icon-only tv-btn--voltar" onclick="tvCommand(this, '${resolveCustomTvButtonCommand("back", "voltar")}')" data-device-id="${deviceId}" aria-label="Voltar">
                         <img src="images/icons/arrow-left.svg" alt="Voltar">
                     </button>
-                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveMappedCommand("exit", "exit")}')" data-device-id="${deviceId}" aria-label="Sair">
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveCustomTvButtonCommand("exit", "exit")}')" data-device-id="${deviceId}" aria-label="Sair">
                         <img src="images/icons/icon-exit.svg" alt="Sair">
                     </button>
-                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveMappedCommand("home", "home")}')" data-device-id="${deviceId}" aria-label="Home">
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveCustomTvButtonCommand("home", resolveButtonCommand("smart", "home"))}')" data-device-id="${deviceId}" aria-label="Home">
                         <img src="images/icons/icon-home.svg" alt="Home">
                     </button>
-                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveMappedCommand("info", "info")}')" data-device-id="${deviceId}" aria-label="Info">
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveCustomTvButtonCommand("info", "info")}')" data-device-id="${deviceId}" aria-label="Info">
                         <img src="images/icons/icon-info.svg" alt="Info">
                     </button>
-                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveMappedCommand("menu", "menu")}')" data-device-id="${deviceId}" aria-label="Menu">
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveCustomTvButtonCommand("menu", "menu")}')" data-device-id="${deviceId}" aria-label="Menu">
                         <img src="images/icons/icon-menu.svg" alt="Menu">
                     </button>
                     ${hideMuteButton ? "" : `
-                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveMappedCommand("mute", "mute")}')" data-device-id="${deviceId}" aria-label="Mudo">
+                    <button class="tv-btn tv-btn--icon-only" onclick="tvCommand(this, '${resolveCustomTvButtonCommand("mute", "mute")}')" data-device-id="${deviceId}" aria-label="Mudo">
                         <img src="images/icons/icon-mute.svg" alt="Mudo">
                     </button>`}
                 `;
@@ -2818,7 +2822,7 @@
                         <img src="images/icons/arrow-right.svg" alt="Direita" class="tv-btn-icon-img">
                       </button>
                     </div>
-                    <button class="tv-directional-btn tv-directional-btn--down" onclick="tvCommand(this, 'cursorDown')" data-device-id="${deviceId}" aria-label="Baixo">
+                    <button class="tv-directional-btn tv-directional-btn--down" onclick="tvCommand(this, '${dpadDownCommand}')" data-device-id="${deviceId}" aria-label="Baixo">
                       <img src="images/icons/arrow-down.svg" alt="Baixo" class="tv-btn-icon-img">
                     </button>
                   </div>

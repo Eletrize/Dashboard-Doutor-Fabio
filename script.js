@@ -2330,7 +2330,11 @@ function initAppleTvGestureControls(root = document) {
         );
       } else {
         sendCommand(
-          dy > 0 ? "cursorDown" : "cursorUp",
+          dy > 0
+            ? controlType === "roku"
+              ? "cursorDw"
+              : "cursorDown"
+            : "cursorUp",
           dy > 0 ? buttons.down : buttons.up,
         );
       }
