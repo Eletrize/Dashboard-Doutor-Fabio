@@ -98,8 +98,8 @@ begin
     ('ambiente7', '12606', 'tv', 'Televisao'),
 
     ('ambiente8', '12638', 'comfort', 'Suite Milena'),
-    ('ambiente8', '12646', 'curtains', 'Cortina Abre'),
-    ('ambiente8', '12647', 'curtains', 'Cortina Fecha'),
+    ('ambiente8', '12644', 'curtains', 'Cortina Abre'),
+    ('ambiente8', '12645', 'curtains', 'Cortina Fecha'),
     ('ambiente8', '12674', 'curtains', 'Cortina Banheiro'),
     ('ambiente8', '12636', 'tv', 'Televisao'),
     ('ambiente8', '54', 'music', 'Musica'),

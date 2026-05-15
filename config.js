@@ -736,10 +736,10 @@ const CLIENT_CONFIG = {
       curtains: [
         {
           name: "Cortina",
-          targets: ["12646", "12647"],
+          targets: ["12644", "12645"],
           actionPlans: {
-            open: [{ id: "12646", command: "on" }],
-            close: [{ id: "12647", command: "on" }],
+            open: [{ id: "12644", command: "on" }],
+            close: [{ id: "12645", command: "on" }],
           },
         },
         { id: "12674", name: "Cortina Banheiro" },
