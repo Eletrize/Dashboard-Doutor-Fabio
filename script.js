@@ -2279,7 +2279,7 @@ function initAppleTvGestureControls(root = document) {
     const controlType = String(
       wrapper?.dataset?.deviceType || wrapper?.dataset?.controlType || "",
     ).toLowerCase();
-    const centerCommand = controlType === "roku" ? "cursorOK" : "cursorCenter";
+    const centerCommand = controlType === "roku" ? "cursorOk" : "cursorCenter";
 
     const sendCommand = (command, btn) => {
       if (btn) {
