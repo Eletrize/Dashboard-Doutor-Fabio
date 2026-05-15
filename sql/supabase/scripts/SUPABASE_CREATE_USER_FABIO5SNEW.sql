@@ -101,9 +101,6 @@ begin
     ('ambiente8', '12644', 'curtains', 'Cortina Abre'),
     ('ambiente8', '12645', 'curtains', 'Cortina Fecha'),
     ('ambiente8', '12674', 'curtains', 'Cortina Banheiro'),
-    ('ambiente8', '12636', 'tv', 'Televisao'),
-    ('ambiente8', '54', 'music', 'Musica'),
-    ('ambiente8', '55', 'clarotv', 'Claro TV'),
 
     ('ambiente9', '12613', 'comfort', 'Suite Fabio'),
     ('ambiente9', '12616', 'curtains', 'Cortina'),

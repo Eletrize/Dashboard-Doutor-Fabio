@@ -127,11 +127,8 @@ values
   ('ambiente6','316','lights','Trilho'),
   ('ambiente7','379','comfort','Ar Condicionado'),
   ('ambiente7','382','tv','Televisao'),
-  ('ambiente8','55','clarotv','Claro TV'),
   ('ambiente8','188','comfort','Suite Milena'),
   ('ambiente8','51','curtains','Cortina'),
-  ('ambiente8','54','music','Musica'),
-  ('ambiente8','53','tv','Televisao'),
   ('ambiente9','180','comfort','Suite Master'),
   ('ambiente9','52','curtains','Cortina')
 on conflict (environment_key, device_id) do update

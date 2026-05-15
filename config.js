@@ -750,33 +750,6 @@ const CLIENT_CONFIG = {
         controls: { zoneSelector: false, aletas: true, windfree: true },
         temperature: { min: 18, max: 25, default: 22 },
       },
-      tv: [
-        {
-          id: "12636",
-          name: "Televisão",
-          hideMuteButton: true,
-          buttonCommandMap: {
-            powerOn: "powerOn",
-            powerOff: "powerOff",
-            back: "voltar",
-            exit: "sair",
-            smart: "smart",
-            info: "info",
-            hdmi3: "hdmi3",
-            rewind: "rewind",
-            play: "play",
-            pause: "pause",
-            forward: "forward",
-            cursorUp: "cursorUp",
-            cursorDown: "cursorDown",
-            cursorLeft: "cursorLeft",
-            cursorRight: "cursorRight",
-            cursorCenter: "cursorCenter",
-          },
-        },
-      ],
-      music: [{ id: "54", name: "Música" }],
-      clarotv: [{ id: "55", name: "Claro TV" }],
     },
 
     ambiente9: {
