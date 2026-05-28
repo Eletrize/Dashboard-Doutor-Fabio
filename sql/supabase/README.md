@@ -13,6 +13,7 @@ This folder centralizes all Supabase SQL scripts used by the dashboard.
 
 - `SUPABASE_ACCESS_CONTROL.sql`: creates and seeds access control tables
 - `SUPABASE_SCENES.sql`: creates scenes table and related policies/indexes
+- `SUPABASE_KEEP_ALIVE.sql`: creates the keep-alive table and public read policy
 
 ### scripts
 
